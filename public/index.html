@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CreamyBits – African Pastries · Albuquerque, NM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0f0f0f; --white: #ffffff; --pink: #ec4899;
+      --yellow: #facc15; --blue: #60a5fa; --gray: #6b7280; --light: #f8f8f8;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: #fff; color: var(--black); overflow-x: hidden; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--black);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 3rem; height: 70px;
+    }
+    .nav-logo { width: 50px; height: 50px; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff; flex-shrink: 0; }
+    .logo-inner { display: flex; flex-direction: column; align-items: center; }
+    .logo-inner .lt { font-size: 6px; letter-spacing: 2px; color: #e11d48; font-family: 'Playfair Display', serif; }
+    .logo-inner .lm { font-size: 11px; font-weight: 900; font-family: 'Playfair Display', serif; color: #0f0f0f; letter-spacing: 1px; line-height: 1.1; text-align: center; }
+    .logo-dots { display: flex; gap: 2px; margin-top: 2px; }
+    .logo-dots span { width: 4px; height: 4px; border-radius: 50%; display: inline-block; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { color: #fff; text-decoration: none; font-size: .95rem; font-weight: 500; opacity: .85; transition: opacity .2s; }
+    .nav-links a:hover { opacity: 1; }
+    .nav-right { display: flex; align-items: center; gap: .5rem; }
+    .cart-btn { background: none; border: none; color: #fff; cursor: pointer; padding: 8px; border-radius: 8px; transition: background .2s; position: relative; display: flex; align-items: center; }
+    .cart-btn:hover { background: rgba(255,255,255,.1); }
+    .cart-count { position: absolute; top: 2px; right: 2px; background: var(--pink); color: #fff; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 6px; z-index: 201; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .3s; }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── HERO ── */
+    .hero { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 1fr 1fr; align-items: center; background: linear-gradient(135deg,#fce7f3 0%,#fff 40%,#fef9c3 100%); padding: 4rem 5rem; overflow: hidden; position: relative; }
+    .hero::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 20% 50%, rgba(244,114,182,.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(250,204,21,.12) 0%, transparent 50%); }
+    .hero-left { position: relative; z-index: 2; }
+    .badge { display: inline-flex; align-items: center; background: var(--black); color: #fff; font-size: .85rem; font-weight: 600; padding: .45rem 1.1rem; border-radius: 999px; margin-bottom: 1.5rem; }
+    .hero-headline { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem,4.5vw,4.2rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.25rem; }
+    .colorful .c { font-style: italic; }
+    .c1{color:#ec4899} .c2{color:#f97316} .c3{color:#eab308} .c4{color:#22c55e} .c5{color:#3b82f6} .c6{color:#8b5cf6} .cdot{color:#3b82f6}
+    .hero-sub { font-size: 1.05rem; color: #4b5563; line-height: 1.7; max-width: 420px; margin-bottom: 2.5rem; }
+    .hero-ctas { display: flex; gap: 1rem; }
+    .btn-black { background: var(--black); color: #fff; border: none; padding: .85rem 2rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform .2s, box-shadow .2s; }
+    .btn-black:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+    .btn-outline { background: transparent; color: var(--black); border: 2px solid var(--black); padding: .85rem 2rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .2s, color .2s; }
+    .btn-outline:hover { background: var(--black); color: #fff; }
+    .hero-right { position: relative; z-index: 2; display: flex; justify-content: flex-end; }
+    .hero-img-box { width: 100%; max-width: 500px; background: linear-gradient(145deg,#1f1f1f,#3d2c1e,#1a1a1a); border-radius: 24px; aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; font-size: 8rem; position: relative; overflow: hidden; }
+    .hero-img-box::before { content: ''; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 30% 30%, rgba(139,90,43,.3) 0, transparent 60px); }
+    .review-card { position: absolute; bottom: -20px; left: -40px; background: #111; color: #fff; border-radius: 16px; padding: 1rem 1.25rem; max-width: 210px; box-shadow: 0 8px 32px rgba(0,0,0,.3); animation: float 4s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .stars { color: #facc15; margin-bottom: .4rem; }
+    .review-card p { font-size: .8rem; color: #e5e7eb; line-height: 1.5; }
+
+    /* ── FEATURES ── */
+    .features { background: var(--light); padding: 5rem; display: grid; grid-template-columns: repeat(3,1fr); gap: 3rem; text-align: center; }
+    .feature-icon { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.75rem; }
+    .fi-blue{background:#dbeafe} .fi-pink{background:#fce7f3} .fi-yellow{background:#fef9c3}
+    .feature h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .5rem; }
+    .feature p { font-size: .9rem; color: var(--gray); line-height: 1.65; }
+
+    /* ── MENU ── */
+    #menu { background: #fff; padding: 5rem; }
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-tag { display: inline-block; background: #fce7f3; color: #be185d; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .35rem .9rem; border-radius: 999px; margin-bottom: .75rem; }
+    .section-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,3vw,2.6rem); font-weight: 900; margin-bottom: .75rem; }
+    .section-header p { color: var(--gray); font-size: 1rem; max-width: 520px; margin: 0 auto; }
+    .cat-tabs { display: flex; gap: .75rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .cat-tab { padding: .55rem 1.4rem; border-radius: 999px; border: 2px solid #e5e7eb; background: #fff; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: all .2s; color: var(--gray); }
+    .cat-tab.active { background: var(--black); color: #fff; border-color: var(--black); }
+    .cat-tab:hover:not(.active) { border-color: var(--black); color: var(--black); }
+    .cat-group-label { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin: 2.5rem 0 1.5rem; padding-bottom: .5rem; border-bottom: 2px solid #f3f4f6; display: flex; align-items: center; gap: .75rem; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1.5rem; }
+    .product-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 20px; overflow: hidden; transition: transform .25s, box-shadow .25s; display: flex; flex-direction: column; }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,.08); }
+    .product-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #f3f4f6; display: block; }
+    .product-img-placeholder { width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg,#f3f4f6,#e5e7eb); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; }
+    .product-body { padding: 1.1rem 1.25rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .product-name { font-weight: 700; font-size: 1rem; margin-bottom: .35rem; }
+    .product-desc { font-size: .82rem; color: var(--gray); line-height: 1.55; margin-bottom: .85rem; flex: 1; font-style: italic; }
+    .product-price { font-size: 1.1rem; font-weight: 700; color: var(--black); margin-bottom: 1rem; }
+    .product-price span { font-size: .8rem; color: var(--gray); font-weight: 400; }
+    .variant-select { width: 100%; padding: .5rem .75rem; border-radius: 10px; border: 1.5px solid #e5e7eb; font-family: 'DM Sans', sans-serif; font-size: .85rem; background: #fff; cursor: pointer; margin-bottom: .75rem; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
+    .variant-select:focus { outline: none; border-color: var(--black); }
+    .add-btn { width: 100%; background: var(--black); color: #fff; border: none; padding: .7rem; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: background .2s, transform .15s; display: flex; align-items: center; justify-content: center; gap: .4rem; }
+    .add-btn:hover { background: #222; transform: scale(1.01); }
+    .add-btn.added { background: #16a34a; }
+
+    /* ── CART DRAWER ── */
+    .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .cart-overlay.open { opacity: 1; pointer-events: all; }
+    .cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px,100vw); background: #fff; z-index: 400; transform: translateX(100%); transition: transform .35s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; box-shadow: -8px 0 40px rgba(0,0,0,.15); }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-header { padding: 1.5rem 1.75rem; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+    .cart-header h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; }
+    .cart-close { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 8px; transition: background .2s; }
+    .cart-close:hover { background: #f0f0f0; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 1.25rem 1.75rem; }
+    .cart-empty { text-align: center; padding: 3rem 0; color: var(--gray); }
+    .cart-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .cart-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 0; border-bottom: 1px solid #f5f5f5; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-weight: 600; font-size: .9rem; margin-bottom: .2rem; }
+    .cart-item-variant { font-size: .78rem; color: var(--gray); margin-bottom: .4rem; }
+    .cart-item-price { font-weight: 700; font-size: .95rem; }
+    .cart-item-qty { display: flex; align-items: center; gap: .5rem; }
+    .qty-btn { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid #e5e7eb; background: #fff; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all .15s; }
+    .qty-btn:hover { background: #f0f0f0; }
+    .qty-val { font-weight: 700; min-width: 20px; text-align: center; }
+    .cart-footer { padding: 1.25rem 1.75rem; border-top: 1px solid #f0f0f0; }
+    .cart-subtotal { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; }
+    .cart-note { font-size: .78rem; color: var(--gray); margin-bottom: 1.25rem; line-height: 1.5; }
+    .btn-checkout { width: 100%; background: linear-gradient(135deg,#ec4899,#8b5cf6); color: #fff; border: none; padding: 1rem; border-radius: 14px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .15s; box-shadow: 0 4px 20px rgba(139,92,246,.35); }
+    .btn-checkout:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); }
+    .btn-checkout:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* Customer form modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 20px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,.2); display: flex; flex-direction: column; }
+    .modal-header { padding: 1.5rem 1.75rem 1rem; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
+    .modal-close { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 8px; transition: background .2s; }
+    .modal-close:hover { background: #f0f0f0; }
+    .modal-body { padding: 1.25rem 1.75rem 1.5rem; flex: 1; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .4rem; color: #374151; }
+    .form-group label .req { color: #ec4899; }
+    .form-input { width: 100%; padding: .65rem .9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; background: #fff; transition: border-color .2s; }
+    .form-input:focus { outline: none; border-color: #0f0f0f; }
+    .form-input.error { border-color: #ec4899; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .form-hint { font-size: .75rem; color: #9ca3af; margin-top: .3rem; }
+    .allergy-note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: .75rem 1rem; font-size: .82rem; color: #c2410c; margin-bottom: 1rem; line-height: 1.5; }
+    .modal-footer { padding: 1rem 1.75rem 1.5rem; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
+    .form-error { color: #dc2626; font-size: .82rem; margin-bottom: .75rem; display: none; }
+    @media(max-width:500px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* ── CTA BANNER ── */
+    .cta-banner { position: relative; padding: 6rem 2rem; text-align: center; color: #fff; overflow: hidden; }
+    .cta-bg { position: absolute; inset: 0; background: linear-gradient(135deg,#1a0a2e,#2d1b4e,#1a0a1a); z-index: 0; }
+    .cta-bg::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=60') center/cover; opacity: .22; }
+    .cta-content { position: relative; z-index: 1; }
+    .cta-banner h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem,4vw,3rem); font-weight: 900; margin-bottom: 1rem; }
+    .cta-banner p { font-size: 1rem; color: #d1d5db; max-width: 540px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .btn-gradient { background: linear-gradient(135deg,#ec4899,#8b5cf6); color: #fff; border: none; padding: 1rem 2.5rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: transform .2s, box-shadow .2s; box-shadow: 0 4px 24px rgba(139,92,246,.4); }
+    .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(139,92,246,.5); }
+
+    /* ── FOOTER ── */
+    footer { background: #0a0a0a; color: #fff; padding: 4rem 5rem 2rem; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem; padding-bottom: 3rem; border-bottom: 1px solid #1f1f1f; margin-bottom: 2rem; }
+    .footer-logo-wrap { width: 54px; height: 54px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; border: 2px solid #fff; }
+    .footer-tagline { font-size: .88rem; color: #9ca3af; line-height: 1.7; max-width: 280px; }
+    .footer-col h4 { font-size: .95rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .footer-col address { font-style: normal; font-size: .88rem; color: #9ca3af; line-height: 2.1; }
+    .social-links { display: flex; gap: .75rem; }
+    .social-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #2a2a2a; background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s, transform .2s; }
+    .social-btn:hover { background: #2a2a2a; transform: translateY(-2px); }
+    .footer-bottom { text-align: center; font-size: .82rem; color: #4b5563; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    .hero-left > * { animation: fadeUp .7s ease both; }
+    .badge{animation-delay:.1s} .hero-headline{animation-delay:.2s} .hero-sub{animation-delay:.35s} .hero-ctas{animation-delay:.5s}
+    .hero-right { animation: fadeUp .9s .3s ease both; }
+
+    /* ── TABLET ── */
+    @media(max-width:1000px){
+      nav { padding: 0 1.5rem; }
+      .nav-links { gap: 1.5rem; }
+      .hero { grid-template-columns: 1fr; padding: 3rem 2rem; }
+      .hero-right { display: none; }
+      .features { grid-template-columns: 1fr; padding: 3rem 2rem; gap: 2rem; }
+      #menu { padding: 3.5rem 1.5rem; }
+      footer { padding: 3rem 2rem 2rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    /* ── MOBILE ── */
+    @media(max-width:680px){
+      nav { padding: 0 1.25rem; height: 62px; position: fixed; width: 100%; }
+      body { padding-top: 62px; }
+      .hamburger { display: flex; }
+      .nav-links {
+        display: flex !important;
+        position: fixed; top: 62px; left: 0; right: 0;
+        background: #0f0f0f;
+        flex-direction: column; gap: 0;
+        padding: 0; z-index: 200;
+        max-height: 0; overflow: hidden;
+        transition: max-height .35s cubic-bezier(.4,0,.2,1), padding .3s;
+        border-top: 1px solid #1f1f1f;
+      }
+      .nav-links.mobile-open { max-height: 300px; padding: .5rem 0 1rem; }
+      .nav-links li a { display: block; padding: .85rem 1.75rem; font-size: 1rem; border-bottom: 1px solid #1a1a1a; }
+      .nav-links li:last-child a { border-bottom: none; }
+      .hero { min-height: auto; padding: 2.5rem 1.5rem 3rem; }
+      .hero-headline { font-size: clamp(2.4rem,10vw,3.2rem); }
+      .hero-sub { font-size: .97rem; }
+      .hero-ctas { flex-direction: column; gap: .75rem; }
+      .btn-black, .btn-outline { width: 100%; text-align: center; justify-content: center; }
+      .features { padding: 2.5rem 1.5rem; gap: 1.75rem; }
+      #menu { padding: 2.5rem 1.25rem; }
+      .cat-tabs { gap: .5rem; }
+      .cat-tab { padding: .45rem 1rem; font-size: .82rem; }
+      .product-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .product-name { font-size: .92rem; }
+      .product-desc { font-size: .78rem; }
+      .product-price { font-size: 1rem; }
+      .add-btn { font-size: .82rem; padding: .6rem; }
+      .cat-group-label { font-size: 1.2rem; }
+      .cart-drawer { width: 100vw; }
+      .cta-banner { padding: 4rem 1.5rem; }
+      footer { padding: 2.5rem 1.5rem 1.5rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; }
+      .section-header { margin-bottom: 2rem; }
+      .section-header h2 { font-size: 1.75rem; }
+    }
+
+    @media(max-width:400px){
+      .product-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="scrollTo({top:0,behavior:'smooth'})">
+    <div class="logo-inner">
+      <span class="lt">✦ ✦ ✦</span>
+      <span class="lm">CREAMY<br>Bits</span>
+      <div class="logo-dots">
+        <span style="background:#e11d48"></span>
+        <span style="background:#f59e0b"></span>
+        <span style="background:#3b82f6"></span>
+        <span style="background:#22c55e"></span>
+      </div>
+    </div>
+  </div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#home"  onclick="closeMenu()">Home</a></li>
+    <li><a href="#menu"  onclick="closeMenu()">Menu &amp; Order</a></li>
+    <li><a href="#story" onclick="closeMenu()">Our Story</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <div class="badge">🌍 Freshly Made · Albuquerque, NM</div>
+    <h1 class="hero-headline">Taste of<br>
+      <span class="colorful">
+        <span class="c c1">A</span><span class="c c2">f</span><span class="c c3">r</span><span class="c c4">i</span><span class="c c5">c</span><span class="c c6">a</span><span class="cdot">.</span>
+      </span>
+    </h1>
+    <p class="hero-sub">Authentic African pastries — from golden puff puff and buttery meat pies to crispy spring rolls and samosas. Handcrafted fresh and ready for pick-up in Albuquerque every weekend.</p>
+    <div class="hero-ctas">
+      <button class="btn-black" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now &nbsp;→</button>
+      <button class="btn-outline" onclick="document.getElementById('story').scrollIntoView({behavior:'smooth'})">Our Story</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-img-box">
+      <span style="font-size:8rem;z-index:1;filter:drop-shadow(0 8px 32px rgba(0,0,0,.5))">🥧</span>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"The best African pastries in New Mexico. Those puff puffs are unreal!"</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="feature">
+    <div class="feature-icon fi-blue">🌾</div>
+    <h3>Premium Ingredients</h3>
+    <p>We use only the finest locally sourced flour and real butter for that perfect flake in every bite.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon fi-pink">👩‍🍳</div>
+    <h3>Handcrafted Fresh</h3>
+    <p>Made from scratch every time — no shortcuts, no preservatives, just real African flavors.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon fi-yellow">📦</div>
+    <h3>Weekend Pick-Up</h3>
+    <p>Order online, pay securely, and pick up Saturday or Sunday in Albuquerque, NM.</p>
+  </div>
+</section>
+
+<!-- MENU & ORDER -->
+<section id="menu">
+  <div class="section-header">
+    <div class="section-tag">Menu &amp; Order</div>
+    <h2>Fresh from our kitchen</h2>
+    <p>Pick-up available Saturdays &amp; Sundays only. Weekday bulk / catering orders available on request.</p>
+  </div>
+
+  <div class="cat-tabs" id="catTabs">
+    <button class="cat-tab active" data-cat="all">All</button>
+    <button class="cat-tab" data-cat="puffpuff">Puff Puff</button>
+    <button class="cat-tab" data-cat="pastries">Pastries</button>
+    <button class="cat-tab" data-cat="catering">Catering</button>
+    <button class="cat-tab" data-cat="drinks">Drinks</button>
+  </div>
+
+  <!-- DRINKS -->
+  <div class="cat-group" data-group="drinks">
+    <div class="cat-group-label"><span>🥤</span> Drinks</div>
+    <div class="product-grid">
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0694_a92c3db89b559e91af51103cd9a5d408.jpg" alt="Chapman Drink" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍹</div>
+        <div class="product-body">
+          <div class="product-name">Chapman Drink</div>
+          <div class="product-desc">A vibrant mocktail made with fruity sodas, orange juice, bitters, cucumber &amp; orange slices. Sweet, tangy &amp; refreshing.</div>
+          <div class="product-price">$6.00</div>
+          <button class="add-btn" onclick="addToCart('Chapman Drink','',6,this)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PUFF PUFF -->
+  <div class="cat-group" data-group="puffpuff">
+    <div class="cat-group-label"><span>🍡</span> Puff Puff</div>
+    <div class="product-grid">
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0825_cb8e3a3adcb8a5085cd030e6a7fcf663.jpg" alt="Puff Puff Plain" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍡</div>
+        <div class="product-body">
+          <div class="product-name">Puff Puff – Plain</div>
+          <div class="product-desc">Soft, golden, lightly sweet fried dough bites. Like donuts but better.</div>
+          <div class="product-price">$25.00 <span>· Box of 20</span></div>
+          <button class="add-btn" onclick="addToCart('Puff Puff – Plain','Box of 20',25,this)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order
+          </button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0755_2_96f845450cddf102a09c28a87f7b1167.jpg" alt="Puff Puff Glazed" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍡</div>
+        <div class="product-body">
+          <div class="product-name">Puff Puff – Glazed</div>
+          <div class="product-desc">Choose your glazes and toppings for a custom box of 25.</div>
+          <div class="product-price">$30.00 <span>· Box of 25</span></div>
+          <select class="variant-select" id="gf1"><option value="" disabled selected>Flavor 1</option><option>Cinnamon Sugar</option><option>White Chocolate</option><option>Chocolate</option><option>Caramel</option><option>Biscoff</option><option>Strawberry</option></select>
+          <select class="variant-select" id="gf2"><option value="" disabled selected>Flavor 2</option><option>Caramel</option><option>Chocolate</option><option>White Chocolate</option><option>Biscoff</option><option>Cinnamon Sugar</option><option>Strawberry</option></select>
+          <select class="variant-select" id="gt"><option value="" disabled selected>Topping (optional)</option><option>Coconut</option><option>Biscoff Crumbs</option><option>Oreo Crumbs</option></select>
+          <button class="add-btn" onclick="addGlazed(this)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PASTRIES -->
+  <div class="cat-group" data-group="pastries">
+    <div class="cat-group-label"><span>🥐</span> Pastries</div>
+    <div class="product-grid">
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_3285_c87d40489ab3711ac2b16a5a4df89245.jpg" alt="Meat Pies" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🥧</div>
+        <div class="product-body">
+          <div class="product-name">Meat Pies</div>
+          <div class="product-desc">Buttery, flaky pastry with a rich filling of seasoned ground meat and vegetables.</div>
+          <div class="product-price">From $18.00</div>
+          <select class="variant-select" id="mp-v">
+            <option value="Half Dozen|18">Half Dozen – $18.00</option>
+            <option value="One Dozen|32">One Dozen – $32.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Meat Pies','mp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_9879_78e76b0f366f72abacbd9c46b054fc04.jpg" alt="Chicken Pies" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍗</div>
+        <div class="product-body">
+          <div class="product-name">Chicken Pies</div>
+          <div class="product-desc">Made with chicken breast/thighs and vegetables (diced carrot &amp; Irish potatoes).</div>
+          <div class="product-price">From $20.00</div>
+          <select class="variant-select" id="cp-v">
+            <option value="Half Dozen|20">Half Dozen – $20.00</option>
+            <option value="One Dozen|38">One Dozen – $38.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Chicken Pies','cp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0698_f4de2dd83e8d89f4ae9efe6ddb426950.jpg" alt="Fish Pies" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🐟</div>
+        <div class="product-body">
+          <div class="product-name">Fish Pies</div>
+          <div class="product-desc">Buttery dough filled with mackerel fish and vegetables (carrots &amp; bell peppers).</div>
+          <div class="product-price">From $20.00</div>
+          <select class="variant-select" id="fp-v">
+            <option value="Half Dozen|20">Half Dozen – $20.00</option>
+            <option value="One Dozen|40">One Dozen – $40.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Fish Pies','fp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0697_d7d65768d88b2f3b1edab07c47f32575.jpg" alt="Vegetable Spring Roll" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🥢</div>
+        <div class="product-body">
+          <div class="product-name">Vegetable Spring Roll</div>
+          <div class="product-desc">Light crispy rolls filled with a tasty blend of fresh vegetables.</div>
+          <div class="product-price">From $15.00</div>
+          <select class="variant-select" id="vr-v">
+            <option value="Half Dozen|15">Half Dozen – $15.00</option>
+            <option value="One Dozen|30">One Dozen – $30.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Vegetable Spring Roll','vr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0696_a70f39a37847bbb7937d7501703007a5.jpg" alt="Chicken Spring Rolls" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🥢</div>
+        <div class="product-body">
+          <div class="product-name">Chicken Spring Rolls</div>
+          <div class="product-desc">Light crispy rolls filled with seasoned chicken and vegetables.</div>
+          <div class="product-price">From $20.00</div>
+          <select class="variant-select" id="cr-v">
+            <option value="Half Dozen|20">Half Dozen – $20.00</option>
+            <option value="One Dozen|35">One Dozen – $35.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Chicken Spring Rolls','cr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_9228_854dccf3d9c58f76304c3f7e8de92efe.jpg" alt="Beef Samosa" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🥟</div>
+        <div class="product-body">
+          <div class="product-name">Beef Samosa</div>
+          <div class="product-desc">Crispy fried pastry filled with a savory blend of meat and vegetables.</div>
+          <div class="product-price">$30.00 <span>· Box of 12</span></div>
+          <button class="add-btn" onclick="addToCart('Beef Samosa','Box of 12',30,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0685_jpg_d0b8e3c6c077caa5b670c96cd1f0c0f3.jpg" alt="Sausage Rolls" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🌭</div>
+        <div class="product-body">
+          <div class="product-name">Sausage Rolls</div>
+          <div class="product-desc">Buttery flaky pastry wrapped around a rich, savory sausage filling.</div>
+          <div class="product-price">From $18.00</div>
+          <select class="variant-select" id="sr-v">
+            <option value="Half Dozen|18">Half Dozen – $18.00</option>
+            <option value="One Dozen|32">One Dozen – $32.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Sausage Rolls','sr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_6948_41b239fec49a0df547678e64b7bda15f.jpg" alt="Egg Rolls" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🥚</div>
+        <div class="product-body">
+          <div class="product-name">Egg Rolls</div>
+          <div class="product-desc">A whole boiled egg wrapped in lightly sweet dough, fried golden and fluffy.</div>
+          <div class="product-price">From $20.00</div>
+          <select class="variant-select" id="er-v">
+            <option value="Half Dozen|20">Half Dozen – $20.00</option>
+            <option value="One Dozen|40">One Dozen – $40.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Egg Rolls','er-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0699_3ac264c9da4876dce7b1ba8fc91ba9ef.jpg" alt="Shrimp Roll" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍤</div>
+        <div class="product-body">
+          <div class="product-name">Shrimp Roll</div>
+          <div class="product-desc">Crispy shrimp rolls — a crowd favourite for any occasion.</div>
+          <div class="product-price">$38.00 <span>· Box of 12</span></div>
+          <button class="add-btn" onclick="addToCart('Shrimp Roll','Box of 12',38,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/c11257d6_100d_4f73_8f2c_e813caa3c1c3_f8ad95a2cef6ad0373839df9fe5ebb29.jpg" alt="Small Chops Mini" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍽️</div>
+        <div class="product-body">
+          <div class="product-name">Small Chops Pack – Mini</div>
+          <div class="product-desc">3 Puff Puff · 1 Mini Meatpie · 1 Chicken Wing · 1 Spring Roll. Min. order: 10 packs.</div>
+          <div class="product-price">$9.00 <span>· per pack</span></div>
+          <button class="add-btn" onclick="addToCart('Small Chops Pack – Mini','Min. 10 packs',9,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_8996_e9f5c980d465bf4cc90154fb85eebf53.jpg" alt="Small Chops Platter" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍽️</div>
+        <div class="product-body">
+          <div class="product-name">Small Chops Platter</div>
+          <div class="product-desc">30 puff puffs · 10 spring rolls · 10 beef samosas or mini meat pies · 10 chicken wings · 6 shrimp rolls.</div>
+          <div class="product-price">$100.00</div>
+          <button class="add-btn" onclick="addToCart('Small Chops Platter','Full Platter',100,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_7004_7c6f14c8bc6cfd373128876a10ac1af8.jpg" alt="Chin-Chin" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🍬</div>
+        <div class="product-body">
+          <div class="product-name">Chin-Chin</div>
+          <div class="product-desc">Best for snacking individually and when you have guests over.</div>
+          <div class="product-price">From $20.00</div>
+          <select class="variant-select" id="cc-v">
+            <option value="48oz|20">48 oz – $20.00</option>
+            <option value="68oz|30">68 oz – $30.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Chin-Chin','cc-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0627_cc6f0100301efffcc0d4a0c1ba637e57.jpg" alt="Shawarma" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🌯</div>
+        <div class="product-body">
+          <div class="product-name">Shawarma</div>
+          <div class="product-desc">Flavourful wraps made fresh to order.</div>
+          <div class="product-price">From $10.00</div>
+          <select class="variant-select" id="sw-v">
+            <option value="Chicken Shawarma|10">Chicken Shawarma – $10.00</option>
+            <option value="Chicken + Sausage|12">Chicken + Sausage – $12.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Shawarma','sw-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_9879_46fc71c086ab007798ab73dcea6906ce.jpg" alt="Pastry Variety Box" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="product-img-placeholder" style="display:none">🎁</div>
+        <div class="product-body">
+          <div class="product-name">Pastry Variety Box</div>
+          <div class="product-desc">Includes 4 Meat Pies, 4 Chicken Pies, 4 Sausage Rolls &amp; Puff Puff.</div>
+          <div class="product-price">$40.00</div>
+          <button class="add-btn" onclick="addToCart('Pastry Variety Box','',40,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CATERING -->
+  <div class="cat-group" data-group="catering">
+    <div class="cat-group-label"><span>🍾</span> Catering</div>
+    <div class="product-grid">
+
+      <div class="product-card">
+        <div class="product-img-placeholder">🥧</div>
+        <div class="product-body">
+          <div class="product-name">Catering: Mini Meatpies</div>
+          <div class="product-desc">Perfect for events. Available in bulk trays.</div>
+          <div class="product-price">From $40.00</div>
+          <select class="variant-select" id="cmp-v">
+            <option value="Mini Box (25 pcs)|40">Mini Box (25 pcs) – $40.00</option>
+            <option value="Half Tray (50 pcs)|75">Half Tray (50 pcs) – $75.00</option>
+            <option value="Full Tray (100 pcs)|150">Full Tray (100 pcs) – $150.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Catering: Mini Meatpies','cmp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-placeholder">🥢</div>
+        <div class="product-body">
+          <div class="product-name">Catering: Vegetable Spring Rolls</div>
+          <div class="product-desc">Crispy veggie rolls in half or full tray quantities.</div>
+          <div class="product-price">From $50.00</div>
+          <select class="variant-select" id="cvr-v">
+            <option value="Half Tray (20 pcs)|50">Half Tray (20 pcs) – $50.00</option>
+            <option value="Full Tray (45 pcs)|100">Full Tray (45 pcs) – $100.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Catering: Veg Spring Rolls','cvr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-placeholder">🥟</div>
+        <div class="product-body">
+          <div class="product-name">Catering: Beef Samosa</div>
+          <div class="product-desc">Catering-size orders of crispy beef samosas.</div>
+          <div class="product-price">From $50.00</div>
+          <select class="variant-select" id="cbs-v">
+            <option value="Half Tray (20 pcs)|50">Half Tray (20 pcs) – $50.00</option>
+            <option value="Full Tray (45 pcs)|100">Full Tray (45 pcs) – $100.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Catering: Beef Samosa','cbs-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-placeholder">🍡</div>
+        <div class="product-body">
+          <div class="product-name">Catering: Puff Puff</div>
+          <div class="product-desc">Large-batch puff puff for events and gatherings.</div>
+          <div class="product-price">From $50.00</div>
+          <select class="variant-select" id="cpp-v">
+            <option value="Half Tray|50">Half Tray – $50.00</option>
+            <option value="Full Tray|100">Full Tray – $100.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Catering: Puff Puff','cpp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-placeholder">🍗</div>
+        <div class="product-body">
+          <div class="product-name">Catering: Chicken Wings</div>
+          <div class="product-desc">Juicy, seasoned chicken wings in bulk quantities.</div>
+          <div class="product-price">From $40.00</div>
+          <select class="variant-select" id="cw-v">
+            <option value="25 pcs|40">25 pcs – $40.00</option>
+            <option value="50 pcs|70">50 pcs – $70.00</option>
+            <option value="100 pcs|140">100 pcs – $140.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Catering: Chicken Wings','cw-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-placeholder">🌶️</div>
+        <div class="product-body">
+          <div class="product-name">Catering: Peppered Gizzard</div>
+          <div class="product-desc">Bold, spicy peppered gizzard — a party staple.</div>
+          <div class="product-price">From $40.00</div>
+          <select class="variant-select" id="pg-v">
+            <option value="Mini Tray|40">Mini Tray – $40.00</option>
+            <option value="Half Tray|80">Half Tray – $80.00</option>
+            <option value="Full Tray|160">Full Tray – $160.00</option>
+          </select>
+          <button class="add-btn" onclick="addVariant('Catering: Peppered Gizzard','pg-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="cta-bg"></div>
+  <div class="cta-content">
+    <h2>Ready to treat yourself?</h2>
+    <p>Browse our full menu, build your order, and pay securely online. Pick up on the weekend in Albuquerque, NM.</p>
+    <button class="btn-gradient" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">View Full Menu</button>
+  </div>
+</section>
+
+<!-- FOOTER / OUR STORY -->
+<footer id="story">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo-wrap">
+        <div class="logo-inner" style="transform:scale(.85)">
+          <span class="lt">✦ ✦ ✦</span>
+          <span class="lm">CREAMY<br>Bits</span>
+          <div class="logo-dots">
+            <span style="background:#e11d48"></span>
+            <span style="background:#f59e0b"></span>
+            <span style="background:#3b82f6"></span>
+            <span style="background:#22c55e"></span>
+          </div>
+        </div>
+      </div>
+      <p class="footer-tagline">Family-owned African pastry kitchen bringing the bold, comforting flavors of West Africa to Albuquerque, New Mexico. Every bite is made with love.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Pick-Up Info</h4>
+      <address>
+        Albuquerque, NM<br><br>
+        Sat &amp; Sun: 10am – 6pm<br>
+        Exact address confirmed<br>
+        via order confirmation email.
+      </address>
+    </div>
+    <div class="footer-col">
+      <h4>Contact &amp; Follow</h4>
+      <address style="margin-bottom:1.25rem">
+        <a href="mailto:creamybitsllc@gmail.com" style="color:#9ca3af;text-decoration:none">creamybitsllc@gmail.com</a>
+      </address>
+      <div class="social-links">
+        <button class="social-btn" aria-label="Instagram" onclick="window.open('https://instagram.com/creamybits','_blank')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <button class="social-btn" aria-label="Facebook" onclick="window.open('https://facebook.com/creamybits','_blank')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 CreamyBits LLC. All rights reserved. · Albuquerque, New Mexico</div>
+</footer>
+
+<!-- ORDER DETAILS MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <h3 id="modalTitle">Complete Your Order</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="form-error" id="formError"></p>
+
+      <div class="form-group">
+        <label for="custName">Full Name <span class="req">*</span></label>
+        <input class="form-input" id="custName" type="text" placeholder="Jane Doe" autocomplete="name" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="custEmail">Email <span class="req">*</span></label>
+          <input class="form-input" id="custEmail" type="email" placeholder="jane@example.com" autocomplete="email" required />
+        </div>
+        <div class="form-group">
+          <label for="custPhone">Phone <span class="req">*</span></label>
+          <input class="form-input" id="custPhone" type="tel" placeholder="(505) 000-0000" autocomplete="tel" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pickupDay">Pick-up Day <span class="req">*</span></label>
+          <select class="form-input" id="pickupDay" required>
+            <option value="" disabled selected>Select day</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pickupTime">Pick-up Time <span class="req">*</span></label>
+          <select class="form-input" id="pickupTime" required>
+            <option value="" disabled selected>Select time</option>
+            <option>10:00 AM – 11:00 AM</option>
+            <option>11:00 AM – 12:00 PM</option>
+            <option>12:00 PM – 1:00 PM</option>
+            <option>1:00 PM – 2:00 PM</option>
+            <option>2:00 PM – 3:00 PM</option>
+            <option>3:00 PM – 4:00 PM</option>
+            <option>4:00 PM – 5:00 PM</option>
+            <option>5:00 PM – 6:00 PM</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="allergy-note">
+        ⚠️ <strong>Allergy &amp; Dietary Info — Required.</strong><br>
+        Please list any allergies or dietary restrictions. If none, type <em>"None"</em>. This helps us keep you safe.
+      </div>
+      <div class="form-group">
+        <label for="allergies">Allergies / Dietary Notes <span class="req">*</span></label>
+        <textarea class="form-input" id="allergies" rows="3" placeholder='e.g. "Nut allergy" or "None"' required style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-checkout" id="submitOrderBtn" onclick="submitOrder()">
+        Pay Securely with Stripe →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h3>Your Order 🛍️</h3>
+    <button class="cart-close" onclick="closeCart()" aria-label="Close cart">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty.<br>Add some delicious items!</p></div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-subtotal"><span>Subtotal</span><span id="cartTotal">$0.00</span></div>
+    <p class="cart-note">⚠️ Pick-up available Saturdays &amp; Sundays only in Albuquerque, NM. Exact address sent with order confirmation.</p>
+    <button class="btn-checkout" id="checkoutBtn" onclick="openModal()">
+      Proceed to Checkout →
+    </button>
+  </div>
+</div>
+
+<script>
+  // ── Cart state ──────────────────────────────────────────────────────────
+  let cart = [];
+
+  // ── Mobile nav ─────────────────────────────────────────────────────────
+  function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('mobile-open');
+    document.getElementById('hamburger').classList.toggle('open');
+  }
+  function closeMenu() {
+    document.getElementById('navLinks').classList.remove('mobile-open');
+    document.getElementById('hamburger').classList.remove('open');
+  }
+
+  // ── Add to cart ─────────────────────────────────────────────────────────
+  function addToCart(name, variant, price, btn) {
+    const existing = cart.find(i => i.name === name && i.variant === variant);
+    if (existing) existing.qty++;
+    else cart.push({ name, variant, price: parseFloat(price), qty: 1 });
+    updateCart();
+    if (btn) flashBtn(btn);
+    openCart();
+  }
+
+  function addVariant(name, selectId, btn) {
+    const sel   = document.getElementById(selectId);
+    const parts = sel.value.split('|');
+    addToCart(name, parts[0], parseFloat(parts[1]), btn);
+  }
+
+  function addGlazed(btn) {
+    const f1 = document.getElementById('gf1').value || 'No Flavor 1';
+    const f2 = document.getElementById('gf2').value || 'No Flavor 2';
+    const t  = document.getElementById('gt').value  || 'No Topping';
+    addToCart('Puff Puff – Glazed', f1 + ' / ' + f2 + ' / ' + t, 30, btn);
+  }
+
+  function flashBtn(btn) {
+    btn.classList.add('added');
+    btn.innerHTML = '✓ Added!';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order';
+    }, 1400);
+  }
+
+  // ── Update UI ───────────────────────────────────────────────────────────
+  function updateCart() {
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const countEl = document.getElementById('cartCount');
+    countEl.textContent = count;
+    countEl.style.display = count > 0 ? 'flex' : 'none';
+    document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
+    renderCartItems();
+  }
+
+  function renderCartItems() {
+    const el = document.getElementById('cartItems');
+    if (!cart.length) {
+      el.innerHTML = '<div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty.<br>Add some delicious items!</p></div>';
+      return;
+    }
+    el.innerHTML = cart.map((item, idx) => `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          ${item.variant ? `<div class="cart-item-variant">${item.variant}</div>` : ''}
+          <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+        </div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty(${idx},-1)" aria-label="Decrease">−</button>
+          <span class="qty-val">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${idx},1)"  aria-label="Increase">+</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function changeQty(idx, delta) {
+    cart[idx].qty += delta;
+    if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    updateCart();
+  }
+
+  // ── Cart drawer ─────────────────────────────────────────────────────────
+  function openCart() {
+    document.getElementById('cartDrawer').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCart() {
+    document.getElementById('cartDrawer').classList.remove('open');
+    document.getElementById('cartOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ── Order details modal ─────────────────────────────────────────────────
+  function openModal() {
+    if (!cart.length) return;
+    closeCart();
+    document.getElementById('orderModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('formError').style.display = 'none';
+  }
+  function closeModal() {
+    document.getElementById('orderModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ── Stripe checkout ─────────────────────────────────────────────────────
+  async function submitOrder() {
+    const name      = document.getElementById('custName').value.trim();
+    const email     = document.getElementById('custEmail').value.trim();
+    const phone     = document.getElementById('custPhone').value.trim();
+    const pickupDay = document.getElementById('pickupDay').value;
+    const pickupTime= document.getElementById('pickupTime').value;
+    const allergies = document.getElementById('allergies').value.trim();
+
+    const errorEl = document.getElementById('formError');
+    const btn     = document.getElementById('submitOrderBtn');
+
+    // Client-side validation
+    const missing = [];
+    if (!name)       missing.push('Full name');
+    if (!email)      missing.push('Email');
+    if (!phone)      missing.push('Phone number');
+    if (!pickupDay)  missing.push('Pick-up day');
+    if (!pickupTime) missing.push('Pick-up time');
+    if (!allergies)  missing.push('Allergy / dietary info (type "None" if none)');
+
+    if (missing.length) {
+      errorEl.textContent = 'Please fill in: ' + missing.join(', ') + '.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errorEl.textContent = 'Please enter a valid email address.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to payment…';
+
+    try {
+      const res = await fetch('/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart,
+          customerName:  name,
+          customerEmail: email,
+          customerPhone: phone,
+          pickupDay,
+          pickupTime,
+          allergies,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      window.location.href = data.url;
+    } catch (err) {
+      errorEl.textContent = 'Could not start checkout: ' + err.message;
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Pay Securely with Stripe →';
+    }
+  }
+
+  // ── Category filter tabs ────────────────────────────────────────────────
+  document.getElementById('catTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.cat-tab');
+    if (!tab) return;
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const cat = tab.dataset.cat;
+    document.querySelectorAll('.cat-group').forEach(g => {
+      g.style.display = (cat === 'all' || g.dataset.group === cat) ? '' : 'none';
+    });
+  });
+
+  // Close modal on overlay click
+  document.getElementById('orderModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('orderModal')) closeModal();
+  });
+</script>
+</body>
+</html>

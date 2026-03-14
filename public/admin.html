@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard – CreamyBits</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --black: #0f0f0f; --gray: #6b7280; --light: #f8f8f8; --pink: #ec4899; }
+    body { font-family: 'DM Sans', sans-serif; background: #f3f4f6; color: var(--black); min-height: 100vh; }
+
+    /* Top bar */
+    .topbar { background: var(--black); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-logo { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 900; }
+    .topbar-right { display: flex; align-items: center; gap: 1.5rem; }
+    .topbar-right span { color: #9ca3af; font-size: .85rem; }
+    .logout-btn { color: #fff; background: rgba(255,255,255,.1); border: none; padding: .45rem 1rem; border-radius: 8px; cursor: pointer; font-size: .85rem; font-family: 'DM Sans', sans-serif; transition: background .2s; }
+    .logout-btn:hover { background: rgba(255,255,255,.2); }
+
+    /* Stats row */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 1.5rem 2rem 0; }
+    .stat-card { background: #fff; border-radius: 14px; padding: 1.25rem 1.5rem; border: 1px solid #e5e7eb; }
+    .stat-label { font-size: .8rem; color: var(--gray); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .35rem; }
+    .stat-value { font-size: 1.75rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+    .stat-value.green { color: #16a34a; }
+    .stat-value.pink  { color: var(--pink); }
+    .stat-value.blue  { color: #3b82f6; }
+
+    /* Controls */
+    .controls { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 2rem; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 200px; max-width: 360px; position: relative; }
+    .search-box input { width: 100%; padding: .6rem 1rem .6rem 2.5rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; background: #fff; }
+    .search-box input:focus { outline: none; border-color: var(--black); }
+    .search-icon { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+    .filter-select { padding: .6rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; background: #fff; cursor: pointer; }
+    .refresh-btn { padding: .6rem 1.25rem; background: var(--black); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+    .refresh-btn:hover { opacity: .85; }
+
+    /* Table */
+    .table-wrap { margin: 0 2rem 2rem; background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead tr { background: #f8f8f8; }
+    th { padding: .85rem 1rem; text-align: left; font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--gray); border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+    td { padding: .85rem 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    /* Status badges */
+    .badge { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .75rem; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+    .badge-paid      { background: #dcfce7; color: #15803d; }
+    .badge-pending   { background: #fef9c3; color: #a16207; }
+    .badge-ready     { background: #dbeafe; color: #1d4ed8; }
+    .badge-completed { background: #f3f4f6; color: #374151; }
+    .badge-cancelled { background: #fee2e2; color: #dc2626; }
+
+    /* Status select inline */
+    .status-select { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: .3rem .6rem; font-family: 'DM Sans', sans-serif; font-size: .82rem; background: #fff; cursor: pointer; }
+    .status-select:focus { outline: none; border-color: var(--black); }
+
+    /* Details expand */
+    .expand-btn { background: none; border: none; color: #3b82f6; cursor: pointer; font-size: .82rem; font-family: 'DM Sans', sans-serif; font-weight: 600; padding: 0; }
+    .expand-btn:hover { text-decoration: underline; }
+    .detail-row td { background: #f8f8f8; padding: 1rem 1.5rem; }
+    .detail-row { display: none; }
+    .detail-row.open { display: table-row; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 2rem; font-size: .85rem; }
+    .detail-grid dt { color: var(--gray); font-weight: 600; margin-bottom: .1rem; }
+    .detail-grid dd { color: var(--black); }
+    .allergy-tag { display: inline-block; background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; border-radius: 6px; padding: .2rem .6rem; font-size: .8rem; }
+    .items-list { margin-top: .75rem; }
+    .items-list-title { font-weight: 700; font-size: .82rem; margin-bottom: .5rem; }
+    .item-row { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px dashed #e5e7eb; font-size: .82rem; }
+    .item-row:last-child { border-bottom: none; }
+
+    /* Empty / loading state */
+    .state-msg { text-align: center; padding: 3rem; color: var(--gray); }
+
+    @media(max-width:900px){
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width:600px){
+      .stats-row { grid-template-columns: 1fr; padding: 1rem; }
+      .controls { padding: 1rem; }
+      .table-wrap { margin: 0 1rem 1rem; }
+      th, td { padding: .65rem .75rem; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">🥧 CreamyBits – Admin</div>
+  <div class="topbar-right">
+    <span id="lastRefresh"></span>
+    <a href="/admin/logout" class="logout-btn">Sign Out</a>
+  </div>
+</div>
+
+<div class="stats-row" id="statsRow">
+  <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-value" id="statTotal">–</div></div>
+  <div class="stat-card"><div class="stat-label">Paid (Unprepared)</div><div class="stat-value green" id="statPaid">–</div></div>
+  <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value pink" id="statRevenue">–</div></div>
+  <div class="stat-card"><div class="stat-label">This Weekend</div><div class="stat-value blue" id="statWeekend">–</div></div>
+</div>
+
+<div class="controls">
+  <div class="search-box">
+    <span class="search-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    </span>
+    <input type="text" id="searchInput" placeholder="Search by name, email, phone…" oninput="renderTable()" />
+  </div>
+  <select class="filter-select" id="statusFilter" onchange="renderTable()">
+    <option value="all">All statuses</option>
+    <option value="paid">Paid</option>
+    <option value="pending_payment">Pending payment</option>
+    <option value="ready">Ready for pick-up</option>
+    <option value="completed">Completed</option>
+    <option value="cancelled">Cancelled</option>
+  </select>
+  <select class="filter-select" id="dayFilter" onchange="renderTable()">
+    <option value="all">All days</option>
+    <option value="Saturday">Saturday</option>
+    <option value="Sunday">Sunday</option>
+  </select>
+  <button class="refresh-btn" onclick="loadOrders()">↻ Refresh</button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Date &amp; Time</th>
+        <th>Customer</th>
+        <th>Pick-up</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="ordersBody">
+      <tr><td colspan="7" class="state-msg">Loading orders…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  let allOrders = [];
+
+  function formatDate(iso) {
+    if (!iso) return '–';
+    const d = new Date(iso);
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  function orderTotal(order) {
+    return order.items.reduce((s, i) => s + i.price * i.qty, 0);
+  }
+
+  function statusBadge(status) {
+    const map = {
+      paid: ['badge-paid', '✓ Paid'],
+      pending_payment: ['badge-pending', '⏳ Pending'],
+      ready: ['badge-ready', '📦 Ready'],
+      completed: ['badge-completed', '✔ Completed'],
+      cancelled: ['badge-cancelled', '✕ Cancelled'],
+    };
+    const [cls, label] = map[status] || ['badge-pending', status];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function updateStats(orders) {
+    const paid    = orders.filter(o => o.status === 'paid' || o.status === 'ready');
+    const revenue = orders.filter(o => ['paid','ready','completed'].includes(o.status))
+                          .reduce((s, o) => s + orderTotal(o), 0);
+    // weekend = Saturday/Sunday within next 7 days
+    const now = new Date();
+    const dayMs = 86400000;
+    const weekend = orders.filter(o => {
+      if (!['paid','ready'].includes(o.status)) return false;
+      return o.pickupDay === 'Saturday' || o.pickupDay === 'Sunday';
+    });
+    document.getElementById('statTotal').textContent   = orders.length;
+    document.getElementById('statPaid').textContent    = paid.length;
+    document.getElementById('statRevenue').textContent = '$' + revenue.toFixed(2);
+    document.getElementById('statWeekend').textContent = weekend.length;
+  }
+
+  function renderTable() {
+    const q      = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    const day    = document.getElementById('dayFilter').value;
+
+    const filtered = allOrders.filter(o => {
+      if (status !== 'all' && o.status !== status) return false;
+      if (day !== 'all' && o.pickupDay !== day) return false;
+      if (q) {
+        const hay = `${o.customerName} ${o.customerEmail} ${o.customerPhone} ${o.id}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById('ordersBody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="state-msg">No orders found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((o, idx) => {
+      const total   = orderTotal(o).toFixed(2);
+      const shortId = o.id.slice(0, 8).toUpperCase();
+      const hasAllergy = o.allergies && o.allergies.toLowerCase() !== 'none' && o.allergies.toLowerCase() !== 'n/a';
+      const itemsHtml = o.items.map(i =>
+        `<div class="item-row">
+          <span>${i.name}${i.variant ? ` <em style="color:#6b7280">(${i.variant})</em>` : ''}</span>
+          <span>${i.qty} × $${i.price.toFixed(2)}</span>
+        </div>`).join('');
+
+      return `
+        <tr id="row-${o.id}">
+          <td><code style="font-size:.8rem;color:#374151">${shortId}</code></td>
+          <td style="white-space:nowrap;font-size:.82rem">${formatDate(o.placedAt)}</td>
+          <td>
+            <strong>${o.customerName}</strong><br>
+            <span style="color:#6b7280;font-size:.78rem">${o.customerEmail}</span>
+          </td>
+          <td style="white-space:nowrap">
+            <strong>${o.pickupDay}</strong><br>
+            <span style="color:#6b7280;font-size:.78rem">${o.pickupTime}</span>
+          </td>
+          <td><strong>$${total}</strong></td>
+          <td>
+            <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
+              ${['pending_payment','paid','ready','completed','cancelled'].map(s =>
+                `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
+              ).join('')}
+            </select>
+          </td>
+          <td><button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button></td>
+        </tr>
+        <tr class="detail-row" id="detail-${o.id}">
+          <td colspan="7">
+            <div class="detail-grid">
+              <div>
+                <dt>Phone</dt><dd>${o.customerPhone}</dd>
+              </div>
+              <div>
+                <dt>Order ID</dt><dd style="font-size:.78rem;color:#6b7280">${o.id}</dd>
+              </div>
+              <div>
+                <dt>Allergies / Notes</dt>
+                <dd>${hasAllergy ? `<span class="allergy-tag">⚠️ ${o.allergies}</span>` : '<span style="color:#6b7280">None reported</span>'}</dd>
+              </div>
+              <div>
+                <dt>Payment</dt>
+                <dd>${o.stripePaymentIntent ? `<span style="color:#16a34a;font-size:.8rem">✓ ${o.stripePaymentIntent}</span>` : '–'}</dd>
+              </div>
+            </div>
+            <div class="items-list">
+              <div class="items-list-title">Items Ordered</div>
+              ${itemsHtml}
+              <div class="item-row" style="font-weight:700;margin-top:.25rem">
+                <span>Total</span><span>$${total}</span>
+              </div>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function toggleDetail(id) {
+    const row = document.getElementById('detail-' + id);
+    const btn = document.querySelector(`#row-${id} .expand-btn`);
+    const isOpen = row.classList.toggle('open');
+    btn.textContent = isOpen ? 'Details ▴' : 'Details ▾';
+  }
+
+  async function updateStatus(orderId, newStatus) {
+    try {
+      const res = await fetch(`/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const updated = await res.json();
+      const idx = allOrders.findIndex(o => o.id === orderId);
+      if (idx !== -1) allOrders[idx] = updated;
+      updateStats(allOrders);
+    } catch(e) {
+      alert('Could not update status: ' + e.message);
+    }
+  }
+
+  async function loadOrders() {
+    try {
+      const res = await fetch('/admin/orders');
+      if (res.status === 302 || res.redirected) { location.href = '/admin-login.html'; return; }
+      allOrders = await res.json();
+      updateStats(allOrders);
+      renderTable();
+      document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    } catch(e) {
+      document.getElementById('ordersBody').innerHTML = `<tr><td colspan="7" class="state-msg">Error loading orders: ${e.message}</td></tr>`;
+    }
+  }
+
+  loadOrders();
+  // Auto-refresh every 60 seconds
+  setInterval(loadOrders, 60000);
+</script>
+</body>
+</html>
