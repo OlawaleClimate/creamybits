@@ -1,10 +1,9 @@
 'use strict';
 require('dotenv').config();
-// Force Node's DNS resolver to always prefer IPv4 (fixes Render → Supabase IPv6 issue)
-require('dns').setDefaultResultOrder('ipv4first');
 
 const express        = require('express');
 const path           = require('path');
+const dns            = require('dns').promises;
 const session        = require('express-session');
 const { Resend }     = require('resend');
 const { v4: uuidv4 } = require('uuid');
@@ -22,12 +21,24 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+let pool;
 
 async function initDB() {
+  // Explicitly resolve hostname to IPv4 — Render's network cannot reach IPv6
+  const url = new URL(process.env.DATABASE_URL);
+  try {
+    const addrs = await dns.resolve4(url.hostname);
+    url.hostname = addrs[0];
+    console.log('DB host → IPv4:', addrs[0]);
+  } catch (e) {
+    console.warn('IPv4 resolve failed, using original hostname:', e.message);
+  }
+
+  pool = new Pool({
+    connectionString: url.toString(),
+    ssl: { rejectUnauthorized: false },
+  });
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS orders (
       id               TEXT PRIMARY KEY,
