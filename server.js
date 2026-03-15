@@ -15,6 +15,11 @@ const PORT     = process.env.PORT     || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ── Supabase / PostgreSQL ─────────────────────────────────────────────────────
+if (!process.env.DATABASE_URL) {
+  console.error('FATAL: DATABASE_URL env var is not set. Orders will not be saved.');
+  process.exit(1);
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -38,7 +43,8 @@ pool.query(`
     allergies        TEXT,
     items            JSONB
   );
-`).catch(e => console.error('DB init error:', e.message));
+`).then(() => console.log('✅ DB ready'))
+  .catch(e => console.error('DB init error:', e.message));
 
 async function readOrders() {
   const { rows } = await pool.query(
