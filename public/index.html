@@ -90,6 +90,8 @@
     .product-price span { font-size: .8rem; color: var(--gray); font-weight: 400; }
     .variant-select { width: 100%; padding: .5rem .75rem; border-radius: 10px; border: 1.5px solid #e5e7eb; font-family: 'DM Sans', sans-serif; font-size: .85rem; background: #fff; cursor: pointer; margin-bottom: .75rem; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
     .variant-select:focus { outline: none; border-color: var(--black); }
+    .variant-select.select-error { border-color: #ec4899; animation: selectShake .3s ease; }
+    @keyframes selectShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
     .add-btn { width: 100%; background: var(--black); color: #fff; border: none; padding: .7rem; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: background .2s, transform .15s; display: flex; align-items: center; justify-content: center; gap: .4rem; }
     .add-btn:hover { background: #222; transform: scale(1.01); }
     .add-btn.added { background: #16a34a; }
@@ -851,7 +853,13 @@
   }
 
   function addVariant(name, selectId, btn) {
-    const sel   = document.getElementById(selectId);
+    const sel = document.getElementById(selectId);
+    if (!sel.value) {
+      sel.classList.add('select-error');
+      sel.focus();
+      sel.addEventListener('change', () => sel.classList.remove('select-error'), { once: true });
+      return;
+    }
     const parts = sel.value.split('|');
     addToCart(name, parts[0], parseFloat(parts[1]), btn);
   }
