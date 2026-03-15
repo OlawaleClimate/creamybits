@@ -127,9 +127,6 @@ async function sendEmails(order) {
 }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 // Webhook route must get raw body — register BEFORE json middleware catches it
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -160,6 +157,9 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
   }
   res.sendStatus(200);
 });
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'creamybits_dev_secret_changeme',
