@@ -148,6 +148,22 @@
     .form-error { color: #dc2626; font-size: .82rem; margin-bottom: .75rem; display: none; }
     @media(max-width:500px) { .form-row { grid-template-columns: 1fr; } }
 
+    /* Calendar picker */
+    .cal-wrap { border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; }
+    .cal-wrap:focus-within { border-color: #0f0f0f; }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; background: #f8f8f8; border-bottom: 1px solid #e5e7eb; }
+    .cal-nav { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: .25rem .5rem; border-radius: 6px; color: #374151; transition: background .15s; }
+    .cal-nav:hover { background: #e5e7eb; }
+    .cal-month-label { font-weight: 700; font-size: .9rem; color: #111; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; padding: .5rem; }
+    .cal-dow { text-align: center; font-size: .72rem; font-weight: 700; color: #9ca3af; padding: .3rem 0; }
+    .cal-day { text-align: center; padding: .35rem .15rem; border-radius: 8px; font-size: .85rem; cursor: default; color: #d1d5db; }
+    .cal-day.selectable { color: #111; cursor: pointer; font-weight: 600; }
+    .cal-day.selectable:hover { background: #f3e8ff; color: #7c3aed; }
+    .cal-day.selected { background: linear-gradient(135deg,#ec4899,#8b5cf6); color: #fff !important; font-weight: 700; }
+    .cal-day.today { outline: 2px solid #e5e7eb; }
+    .cal-selected-label { text-align: center; padding: .4rem; font-size: .82rem; color: #7c3aed; font-weight: 600; min-height: 1.5rem; }
+
     /* ── CTA BANNER ── */
     .cta-banner { position: relative; padding: 6rem 2rem; text-align: center; color: #fff; overflow: hidden; }
     .cta-bg { position: absolute; inset: 0; background: linear-gradient(135deg,#1a0a2e,#2d1b4e,#1a0a1a); z-index: 0; }
@@ -768,29 +784,28 @@
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="pickupDay">Pick-up Day <span class="req">*</span></label>
-          <select class="form-input" id="pickupDay" required>
-            <option value="" disabled selected>Select day</option>
-            <option value="Saturday">Saturday</option>
-            <option value="Sunday">Sunday</option>
-          </select>
+      <div class="form-group">
+        <label>Pick-up Date <span class="req">*</span></label>
+        <div class="cal-wrap" id="calWrap">
+          <div class="cal-header">
+            <button type="button" class="cal-nav" id="calPrev">&#8249;</button>
+            <span class="cal-month-label" id="calMonthLabel"></span>
+            <button type="button" class="cal-nav" id="calNext">&#8250;</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-selected-label" id="calSelectedLabel">Select a Saturday or Sunday</div>
         </div>
-        <div class="form-group">
-          <label for="pickupTime">Pick-up Time <span class="req">*</span></label>
-          <select class="form-input" id="pickupTime" required>
-            <option value="" disabled selected>Select time</option>
-            <option>10:00 AM – 11:00 AM</option>
-            <option>11:00 AM – 12:00 PM</option>
-            <option>12:00 PM – 1:00 PM</option>
-            <option>1:00 PM – 2:00 PM</option>
-            <option>2:00 PM – 3:00 PM</option>
-            <option>3:00 PM – 4:00 PM</option>
-            <option>4:00 PM – 5:00 PM</option>
-            <option>5:00 PM – 6:00 PM</option>
-          </select>
-        </div>
+        <input type="hidden" id="pickupDay" required />
+        <input type="hidden" id="pickupDate" />
+      </div>
+      <div class="form-group">
+        <label for="pickupTime">Pick-up Time <span class="req">*</span></label>
+        <select class="form-input" id="pickupTime" required>
+          <option value="" disabled selected>Select time</option>
+          <option>10:00 AM</option>
+          <option>11:00 AM</option>
+          <option>12:00 PM</option>
+        </select>
       </div>
 
       <div class="allergy-note">
@@ -927,12 +942,72 @@
     document.body.style.overflow = '';
   }
 
+  // ── Calendar (Sat/Sun only) ─────────────────────────────────────────────
+  let calYear, calMonth, calSelectedDate;
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function renderCal() {
+    const label = document.getElementById('calMonthLabel');
+    const grid  = document.getElementById('calGrid');
+    label.textContent = MONTHS[calMonth] + ' ' + calYear;
+    grid.innerHTML = DAYS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+    const first = new Date(calYear, calMonth, 1).getDay();
+    for (let i = 0; i < first; i++) grid.innerHTML += `<div class="cal-day"></div>`;
+    const days = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(calYear, calMonth, d);
+      const dow  = date.getDay(); // 0=Sun, 6=Sat
+      const isWeekend = dow === 0 || dow === 6;
+      const isFuture  = date > today;
+      const isSelected = calSelectedDate && date.toDateString() === calSelectedDate.toDateString();
+      const isToday  = date.toDateString() === today.toDateString();
+      let cls = 'cal-day';
+      if (isWeekend && isFuture) cls += ' selectable';
+      if (isSelected) cls += ' selected';
+      if (isToday) cls += ' today';
+      const clickable = isWeekend && isFuture ? `onclick="selectDate(${calYear},${calMonth},${d})"` : '';
+      grid.innerHTML += `<div class="${cls}" ${clickable}>${d}</div>`;
+    }
+  }
+
+  function selectDate(y, m, d) {
+    calSelectedDate = new Date(y, m, d);
+    const dayName = calSelectedDate.getDay() === 6 ? 'Saturday' : 'Sunday';
+    const formatted = MONTHS[m] + ' ' + d + ', ' + y;
+    document.getElementById('pickupDay').value  = dayName;
+    document.getElementById('pickupDate').value = formatted;
+    document.getElementById('calSelectedLabel').textContent = '✓ ' + dayName + ', ' + formatted;
+    renderCal();
+  }
+
+  function initCal() {
+    const now = new Date();
+    calYear  = now.getFullYear();
+    calMonth = now.getMonth();
+    calSelectedDate = null;
+    document.getElementById('pickupDay').value  = '';
+    document.getElementById('pickupDate').value = '';
+    document.getElementById('calSelectedLabel').textContent = 'Select a Saturday or Sunday';
+    document.getElementById('calPrev').onclick = () => {
+      const now2 = new Date(); 
+      if (calYear === now2.getFullYear() && calMonth === now2.getMonth()) return;
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCal();
+    };
+    document.getElementById('calNext').onclick = () => {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal();
+    };
+    renderCal();
+  }
+
   // ── Order details modal ─────────────────────────────────────────────────
   function openModal() {
     if (!cart.length) return;
     closeCart();
     document.getElementById('orderModal').classList.add('open');
     document.body.style.overflow = 'hidden';
+    initCal();
     document.getElementById('formError').style.display = 'none';
   }
   function closeModal() {
@@ -945,8 +1020,9 @@
     const name      = document.getElementById('custName').value.trim();
     const email     = document.getElementById('custEmail').value.trim();
     const phone     = document.getElementById('custPhone').value.trim();
-    const pickupDay = document.getElementById('pickupDay').value;
-    const pickupTime= document.getElementById('pickupTime').value;
+    const pickupDay  = document.getElementById('pickupDay').value;
+    const pickupDate = document.getElementById('pickupDate').value;
+    const pickupTime = document.getElementById('pickupTime').value;
     const allergies = document.getElementById('allergies').value.trim();
 
     const errorEl = document.getElementById('formError');
@@ -957,7 +1033,7 @@
     if (!name)       missing.push('Full name');
     if (!email)      missing.push('Email');
     if (!phone)      missing.push('Phone number');
-    if (!pickupDay)  missing.push('Pick-up day');
+    if (!pickupDay)  missing.push('Pick-up date (select a Saturday or Sunday)');
     if (!pickupTime) missing.push('Pick-up time');
     if (!allergies)  missing.push('Allergy / dietary info (type "None" if none)');
 
@@ -986,6 +1062,7 @@
           customerEmail: email,
           customerPhone: phone,
           pickupDay,
+          pickupDate,
           pickupTime,
           allergies,
         }),

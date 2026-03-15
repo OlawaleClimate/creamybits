@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app      = express();
+app.set('trust proxy', 1); // Required for secure cookies behind Render/Railway proxy
 const PORT     = process.env.PORT     || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
@@ -63,7 +64,7 @@ function buildEmailHtml(bodyHtml, itemRows, total, order) {
           </tr>
         </tfoot>
       </table>
-      <p style="font-size:13px;margin:8px 0"><strong>📅 Pick-up:</strong> ${order.pickupDay}, ${order.pickupTime}</p>
+      <p style="font-size:13px;margin:8px 0"><strong>📅 Pick-up:</strong> ${order.pickupDate ? order.pickupDate : order.pickupDay}, ${order.pickupTime}</p>
       ${order.allergies && order.allergies.toLowerCase() !== 'none' && order.allergies.toLowerCase() !== 'n/a'
         ? `<p style="font-size:13px;margin:8px 0;color:#dc2626"><strong>⚠️ Allergies / Notes:</strong> ${order.allergies}</p>`
         : ''}
@@ -102,7 +103,7 @@ async function sendEmails(order) {
       <tr><td style="color:#6b7280;width:130px;padding:4px 0">Customer</td><td><strong>${order.customerName}</strong></td></tr>
       <tr><td style="color:#6b7280;padding:4px 0">Email</td><td>${order.customerEmail}</td></tr>
       <tr><td style="color:#6b7280;padding:4px 0">Phone</td><td>${order.customerPhone}</td></tr>
-      <tr><td style="color:#6b7280;padding:4px 0">Pick-up</td><td><strong>${order.pickupDay}, ${order.pickupTime}</strong></td></tr>
+      <tr><td style="color:#6b7280;padding:4px 0">Pick-up</td><td><strong>${order.pickupDate ? order.pickupDate : order.pickupDay}, ${order.pickupTime}</strong></td></tr>
       ${order.allergies ? `<tr><td style="color:#dc2626;padding:4px 0">Allergies</td><td style="color:#dc2626"><strong>${order.allergies}</strong></td></tr>` : ''}
     </table>`;
 
@@ -177,7 +178,7 @@ function requireAdmin(req, res, next) {
 
 // ── Checkout session ──────────────────────────────────────────────────────────
 app.post('/create-checkout-session', async (req, res) => {
-  const { items, customerName, customerEmail, customerPhone, pickupDay, pickupTime, allergies } = req.body;
+  const { items, customerName, customerEmail, customerPhone, pickupDay, pickupDate, pickupTime, allergies } = req.body;
 
   if (!Array.isArray(items) || items.length === 0)
     return res.status(400).json({ error: 'Cart is empty.' });
@@ -222,7 +223,7 @@ app.post('/create-checkout-session', async (req, res) => {
       metadata: { orderId },
       custom_text: {
         submit: {
-          message: `Pick-up: ${pickupDay} ${pickupTime} · Albuquerque, NM. Confirmation sent to ${customerEmail}.`,
+          message: `Pick-up: ${pickupDate || pickupDay} at ${pickupTime} · Albuquerque, NM. Confirmation sent to ${customerEmail}.`,
         },
       },
     });
@@ -236,6 +237,7 @@ app.post('/create-checkout-session', async (req, res) => {
       customerEmail: customerEmail.trim().toLowerCase(),
       customerPhone: customerPhone.trim(),
       pickupDay,
+      pickupDate: pickupDate || '',
       pickupTime,
       allergies: allergies.trim(),
       items,
