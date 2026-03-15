@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express        = require('express');
 const path           = require('path');
+const dns            = require('dns').promises;
 const session        = require('express-session');
 const { Resend }     = require('resend');
 const { v4: uuidv4 } = require('uuid');
@@ -16,35 +17,47 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ── Supabase / PostgreSQL ─────────────────────────────────────────────────────
 if (!process.env.DATABASE_URL) {
-  console.error('FATAL: DATABASE_URL env var is not set. Orders will not be saved.');
+  console.error('FATAL: DATABASE_URL env var is not set.');
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+let pool;
 
-// Ensure table exists (no-op if already present)
-pool.query(`
-  CREATE TABLE IF NOT EXISTS orders (
-    id               TEXT PRIMARY KEY,
-    stripe_session_id TEXT,
-    stripe_id        TEXT,
-    status           TEXT NOT NULL DEFAULT 'pending_payment',
-    placed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    paid_at          TIMESTAMPTZ,
-    customer_name    TEXT,
-    customer_email   TEXT,
-    customer_phone   TEXT,
-    pickup_day       TEXT,
-    pickup_date      TEXT,
-    pickup_time      TEXT,
-    allergies        TEXT,
-    items            JSONB
-  );
-`).then(() => console.log('✅ DB ready'))
-  .catch(e => console.error('DB init error:', e.message));
+async function initDB() {
+  // Force IPv4 — Render's network prefers IPv6 but Supabase only accepts IPv4
+  const url = new URL(process.env.DATABASE_URL);
+  try {
+    const [ipv4] = await dns.resolve4(url.hostname);
+    url.hostname = ipv4;
+  } catch (e) {
+    console.warn('IPv4 DNS resolve failed, using hostname:', e.message);
+  }
+
+  pool = new Pool({
+    connectionString: url.toString(),
+    ssl: { rejectUnauthorized: false },
+  });
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id               TEXT PRIMARY KEY,
+      stripe_session_id TEXT,
+      stripe_id        TEXT,
+      status           TEXT NOT NULL DEFAULT 'pending_payment',
+      placed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      paid_at          TIMESTAMPTZ,
+      customer_name    TEXT,
+      customer_email   TEXT,
+      customer_phone   TEXT,
+      pickup_day       TEXT,
+      pickup_date      TEXT,
+      pickup_time      TEXT,
+      allergies        TEXT,
+      items            JSONB
+    );
+  `);
+  console.log('✅ DB ready');
+}
 
 async function readOrders() {
   const { rows } = await pool.query(
@@ -366,6 +379,11 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`✅  CreamyBits → http://localhost:${PORT}`);
-});
+initDB()
+  .then(() => {
+    app.listen(PORT, () => console.log(`✅  CreamyBits → http://localhost:${PORT}`));
+  })
+  .catch(err => {
+    console.error('FATAL: DB init failed:', err.message);
+    process.exit(1);
+  });
