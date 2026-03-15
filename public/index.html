@@ -854,15 +854,20 @@
 
   function addVariant(name, selectId, btn) {
     const sel = document.getElementById(selectId);
-    if (!sel.value) {
-      sel.classList.add('select-error');
-      sel.focus();
-      sel.click();
-      sel.addEventListener('change', () => sel.classList.remove('select-error'), { once: true });
-      return;
+    // Remove any previously stacked handler
+    if (sel._variantHandler) {
+      sel.removeEventListener('change', sel._variantHandler);
     }
-    const parts = sel.value.split('|');
-    addToCart(name, parts[0], parseFloat(parts[1]), btn);
+    sel._variantHandler = function() {
+      sel._variantHandler = null;
+      sel.classList.remove('select-error');
+      const parts = sel.value.split('|');
+      addToCart(name, parts[0], parseFloat(parts[1]), btn);
+    };
+    sel.addEventListener('change', sel._variantHandler, { once: true });
+    if (!sel.value) sel.classList.add('select-error');
+    sel.focus();
+    sel.click();
   }
 
   function addGlazed(btn) {
