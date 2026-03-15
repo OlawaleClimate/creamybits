@@ -1,9 +1,10 @@
 'use strict';
 require('dotenv').config();
+// Force Node's DNS resolver to always prefer IPv4 (fixes Render → Supabase IPv6 issue)
+require('dns').setDefaultResultOrder('ipv4first');
 
 const express        = require('express');
 const path           = require('path');
-const dns            = require('dns').promises;
 const session        = require('express-session');
 const { Resend }     = require('resend');
 const { v4: uuidv4 } = require('uuid');
@@ -21,23 +22,12 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-let pool;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
 async function initDB() {
-  // Force IPv4 — Render's network prefers IPv6 but Supabase only accepts IPv4
-  const url = new URL(process.env.DATABASE_URL);
-  try {
-    const [ipv4] = await dns.resolve4(url.hostname);
-    url.hostname = ipv4;
-  } catch (e) {
-    console.warn('IPv4 DNS resolve failed, using hostname:', e.message);
-  }
-
-  pool = new Pool({
-    connectionString: url.toString(),
-    ssl: { rejectUnauthorized: false },
-  });
-
   await pool.query(`
     CREATE TABLE IF NOT EXISTS orders (
       id               TEXT PRIMARY KEY,
@@ -379,11 +369,7 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-initDB()
-  .then(() => {
-    app.listen(PORT, () => console.log(`✅  CreamyBits → http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    console.error('FATAL: DB init failed:', err.message);
-    process.exit(1);
-  });
+// Start server immediately so Render marks deploy as live,
+// then init DB in the background
+app.listen(PORT, () => console.log(`✅  CreamyBits → http://localhost:${PORT}`));
+initDB().catch(err => console.error('DB init error:', err.message));
