@@ -23,12 +23,8 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 3rem; height: 70px;
     }
-    .nav-logo { width: 50px; height: 50px; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff; flex-shrink: 0; }
-    .logo-inner { display: flex; flex-direction: column; align-items: center; }
-    .logo-inner .lt { font-size: 6px; letter-spacing: 2px; color: #e11d48; font-family: 'Playfair Display', serif; }
-    .logo-inner .lm { font-size: 11px; font-weight: 900; font-family: 'Playfair Display', serif; color: #0f0f0f; letter-spacing: 1px; line-height: 1.1; text-align: center; }
-    .logo-dots { display: flex; gap: 2px; margin-top: 2px; }
-    .logo-dots span { width: 4px; height: 4px; border-radius: 50%; display: inline-block; }
+    .nav-logo { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+    .nav-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .nav-links { display: flex; gap: 2.5rem; list-style: none; }
     .nav-links a { color: #fff; text-decoration: none; font-size: .95rem; font-weight: 500; opacity: .85; transition: opacity .2s; }
     .nav-links a:hover { opacity: 1; }
@@ -162,6 +158,7 @@
     .cal-day.selectable:hover { background: #f3e8ff; color: #7c3aed; }
     .cal-day.selected { background: linear-gradient(135deg,#ec4899,#8b5cf6); color: #fff !important; font-weight: 700; }
     .cal-day.today { outline: 2px solid #e5e7eb; }
+    .cal-day.cal-day-closed { color: #f87171; text-decoration: line-through; cursor: not-allowed; }
     .cal-selected-label { text-align: center; padding: .4rem; font-size: .82rem; color: #7c3aed; font-weight: 600; min-height: 1.5rem; }
 
     /* ── CTA BANNER ── */
@@ -177,7 +174,8 @@
     /* ── FOOTER ── */
     footer { background: #0a0a0a; color: #fff; padding: 4rem 5rem 2rem; }
     .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem; padding-bottom: 3rem; border-bottom: 1px solid #1f1f1f; margin-bottom: 2rem; }
-    .footer-logo-wrap { width: 54px; height: 54px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; border: 2px solid #fff; }
+    .footer-logo-wrap { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin-bottom: 1rem; background: #fff; display: flex; align-items: center; justify-content: center; }
+    .footer-logo-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .footer-tagline { font-size: .88rem; color: #9ca3af; line-height: 1.7; max-width: 280px; }
     .footer-col h4 { font-size: .95rem; font-weight: 700; margin-bottom: 1.25rem; }
     .footer-col address { font-style: normal; font-size: .88rem; color: #9ca3af; line-height: 2.1; }
@@ -255,16 +253,7 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo" onclick="scrollTo({top:0,behavior:'smooth'})">
-    <div class="logo-inner">
-      <span class="lt">✦ ✦ ✦</span>
-      <span class="lm">CREAMY<br>Bits</span>
-      <div class="logo-dots">
-        <span style="background:#e11d48"></span>
-        <span style="background:#f59e0b"></span>
-        <span style="background:#3b82f6"></span>
-        <span style="background:#22c55e"></span>
-      </div>
-    </div>
+    <img src="/logo.png" alt="CreamyBits" />
   </div>
 
   <ul class="nav-links" id="navLinks">
@@ -291,13 +280,13 @@
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="hero-left">
-    <div class="badge">🌍 Freshly Made · Albuquerque, NM</div>
-    <h1 class="hero-headline">Taste of<br>
+    <div class="badge">🔥 Weekend Pick-up · Albuquerque, NM</div>
+    <h1 class="hero-headline">Hit Different.<br>
       <span class="colorful">
-        <span class="c c1">A</span><span class="c c2">f</span><span class="c c3">r</span><span class="c c4">i</span><span class="c c5">c</span><span class="c c6">a</span><span class="cdot">.</span>
+        <span class="c c1">E</span><span class="c c2">v</span><span class="c c3">e</span><span class="c c4">r</span><span class="c c5">y</span> <span class="c c6">B</span><span class="cdot">ite.</span>
       </span>
     </h1>
-    <p class="hero-sub">Authentic African pastries — from golden puff puff and buttery meat pies to crispy spring rolls and samosas. Handcrafted fresh and ready for pick-up in Albuquerque every weekend.</p>
+    <p class="hero-sub">Your tastebuds called — they want puff puff, meat pies, spring rolls and samosas. Authentic African pastries, handcrafted fresh for weekend pick-up in Albuquerque.</p>
     <div class="hero-ctas">
       <button class="btn-black" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now &nbsp;→</button>
       <button class="btn-outline" onclick="document.getElementById('story').scrollIntoView({behavior:'smooth'})">Our Story</button>
@@ -716,18 +705,9 @@
   <div class="footer-grid">
     <div>
       <div class="footer-logo-wrap">
-        <div class="logo-inner" style="transform:scale(.85)">
-          <span class="lt">✦ ✦ ✦</span>
-          <span class="lm">CREAMY<br>Bits</span>
-          <div class="logo-dots">
-            <span style="background:#e11d48"></span>
-            <span style="background:#f59e0b"></span>
-            <span style="background:#3b82f6"></span>
-            <span style="background:#22c55e"></span>
-          </div>
-        </div>
+        <img src="/logo.png" alt="CreamyBits" />
       </div>
-      <p class="footer-tagline">Family-owned African pastry kitchen bringing the bold, comforting flavors of West Africa to Albuquerque, New Mexico. Every bite is made with love.</p>
+      <p class="footer-tagline">Where every bite hits different — authentic African pastries crafted to satisfy your tastebuds, every single weekend in Albuquerque, NM.</p>
     </div>
     <div class="footer-col">
       <h4>Pick-Up Info</h4>
@@ -961,14 +941,27 @@
       const dow  = date.getDay(); // 0=Sun, 6=Sat
       const isWeekend = dow === 0 || dow === 6;
       const isFuture  = date > today;
+      // Cutoff: Sat orders close 12PM Fri; Sun orders close 12PM Sat
+      const now = new Date();
+      let isPastCutoff = false;
+      if (dow === 6) { // Saturday pickup
+        const cutoff = new Date(date); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(12,0,0,0);
+        if (now >= cutoff) isPastCutoff = true;
+      } else if (dow === 0) { // Sunday pickup
+        const cutoff = new Date(date); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(12,0,0,0);
+        if (now >= cutoff) isPastCutoff = true;
+      }
+      const isBookable = isWeekend && isFuture && !isPastCutoff;
       const isSelected = calSelectedDate && date.toDateString() === calSelectedDate.toDateString();
       const isToday  = date.toDateString() === today.toDateString();
       let cls = 'cal-day';
-      if (isWeekend && isFuture) cls += ' selectable';
+      if (isBookable) cls += ' selectable';
       if (isSelected) cls += ' selected';
       if (isToday) cls += ' today';
-      const clickable = isWeekend && isFuture ? `onclick="selectDate(${calYear},${calMonth},${d})"` : '';
-      grid.innerHTML += `<div class="${cls}" ${clickable}>${d}</div>`;
+      if (isWeekend && isFuture && isPastCutoff) cls += ' cal-day-closed';
+      const clickable = isBookable ? `onclick="selectDate(${calYear},${calMonth},${d})"` : '';
+      const title = isWeekend && isFuture && isPastCutoff ? `title="Orders closed (cutoff was 12PM ${dow===6?'Friday':'Saturday'})"` : '';
+      grid.innerHTML += `<div class="${cls}" ${clickable} ${title}>${d}</div>`;
     }
   }
 
