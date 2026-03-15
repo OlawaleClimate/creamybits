@@ -144,7 +144,7 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
     const s       = event.data.object;
     const orderId = s.metadata && s.metadata.orderId;
     if (orderId) {
-      const updated = updateOrder(orderId, {
+      const updated = await updateOrder(orderId, {
         status: 'paid',
         paidAt: new Date().toISOString(),
         stripePaymentIntent: s.payment_intent,
@@ -228,7 +228,7 @@ app.post('/create-checkout-session', async (req, res) => {
       },
     });
 
-    saveOrder({
+    await saveOrder({
       id: orderId,
       stripeSessionId: stripeSession.id,
       status: 'pending_payment',
@@ -266,15 +266,15 @@ app.get('/admin/logout', (req, res) => {
 });
 
 // ── Admin API ─────────────────────────────────────────────────────────────────
-app.get('/admin/orders', requireAdmin, (_req, res) => {
-  res.json(readOrders());
+app.get('/admin/orders', requireAdmin, async (_req, res) => {
+  res.json(await readOrders());
 });
 
-app.patch('/admin/orders/:id', requireAdmin, (req, res) => {
+app.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
   const { status } = req.body;
   if (!['pending_payment','paid','ready','completed','cancelled'].includes(status))
     return res.status(400).json({ error: 'Invalid status.' });
-  const updated = updateOrder(req.params.id, { status });
+  const updated = await updateOrder(req.params.id, { status });
   if (!updated) return res.status(404).json({ error: 'Order not found.' });
   res.json(updated);
 });
