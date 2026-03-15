@@ -3,38 +3,109 @@ require('dotenv').config();
 
 const express        = require('express');
 const path           = require('path');
-const fs             = require('fs');
 const session        = require('express-session');
 const { Resend }     = require('resend');
 const { v4: uuidv4 } = require('uuid');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { Pool }       = require('pg');
 
 const app      = express();
-app.set('trust proxy', 1); // Required for secure cookies behind Render/Railway proxy
+app.set('trust proxy', 1);
 const PORT     = process.env.PORT     || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
-// ── Order storage ─────────────────────────────────────────────────────────────
-const ORDERS_FILE = path.join(__dirname, 'orders.json');
-function readOrders() {
-  if (!fs.existsSync(ORDERS_FILE)) return [];
-  try { return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8')); } catch { return []; }
+// ── Supabase / PostgreSQL ─────────────────────────────────────────────────────
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+// Ensure table exists (no-op if already present)
+pool.query(`
+  CREATE TABLE IF NOT EXISTS orders (
+    id               TEXT PRIMARY KEY,
+    stripe_session_id TEXT,
+    stripe_id        TEXT,
+    status           TEXT NOT NULL DEFAULT 'pending_payment',
+    placed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    paid_at          TIMESTAMPTZ,
+    customer_name    TEXT,
+    customer_email   TEXT,
+    customer_phone   TEXT,
+    pickup_day       TEXT,
+    pickup_date      TEXT,
+    pickup_time      TEXT,
+    allergies        TEXT,
+    items            JSONB
+  );
+`).catch(e => console.error('DB init error:', e.message));
+
+async function readOrders() {
+  const { rows } = await pool.query(
+    `SELECT * FROM orders ORDER BY placed_at DESC`
+  );
+  return rows.map(rowToOrder);
 }
-function saveOrder(order) {
-  const orders = readOrders();
-  orders.unshift(order);
-  fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+
+async function saveOrder(order) {
+  await pool.query(
+    `INSERT INTO orders
+       (id, stripe_session_id, status, placed_at,
+        customer_name, customer_email, customer_phone,
+        pickup_day, pickup_date, pickup_time, allergies, items)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+    [
+      order.id,
+      order.stripeSessionId,
+      order.status,
+      order.placedAt,
+      order.customerName,
+      order.customerEmail,
+      order.customerPhone,
+      order.pickupDay,
+      order.pickupDate,
+      order.pickupTime,
+      order.allergies,
+      JSON.stringify(order.items),
+    ]
+  );
 }
-function updateOrder(orderId, patch) {
-  const orders = readOrders();
-  const idx = orders.findIndex(o => o.id === orderId);
-  if (idx !== -1) {
-    Object.assign(orders[idx], patch);
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
-    return orders[idx];
-  }
-  return null;
+
+async function updateOrder(orderId, patch) {
+  const sets = [];
+  const vals = [];
+  let i = 1;
+  if (patch.status)               { sets.push(`status=$${i++}`);    vals.push(patch.status); }
+  if (patch.paidAt)               { sets.push(`paid_at=$${i++}`);   vals.push(patch.paidAt); }
+  if (patch.stripePaymentIntent)  { sets.push(`stripe_id=$${i++}`); vals.push(patch.stripePaymentIntent); }
+  if (!sets.length) return null;
+  vals.push(orderId);
+  const { rows } = await pool.query(
+    `UPDATE orders SET ${sets.join(',')} WHERE id=$${i} RETURNING *`,
+    vals
+  );
+  return rows[0] ? rowToOrder(rows[0]) : null;
 }
+
+function rowToOrder(r) {
+  return {
+    id:                   r.id,
+    stripeSessionId:      r.stripe_session_id,
+    stripePaymentIntent:  r.stripe_id,
+    status:               r.status,
+    placedAt:             r.placed_at,
+    paidAt:               r.paid_at,
+    customerName:         r.customer_name,
+    customerEmail:        r.customer_email,
+    customerPhone:        r.customer_phone,
+    pickupDay:            r.pickup_day,
+    pickupDate:           r.pickup_date,
+    pickupTime:           r.pickup_time,
+    allergies:            r.allergies,
+    items:                r.items,
+  };
+}
+
 
 // ── Email ─────────────────────────────────────────────────────────────────────
 const resend = new Resend(process.env.RESEND_API_KEY);
