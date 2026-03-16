@@ -349,12 +349,53 @@ app.get('/admin/orders', requireAdmin, async (_req, res) => {
   res.json(await readOrders());
 });
 
+async function sendPickupEmail(order) {
+  const total = order.items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
+  const shortId = order.id.slice(0, 8).toUpperCase();
+  const itemRows = order.items.map(i =>
+    `<tr>
+      <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0">${i.name}${i.variant ? ` <em style="color:#6b7280;font-size:12px">(${i.variant})</em>` : ''}</td>
+      <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;text-align:center">${i.qty}</td>
+      <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
+    </tr>`).join('');
+
+  const customerBody = `
+    <h2 style="margin:0 0 10px;font-size:22px">Your order has been picked up! 🎉</h2>
+    <p style="color:#6b7280;margin:0 0 18px;line-height:1.6">
+      Hi ${order.customerName}, thank you for picking up your order from CreamyBits!
+      We hope you enjoy every bite. See you again soon! 🥧
+    </p>`;
+
+  const adminBody = `
+    <h2 style="margin:0 0 10px;font-size:22px">Order Picked Up ✅</h2>
+    <p style="color:#6b7280;margin:0 0 18px">${order.customerName} has picked up order #${shortId}.</p>`;
+
+  await Promise.all([
+    resend.emails.send({
+      from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to:   order.customerEmail,
+      subject: `Thanks for picking up your order! – CreamyBits 🥧`,
+      html: buildEmailHtml(customerBody, itemRows, total, order),
+    }),
+    resend.emails.send({
+      from: `CreamyBits Orders <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to:   process.env.ADMIN_EMAIL,
+      subject: `Order picked up: ${order.customerName} (#${shortId})`,
+      html: buildEmailHtml(adminBody, itemRows, total, order),
+    }),
+  ]);
+}
+
 app.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
   const { status } = req.body;
-  if (!['pending_payment','paid','ready','completed','cancelled'].includes(status))
+  if (!['pending_payment','paid','ready','completed','cancelled','picked_up'].includes(status))
     return res.status(400).json({ error: 'Invalid status.' });
   const updated = await updateOrder(req.params.id, { status });
   if (!updated) return res.status(404).json({ error: 'Order not found.' });
+  if (status === 'picked_up') {
+    try { await sendPickupEmail(updated); }
+    catch (e) { console.error('Pickup email failed:', e.message); }
+  }
   res.json(updated);
 });
 

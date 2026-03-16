@@ -53,6 +53,12 @@
     .badge-ready     { background: #dbeafe; color: #1d4ed8; }
     .badge-completed { background: #f3f4f6; color: #374151; }
     .badge-cancelled { background: #fee2e2; color: #dc2626; }
+    .badge-picked-up { background: #f0fdf4; color: #15803d; border: 1.5px solid #86efac; }
+
+    /* Pickup button */
+    .pickup-btn { padding: .35rem .9rem; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
+    .pickup-btn:hover { opacity: .85; }
+    .pickup-btn:disabled { opacity: .5; cursor: default; }
 
     /* Status select inline */
     .status-select { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: .3rem .6rem; font-family: 'DM Sans', sans-serif; font-size: .82rem; background: #fff; cursor: pointer; }
@@ -167,6 +173,7 @@
       ready: ['badge-ready', '📦 Ready'],
       completed: ['badge-completed', '✔ Completed'],
       cancelled: ['badge-cancelled', '✕ Cancelled'],
+      picked_up: ['badge-picked-up', '✅ Picked Up'],
     };
     const [cls, label] = map[status] || ['badge-pending', status];
     return `<span class="badge ${cls}">${label}</span>`;
@@ -235,12 +242,15 @@
           <td><strong>$${total}</strong></td>
           <td>
             <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
-              ${['pending_payment','paid','ready','completed','cancelled'].map(s =>
+              ${['pending_payment','paid','ready','completed','cancelled','picked_up'].map(s =>
                 `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
               ).join('')}
             </select>
           </td>
-          <td><button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button></td>
+          <td style="display:flex;gap:.5rem;align-items:center">
+            ${o.status !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
+            <button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button>
+          </td>
         </tr>
         <tr class="detail-row" id="detail-${o.id}">
           <td colspan="7">
@@ -277,6 +287,29 @@
     const btn = document.querySelector(`#row-${id} .expand-btn`);
     const isOpen = row.classList.toggle('open');
     btn.textContent = isOpen ? 'Details ▴' : 'Details ▾';
+  }
+
+  async function markPickedUp(orderId, btn) {
+    if (!confirm('Mark this order as picked up? An email will be sent to the customer.')) return;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    try {
+      const res = await fetch(`/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'picked_up' }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const updated = await res.json();
+      const idx = allOrders.findIndex(o => o.id === orderId);
+      if (idx !== -1) allOrders[idx] = updated;
+      updateStats(allOrders);
+      renderTable();
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = '📦 Picked Up';
+      alert('Error: ' + e.message);
+    }
   }
 
   async function updateStatus(orderId, newStatus) {
