@@ -4,6 +4,8 @@ require('dotenv').config();
 const express        = require('express');
 const path           = require('path');
 const session        = require('express-session');
+const pgSession      = require('connect-pg-simple')(session);
+const { rateLimit }  = require('express-rate-limit');
 const { Resend }     = require('resend');
 const { v4: uuidv4 } = require('uuid');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -62,6 +64,12 @@ async function initDB() {
       active       BOOLEAN DEFAULT true,
       created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS session (
+      sid    VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
+      sess   JSON NOT NULL,
+      expire TIMESTAMP(6) NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS IDX_session_expire ON session (expire);
   `);
 
   // Seed products if table is empty
@@ -371,6 +379,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
+  store: new pgSession({ pool, tableName: 'session', createTableIfMissing: false }),
   secret: process.env.SESSION_SECRET || 'creamybits_dev_secret_changeme',
   resave: false,
   saveUninitialized: false,
@@ -385,8 +394,17 @@ function requireAdmin(req, res, next) {
   res.redirect('/admin-login.html');
 }
 
+// ── Rate limiter ──────────────────────────────────────────────────────────────
+const checkoutLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many checkout attempts. Please wait a few minutes and try again.' },
+});
+
 // ── Checkout session ──────────────────────────────────────────────────────────
-app.post('/create-checkout-session', async (req, res) => {
+app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
   const { items, customerName, customerEmail, customerPhone, pickupDay, pickupDate, pickupTime, allergies } = req.body;
 
   if (!Array.isArray(items) || items.length === 0)
@@ -482,6 +500,25 @@ app.get('/products', async (_req, res) => {
 // ── Admin API ─────────────────────────────────────────────────────────────────
 app.get('/admin/orders', requireAdmin, async (_req, res) => {
   res.json(await readOrders());
+});
+
+app.get('/admin/orders/export.csv', requireAdmin, async (_req, res) => {
+  const orders = await readOrders();
+  const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const header = ['Order ID','Placed At','Customer Name','Email','Phone',
+                  'Pickup Day','Pickup Date','Pickup Time','Allergies',
+                  'Items','Total','Payment Status','Pickup Status'];
+  const rows = orders.map(o => {
+    const total = (o.items || []).reduce((s,i) => s + i.price * i.qty, 0).toFixed(2);
+    const items = (o.items || []).map(i => `${i.qty}x ${i.name}${i.variant ? ' ('+i.variant+')' : ''}`).join('; ');
+    return [o.id, o.placedAt, o.customerName, o.customerEmail, o.customerPhone,
+            o.pickupDay, o.pickupDate, o.pickupTime, o.allergies,
+            items, total, o.status, o.pickupStatus].map(escape).join(',');
+  });
+  const csv = [header.join(','), ...rows].join('\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="creamybits-orders.csv"');
+  res.send(csv);
 });
 
 app.get('/admin/products', requireAdmin, async (_req, res) => {
