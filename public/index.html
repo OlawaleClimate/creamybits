@@ -153,6 +153,7 @@
     .cal-nav:hover { background: #e5e7eb; }
     .cal-month-label { font-weight: 700; font-size: .9rem; color: #111; }
     .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; padding: .5rem; }
+    .cal-grid [role="row"] { display: contents; }
     .cal-dow { text-align: center; font-size: .72rem; font-weight: 700; color: #4b5563; padding: .3rem 0; }
     .cal-day { text-align: center; padding: .35rem .15rem; border-radius: 8px; font-size: .85rem; cursor: default; color: #d1d5db; }
     .cal-day.selectable { color: #111; cursor: pointer; font-weight: 600; }
@@ -459,7 +460,7 @@
             <span class="cal-month-label" id="calMonthLabel" aria-live="polite"></span>
             <button type="button" class="cal-nav" id="calNext" aria-label="Next month">&#8250;</button>
           </div>
-          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-grid" id="calGrid" role="grid" aria-label="Pick-up date calendar"></div>
           <div class="cal-selected-label" id="calSelectedLabel">Select a Saturday or Sunday</div>
         </div>
         <input type="hidden" id="pickupDay" required />
@@ -689,49 +690,81 @@
     const label = document.getElementById('calMonthLabel');
     const grid  = document.getElementById('calGrid');
     label.textContent = MONTHS[calMonth] + ' ' + calYear;
-    grid.innerHTML = DAYS.map(d => `<div class="cal-dow">${d}</div>`).join('');
-    const first = new Date(calYear, calMonth, 1).getDay();
-    for (let i = 0; i < first; i++) grid.innerHTML += `<div class="cal-day"></div>`;
-    const days = new Date(calYear, calMonth + 1, 0).getDate();
+    grid.setAttribute('aria-label', MONTHS[calMonth] + ' ' + calYear);
+
+    const FULL_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const today = new Date(); today.setHours(0,0,0,0);
-    for (let d = 1; d <= days; d++) {
+    const now   = new Date();
+    const first = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+    // Compute metadata for every day of the month
+    const cellData = [];
+    for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(calYear, calMonth, d);
-      const dow  = date.getDay(); // 0=Sun, 6=Sat
+      const dow  = date.getDay();
       const isWeekend = dow === 0 || dow === 6;
       const isFuture  = date > today;
-      // Cutoff: Sat orders close 12PM Fri; Sun orders close 12PM Sat
-      const now = new Date();
       let isPastCutoff = false;
-      if (dow === 6) { // Saturday pickup
-        const cutoff = new Date(date); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(12,0,0,0);
-        if (now >= cutoff) isPastCutoff = true;
-      } else if (dow === 0) { // Sunday pickup
+      if (isWeekend && isFuture) {
         const cutoff = new Date(date); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(12,0,0,0);
         if (now >= cutoff) isPastCutoff = true;
       }
       const isBookable = isWeekend && isFuture && !isPastCutoff;
       const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isBlocked = blockedDatesSet.has(dateStr);
-      const isSelected = calSelectedDate && date.toDateString() === calSelectedDate.toDateString();
-      const isToday  = date.toDateString() === today.toDateString();
-      let cls = 'cal-day';
-      if (isBookable && !isBlocked) cls += ' selectable';
-      if (isSelected) cls += ' selected';
-      if (isToday) cls += ' today';
-      if (isWeekend && isFuture && isPastCutoff) cls += ' cal-day-closed';
-      if (isBlocked && isWeekend && isFuture && !isPastCutoff) cls += ' cal-day-closed';
-      const dayLabel = date.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
-      let titleAttr = '';
-      if (isWeekend && isFuture && isPastCutoff) titleAttr = `title="Orders closed (cutoff was 12PM ${dow===6?'Friday':'Saturday'})" aria-label="${dayLabel} – orders closed"`;
-      else if (isBlocked) titleAttr = `title="Not available" aria-label="${dayLabel} – not available"`;
-      else if (isBookable) titleAttr = `aria-label="${dayLabel}" aria-pressed="${isSelected}" tabindex="0"`;
-      else titleAttr = `aria-hidden="true"`;
-      if (isBookable && !isBlocked) {
-        grid.innerHTML += `<div class="${cls}" onclick="selectDate(${calYear},${calMonth},${d})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectDate(${calYear},${calMonth},${d})}" ${titleAttr}>${d}</div>`;
-      } else {
-        grid.innerHTML += `<div class="${cls}" ${titleAttr}>${d}</div>`;
-      }
+      const isBlocked  = blockedDatesSet.has(dateStr);
+      const isSelected = !!(calSelectedDate && date.toDateString() === calSelectedDate.toDateString());
+      const isToday    = date.toDateString() === today.toDateString();
+      const dayLabel   = date.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+      cellData.push({d, dow, isWeekend, isFuture, isPastCutoff, isBookable, isBlocked, isSelected, isToday, dateStr, dayLabel});
     }
+
+    // Roving tabindex: selected bookable cell gets tabindex=0, else first bookable
+    const focusCell = cellData.find(c => c.isSelected && c.isBookable && !c.isBlocked)
+                   || cellData.find(c => c.isBookable && !c.isBlocked);
+    const focusDateStr = focusCell ? focusCell.dateStr : null;
+
+    // Header row
+    let html = `<div role="row">${DAYS.map((d,i) => `<div role="columnheader" class="cal-dow" aria-label="${FULL_DAYS[i]}">${d}</div>`).join('')}</div>`;
+
+    // Week rows
+    const rows = Math.ceil((first + daysInMonth) / 7);
+    for (let row = 0; row < rows; row++) {
+      html += '<div role="row">';
+      for (let col = 0; col < 7; col++) {
+        const idx    = row * 7 + col;
+        const dayNum = idx - first + 1;
+        if (idx < first || dayNum > daysInMonth) {
+          html += '<div role="gridcell" class="cal-day" aria-hidden="true"></div>';
+          continue;
+        }
+        const c = cellData[dayNum - 1];
+        let cls = 'cal-day';
+        if (c.isBookable && !c.isBlocked) cls += ' selectable';
+        if (c.isSelected)  cls += ' selected';
+        if (c.isToday)     cls += ' today';
+        if ((c.isWeekend && c.isFuture && c.isPastCutoff) || (c.isBlocked && c.isWeekend && c.isFuture && !c.isPastCutoff)) cls += ' cal-day-closed';
+
+        if (c.isBookable && !c.isBlocked) {
+          const tab = c.dateStr === focusDateStr ? '0' : '-1';
+          html += `<div role="gridcell" class="${cls}" data-y="${calYear}" data-m="${calMonth}" data-d="${c.d}" tabindex="${tab}" aria-selected="${c.isSelected}" aria-label="${c.dayLabel}">${c.d}</div>`;
+        } else if (c.isWeekend && c.isFuture && c.isPastCutoff) {
+          html += `<div role="gridcell" class="${cls}" aria-label="${c.dayLabel} – orders closed" aria-disabled="true">${c.d}</div>`;
+        } else if (c.isBlocked && c.isWeekend && c.isFuture) {
+          html += `<div role="gridcell" class="${cls}" aria-label="${c.dayLabel} – not available" aria-disabled="true">${c.d}</div>`;
+        } else {
+          html += `<div role="gridcell" class="${cls}" aria-hidden="true">${c.d}</div>`;
+        }
+      }
+      html += '</div>';
+    }
+
+    grid.innerHTML = html;
+
+    // Attach click handlers after render
+    grid.querySelectorAll('[data-d]').forEach(cell => {
+      cell.addEventListener('click', () => selectDate(+cell.dataset.y, +cell.dataset.m, +cell.dataset.d));
+    });
   }
 
   function selectDate(y, m, d) {
@@ -742,6 +775,9 @@
     document.getElementById('pickupDate').value = formatted;
     document.getElementById('calSelectedLabel').textContent = '✓ ' + dayName + ', ' + formatted;
     renderCal();
+    // Restore focus to the newly selected cell
+    const sel = document.getElementById('calGrid').querySelector(`[data-d="${d}"]`);
+    if (sel) sel.focus();
   }
 
   function initCal() {
@@ -753,13 +789,42 @@
     document.getElementById('pickupDate').value = '';
     document.getElementById('calSelectedLabel').textContent = 'Select a Saturday or Sunday';
     document.getElementById('calPrev').onclick = () => {
-      const now2 = new Date(); 
+      const now2 = new Date();
       if (calYear === now2.getFullYear() && calMonth === now2.getMonth()) return;
       calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCal();
+      const first = document.getElementById('calGrid').querySelector('[data-d]');
+      if (first) first.focus();
     };
     document.getElementById('calNext').onclick = () => {
       calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal();
+      const first = document.getElementById('calGrid').querySelector('[data-d]');
+      if (first) first.focus();
     };
+
+    // Arrow-key navigation with roving tabindex — set up once per modal open
+    const grid = document.getElementById('calGrid');
+    if (grid._kbHandler) grid.removeEventListener('keydown', grid._kbHandler);
+    grid._kbHandler = function(e) {
+      if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(e.key)) return;
+      const cells = [...this.querySelectorAll('[data-d]')];
+      const idx   = cells.indexOf(document.activeElement);
+      if (idx === -1) return;
+      e.preventDefault();
+      if (e.key === 'Enter' || e.key === ' ') {
+        const cell = cells[idx];
+        selectDate(+cell.dataset.y, +cell.dataset.m, +cell.dataset.d);
+        return;
+      }
+      let next = idx;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = Math.min(idx + 1, cells.length - 1);
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   next = Math.max(idx - 1, 0);
+      if (next === idx) return;
+      cells[idx].tabIndex = -1;
+      cells[next].tabIndex = 0;
+      cells[next].focus();
+    };
+    grid.addEventListener('keydown', grid._kbHandler);
+
     renderCal();
   }
 
