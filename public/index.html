@@ -23,7 +23,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 3rem; height: 70px;
     }
-    .nav-logo { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+    .nav-logo { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; border: none; padding: 0; }
     .nav-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .nav-links { display: flex; gap: 2.5rem; list-style: none; }
     .nav-links a { color: #fff; text-decoration: none; font-size: .95rem; font-weight: 500; opacity: .85; transition: opacity .2s; }
@@ -46,7 +46,7 @@
     .hero-headline { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem,4.5vw,4.2rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.25rem; }
     .colorful .c { font-style: italic; }
     .c1{color:#ec4899} .c2{color:#f97316} .c3{color:#eab308} .c4{color:#22c55e} .c5{color:#3b82f6} .c6{color:#8b5cf6} .cdot{color:#3b82f6}
-    .hero-sub { font-size: 1.05rem; color: #4b5563; line-height: 1.7; max-width: 420px; margin-bottom: 2.5rem; }
+    .hero-sub { font-size: 1.05rem; color: #374151; line-height: 1.7; max-width: 420px; margin-bottom: 2.5rem; }
     .hero-ctas { display: flex; gap: 1rem; }
     .btn-black { background: var(--black); color: #fff; border: none; padding: .85rem 2rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform .2s, box-shadow .2s; }
     .btn-black:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
@@ -56,7 +56,6 @@
     .hero-img-box { width: 100%; max-width: 500px; background: linear-gradient(145deg,#1f1f1f,#3d2c1e,#1a1a1a); border-radius: 24px; aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; font-size: 8rem; position: relative; overflow: hidden; }
     .hero-img-box::before { content: ''; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 30% 30%, rgba(139,90,43,.3) 0, transparent 60px); }
     .review-card { position: absolute; bottom: -20px; left: -40px; background: #111; color: #fff; border-radius: 16px; padding: 1rem 1.25rem; max-width: 210px; box-shadow: 0 8px 32px rgba(0,0,0,.3); animation: float 4s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .stars { color: #facc15; margin-bottom: .4rem; }
     .review-card p { font-size: .8rem; color: #e5e7eb; line-height: 1.5; }
 
@@ -65,7 +64,7 @@
     .feature-icon { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.75rem; }
     .fi-blue{background:#dbeafe} .fi-pink{background:#fce7f3} .fi-yellow{background:#fef9c3}
     .feature h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .5rem; }
-    .feature p { font-size: .9rem; color: var(--gray); line-height: 1.65; }
+    .feature p { font-size: .9rem; color: #374151; line-height: 1.65; }
 
     /* ── MENU ── */
     #menu { background: #fff; padding: 5rem; }
@@ -85,7 +84,7 @@
     .product-img-placeholder { width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg,#f3f4f6,#e5e7eb); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; }
     .product-body { padding: 1.1rem 1.25rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
     .product-name { font-weight: 700; font-size: 1rem; margin-bottom: .35rem; }
-    .product-desc { font-size: .82rem; color: var(--gray); line-height: 1.55; margin-bottom: .85rem; flex: 1; font-style: italic; }
+    .product-desc { font-size: .82rem; color: #374151; line-height: 1.55; margin-bottom: .85rem; flex: 1; font-style: italic; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--black); margin-bottom: 1rem; }
     .product-price span { font-size: .8rem; color: var(--gray); font-weight: 400; }
     .variant-select { width: 100%; padding: .5rem .75rem; border-radius: 10px; border: 1.5px solid #e5e7eb; font-family: 'DM Sans', sans-serif; font-size: .85rem; background: #fff; cursor: pointer; margin-bottom: .75rem; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
@@ -154,13 +153,14 @@
     .cal-nav:hover { background: #e5e7eb; }
     .cal-month-label { font-weight: 700; font-size: .9rem; color: #111; }
     .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; padding: .5rem; }
-    .cal-dow { text-align: center; font-size: .72rem; font-weight: 700; color: #9ca3af; padding: .3rem 0; }
+    .cal-dow { text-align: center; font-size: .72rem; font-weight: 700; color: #4b5563; padding: .3rem 0; }
     .cal-day { text-align: center; padding: .35rem .15rem; border-radius: 8px; font-size: .85rem; cursor: default; color: #d1d5db; }
     .cal-day.selectable { color: #111; cursor: pointer; font-weight: 600; }
     .cal-day.selectable:hover { background: #f3e8ff; color: #7c3aed; }
     .cal-day.selected { background: linear-gradient(135deg,#ec4899,#8b5cf6); color: #fff !important; font-weight: 700; }
     .cal-day.today { outline: 2px solid #e5e7eb; }
-    .cal-day.cal-day-closed { color: #f87171; text-decoration: line-through; cursor: not-allowed; }
+    .cal-day.cal-day-closed { color: #c0392b; text-decoration: line-through; cursor: not-allowed; }
+    .cal-day.selectable:focus { outline: 2px solid #8b5cf6; outline-offset: 2px; }
     .cal-selected-label { text-align: center; padding: .4rem; font-size: .82rem; color: #7c3aed; font-weight: 600; min-height: 1.5rem; }
 
     /* ── CTA BANNER ── */
@@ -178,19 +178,16 @@
     .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem; padding-bottom: 3rem; border-bottom: 1px solid #1f1f1f; margin-bottom: 2rem; }
     .footer-logo-wrap { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin-bottom: 1rem; background: #fff; display: flex; align-items: center; justify-content: center; }
     .footer-logo-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .footer-tagline { font-size: .88rem; color: #9ca3af; line-height: 1.7; max-width: 280px; }
+    .footer-tagline { font-size: .88rem; color: #d1d5db; line-height: 1.7; max-width: 280px; }
     .footer-col h4 { font-size: .95rem; font-weight: 700; margin-bottom: 1.25rem; }
-    .footer-col address { font-style: normal; font-size: .88rem; color: #9ca3af; line-height: 2.1; }
+    .footer-col address { font-style: normal; font-size: .88rem; color: #d1d5db; line-height: 2.1; }
     .social-links { display: flex; gap: .75rem; }
     .social-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #2a2a2a; background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s, transform .2s; }
     .social-btn:hover { background: #2a2a2a; transform: translateY(-2px); }
-    .footer-bottom { text-align: center; font-size: .82rem; color: #4b5563; }
+    .footer-bottom { text-align: center; font-size: .82rem; color: #9ca3af; }
 
     /* ── ANIMATIONS ── */
-    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-    .hero-left > * { animation: fadeUp .7s ease both; }
-    .badge{animation-delay:.1s} .hero-headline{animation-delay:.2s} .hero-sub{animation-delay:.35s} .hero-ctas{animation-delay:.5s}
-    .hero-right { animation: fadeUp .9s .3s ease both; }
+    /* animations moved to prefers-reduced-motion block below */
 
     /* ── TABLET ── */
     @media(max-width:1000px){
@@ -248,20 +245,35 @@
     @media(max-width:400px){
       .product-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── SKIP LINK ── */
+    .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: var(--black); color: #fff; padding: .6rem 1.2rem; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: .9rem; }
+    .skip-link:focus { left: 1rem; }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: no-preference) {
+      @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+      .hero-left > * { animation: fadeUp .7s ease both; }
+      .badge{animation-delay:.1s} .hero-headline{animation-delay:.2s} .hero-sub{animation-delay:.35s} .hero-ctas{animation-delay:.5s}
+      .hero-right { animation: fadeUp .9s .3s ease both; }
+      .review-card { animation: float 4s ease-in-out infinite; }
+    }
   </style>
 </head>
 <body>
+<a href="#menu" class="skip-link">Skip to main content</a>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo" onclick="scrollTo({top:0,behavior:'smooth'})">
-    <img src="/logo.png" alt="CreamyBits" />
-  </div>
+  <button class="nav-logo" onclick="scrollTo({top:0,behavior:'smooth'})" aria-label="CreamyBits – scroll to top">
+    <img src="/logo.png" alt="" aria-hidden="true" />
+  </button>
 
-  <ul class="nav-links" id="navLinks">
-    <li><a href="#home"  onclick="closeMenu()">Home</a></li>
-    <li><a href="#menu"  onclick="closeMenu()">Menu &amp; Order</a></li>
-    <li><a href="#story" onclick="closeMenu()">Our Story</a></li>
+  <ul class="nav-links" id="navLinks" role="menubar">
+    <li role="none"><a href="#home"  onclick="closeMenu()" role="menuitem">Home</a></li>
+    <li role="none"><a href="#menu"  onclick="closeMenu()" role="menuitem">Menu &amp; Order</a></li>
+    <li role="none"><a href="#story" onclick="closeMenu()" role="menuitem">Our Story</a></li>
   </ul>
 
   <div class="nav-right">
@@ -273,14 +285,14 @@
       </svg>
       <span class="cart-count" id="cartCount">0</span>
     </button>
-    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
 
 <!-- HERO -->
-<section class="hero" id="home">
+<section class="hero" id="home" aria-label="Introduction">
   <div class="hero-left">
     <div class="badge">🔥 Weekend Pick-up · Albuquerque, NM</div>
     <h1 class="hero-headline">Hit Different.<br>
@@ -297,8 +309,8 @@
   <div class="hero-right">
     <div class="hero-img-box">
       <span style="font-size:8rem;z-index:1;filter:drop-shadow(0 8px 32px rgba(0,0,0,.5))">🥧</span>
-      <div class="review-card">
-        <div class="stars">★★★★★</div>
+      <div class="review-card" aria-label="Customer review">
+        <div class="stars" aria-hidden="true">★★★★★</div>
         <p>"The best African pastries in New Mexico. Those puff puffs are unreal!"</p>
       </div>
     </div>
@@ -306,7 +318,7 @@
 </section>
 
 <!-- FEATURES -->
-<section class="features">
+<section class="features" aria-label="Features">
   <div class="feature">
     <div class="feature-icon fi-blue">🌾</div>
     <h3>Premium Ingredients</h3>
@@ -325,19 +337,19 @@
 </section>
 
 <!-- MENU & ORDER -->
-<section id="menu">
+<section id="menu" aria-label="Menu and order">
   <div class="section-header">
     <div class="section-tag">Menu &amp; Order</div>
     <h2>Fresh from our kitchen</h2>
     <p>Pick-up available Saturdays &amp; Sundays only. Weekday bulk / catering orders available on request.</p>
   </div>
 
-  <div class="cat-tabs" id="catTabs">
-    <button class="cat-tab active" data-cat="all">All</button>
-    <button class="cat-tab" data-cat="puffpuff">Puff Puff</button>
-    <button class="cat-tab" data-cat="pastries">Pastries</button>
-    <button class="cat-tab" data-cat="catering">Catering</button>
-    <button class="cat-tab" data-cat="drinks">Drinks</button>
+  <div class="cat-tabs" id="catTabs" role="tablist" aria-label="Menu categories">
+    <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">All</button>
+    <button class="cat-tab" data-cat="puffpuff" role="tab" aria-selected="false">Puff Puff</button>
+    <button class="cat-tab" data-cat="pastries" role="tab" aria-selected="false">Pastries</button>
+    <button class="cat-tab" data-cat="catering" role="tab" aria-selected="false">Catering</button>
+    <button class="cat-tab" data-cat="drinks" role="tab" aria-selected="false">Drinks</button>
   </div>
 
   <!-- DRINKS -->
@@ -366,7 +378,7 @@
 </section>
 
 <!-- CTA BANNER -->
-<section class="cta-banner">
+<section class="cta-banner" aria-label="Call to action">
   <div class="cta-bg"></div>
   <div class="cta-content">
     <h2>Ready to treat yourself?</h2>
@@ -421,7 +433,7 @@
       </button>
     </div>
     <div class="modal-body">
-      <p class="form-error" id="formError"></p>
+<p class="form-error" id="formError" role="alert" aria-live="assertive"></p>
 
       <div class="form-group">
         <label for="custName">Full Name <span class="req">*</span></label>
@@ -443,9 +455,9 @@
         <label>Pick-up Date <span class="req">*</span></label>
         <div class="cal-wrap" id="calWrap">
           <div class="cal-header">
-            <button type="button" class="cal-nav" id="calPrev">&#8249;</button>
-            <span class="cal-month-label" id="calMonthLabel"></span>
-            <button type="button" class="cal-nav" id="calNext">&#8250;</button>
+            <button type="button" class="cal-nav" id="calPrev" aria-label="Previous month">&#8249;</button>
+            <span class="cal-month-label" id="calMonthLabel" aria-live="polite"></span>
+            <button type="button" class="cal-nav" id="calNext" aria-label="Next month">&#8250;</button>
           </div>
           <div class="cal-grid" id="calGrid"></div>
           <div class="cal-selected-label" id="calSelectedLabel">Select a Saturday or Sunday</div>
@@ -464,7 +476,7 @@
       </div>
 
       <div class="allergy-note">
-        ⚠️ <strong>Allergy &amp; Dietary Info — Required.</strong><br>
+        <span aria-hidden="true">⚠️</span> <strong>Allergy &amp; Dietary Info — Required.</strong><br>
         Please list any allergies or dietary restrictions. If none, type <em>"None"</em>. This helps us keep you safe.
       </div>
       <div class="form-group">
@@ -481,8 +493,8 @@
 </div>
 
 <!-- CART DRAWER -->
-<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<div class="cart-drawer" id="cartDrawer">
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()" aria-hidden="true"></div>
+<div class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Your order" aria-hidden="true">
   <div class="cart-header">
     <h3>Your Order 🛍️</h3>
     <button class="cart-close" onclick="closeCart()" aria-label="Close cart">
@@ -490,7 +502,7 @@
     </button>
   </div>
   <div class="cart-items" id="cartItems">
-    <div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty.<br>Add some delicious items!</p></div>
+    <div class="cart-empty"><div class="empty-icon" aria-hidden="true">🛒</div><p>Your cart is empty.<br>Add some delicious items!</p></div>
   </div>
   <div class="cart-footer">
     <div class="cart-subtotal"><span>Subtotal</span><span id="cartTotal">$0.00</span></div>
@@ -507,12 +519,17 @@
   let blockedDatesSet = new Set(); // ISO date strings YYYY-MM-DD
   // ── Mobile nav ─────────────────────────────────────────────────────────
   function toggleMenu() {
-    document.getElementById('navLinks').classList.toggle('mobile-open');
-    document.getElementById('hamburger').classList.toggle('open');
+    const nav = document.getElementById('navLinks');
+    const ham = document.getElementById('hamburger');
+    const isOpen = nav.classList.toggle('mobile-open');
+    ham.classList.toggle('open', isOpen);
+    ham.setAttribute('aria-expanded', String(isOpen));
   }
   function closeMenu() {
     document.getElementById('navLinks').classList.remove('mobile-open');
-    document.getElementById('hamburger').classList.remove('open');
+    const ham = document.getElementById('hamburger');
+    ham.classList.remove('open');
+    ham.setAttribute('aria-expanded', 'false');
   }
 
   // ── Add to cart ─────────────────────────────────────────────────────────
@@ -593,9 +610,9 @@
           <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
         </div>
         <div class="cart-item-qty">
-          <button class="qty-btn" onclick="changeQty(${idx},-1)" aria-label="Decrease">−</button>
-          <span class="qty-val">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty(${idx},1)"  aria-label="Increase">+</button>
+          <button class="qty-btn" onclick="changeQty(${idx},-1)" aria-label="Decrease quantity of ${item.name}">−</button>
+          <span class="qty-val" aria-label="Quantity: ${item.qty}">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${idx},1)"  aria-label="Increase quantity of ${item.name}">+</button>
         </div>
       </div>`).join('');
   }
@@ -618,16 +635,49 @@
     updateCart();
   }
 
+  // ── Focus trap ──────────────────────────────────────────────────────────
+  function trapFocus(containerEl) {
+    const focusable = containerEl.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    function handler(e) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+      }
+    }
+    containerEl._trapHandler = handler;
+    containerEl.addEventListener('keydown', handler);
+    if (first) first.focus();
+  }
+  function releaseFocus(containerEl) {
+    if (containerEl._trapHandler) {
+      containerEl.removeEventListener('keydown', containerEl._trapHandler);
+      containerEl._trapHandler = null;
+    }
+  }
+
   // ── Cart drawer ─────────────────────────────────────────────────────────
+  let _cartOpener = null;
   function openCart() {
-    document.getElementById('cartDrawer').classList.add('open');
+    _cartOpener = document.activeElement;
+    const drawer = document.getElementById('cartDrawer');
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
     document.getElementById('cartOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    trapFocus(drawer);
   }
   function closeCart() {
-    document.getElementById('cartDrawer').classList.remove('open');
+    const drawer = document.getElementById('cartDrawer');
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
     document.getElementById('cartOverlay').classList.remove('open');
     document.body.style.overflow = '';
+    releaseFocus(drawer);
+    if (_cartOpener) { _cartOpener.focus(); _cartOpener = null; }
   }
 
   // ── Calendar (Sat/Sun only) ─────────────────────────────────────────────
@@ -670,9 +720,17 @@
       if (isToday) cls += ' today';
       if (isWeekend && isFuture && isPastCutoff) cls += ' cal-day-closed';
       if (isBlocked && isWeekend && isFuture && !isPastCutoff) cls += ' cal-day-closed';
-      const clickable = (isBookable && !isBlocked) ? `onclick="selectDate(${calYear},${calMonth},${d})"` : '';
-      const title = isWeekend && isFuture && isPastCutoff ? `title="Orders closed (cutoff was 12PM ${dow===6?'Friday':'Saturday'})"` : isBlocked ? `title="Not available"` : '';
-      grid.innerHTML += `<div class="${cls}" ${clickable} ${title}>${d}</div>`;
+      const dayLabel = date.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+      let titleAttr = '';
+      if (isWeekend && isFuture && isPastCutoff) titleAttr = `title="Orders closed (cutoff was 12PM ${dow===6?'Friday':'Saturday'})" aria-label="${dayLabel} – orders closed"`;
+      else if (isBlocked) titleAttr = `title="Not available" aria-label="${dayLabel} – not available"`;
+      else if (isBookable) titleAttr = `aria-label="${dayLabel}" aria-pressed="${isSelected}" tabindex="0"`;
+      else titleAttr = `aria-hidden="true"`;
+      if (isBookable && !isBlocked) {
+        grid.innerHTML += `<div class="${cls}" onclick="selectDate(${calYear},${calMonth},${d})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectDate(${calYear},${calMonth},${d})}" ${titleAttr}>${d}</div>`;
+      } else {
+        grid.innerHTML += `<div class="${cls}" ${titleAttr}>${d}</div>`;
+      }
     }
   }
 
@@ -706,17 +764,24 @@
   }
 
   // ── Order details modal ─────────────────────────────────────────────────
+  let _modalOpener = null;
   function openModal() {
     if (!cart.length) return;
+    _modalOpener = document.activeElement;
     closeCart();
-    document.getElementById('orderModal').classList.add('open');
+    const modal = document.getElementById('orderModal');
+    modal.classList.add('open');
     document.body.style.overflow = 'hidden';
     initCal();
     document.getElementById('formError').style.display = 'none';
+    trapFocus(modal);
   }
   function closeModal() {
-    document.getElementById('orderModal').classList.remove('open');
+    const modal = document.getElementById('orderModal');
+    modal.classList.remove('open');
     document.body.style.overflow = '';
+    releaseFocus(modal);
+    if (_modalOpener) { _modalOpener.focus(); _modalOpener = null; }
   }
 
   // ── Stripe checkout ─────────────────────────────────────────────────────
@@ -865,8 +930,12 @@
   document.getElementById('catTabs').addEventListener('click', e => {
     const tab = e.target.closest('.cat-tab');
     if (!tab) return;
-    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.cat-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
     tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
     const cat = tab.dataset.cat;
     document.querySelectorAll('.cat-group').forEach(g => {
       g.style.display = (cat === 'all' || g.dataset.group === cat) ? '' : 'none';
@@ -876,6 +945,13 @@
   // Close modal on overlay click
   document.getElementById('orderModal').addEventListener('click', e => {
     if (e.target === document.getElementById('orderModal')) closeModal();
+  });
+
+  // Escape key closes overlays
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('orderModal').classList.contains('open')) { closeModal(); return; }
+    if (document.getElementById('cartDrawer').classList.contains('open')) { closeCart(); }
   });
 </script>
 </body>
