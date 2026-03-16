@@ -59,6 +59,7 @@
     .pickup-btn { padding: .35rem .9rem; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
     .pickup-btn:hover { opacity: .85; }
     .pickup-btn:disabled { opacity: .5; cursor: default; }
+    .col-label { font-size: .7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: .25rem; }
 
     /* Status select inline */
     .status-select { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: .3rem .6rem; font-family: 'DM Sans', sans-serif; font-size: .82rem; background: #fff; cursor: pointer; }
@@ -143,12 +144,13 @@
         <th>Customer</th>
         <th>Pick-up</th>
         <th>Total</th>
-        <th>Status</th>
+        <th>Payment</th>
+        <th>Pickup Status</th>
         <th></th>
       </tr>
     </thead>
     <tbody id="ordersBody">
-      <tr><td colspan="7" class="state-msg">Loading orders…</td></tr>
+      <tr><td colspan="8" class="state-msg">Loading orders…</td></tr>
     </tbody>
   </table>
 </div>
@@ -213,7 +215,7 @@
 
     const tbody = document.getElementById('ordersBody');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="state-msg">No orders found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="state-msg">No orders found.</td></tr>';;
       return;
     }
 
@@ -241,19 +243,26 @@
           </td>
           <td><strong>$${total}</strong></td>
           <td>
-            <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
-              ${['pending_payment','paid','ready','completed','cancelled','picked_up'].map(s =>
+            <select class="status-select" onchange="updatePaymentStatus('${o.id}', this.value)">
+              ${['pending_payment','paid','cancelled'].map(s =>
                 `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
               ).join('')}
             </select>
           </td>
+          <td>
+            <select class="status-select" onchange="updatePickupStatus('${o.id}', this.value)">
+              ${['pending','ready','picked_up'].map(s =>
+                `<option value="${s}" ${o.pickupStatus === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
+              ).join('')}
+            </select>
+          </td>
           <td style="display:flex;gap:.5rem;align-items:center">
-            ${o.status !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
+            ${o.pickupStatus !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
             <button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button>
           </td>
         </tr>
         <tr class="detail-row" id="detail-${o.id}">
-          <td colspan="7">
+          <td colspan="8">
             <div class="detail-grid">
               <div>
                 <dt>Phone</dt><dd>${o.customerPhone}</dd>
@@ -297,7 +306,7 @@
       const res = await fetch(`/admin/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'picked_up' }),
+        body: JSON.stringify({ pickupStatus: 'picked_up' }),
       });
       if (!res.ok) throw new Error('Failed');
       const updated = await res.json();
@@ -312,7 +321,7 @@
     }
   }
 
-  async function updateStatus(orderId, newStatus) {
+  async function updatePaymentStatus(orderId, newStatus) {
     try {
       const res = await fetch(`/admin/orders/${orderId}`, {
         method: 'PATCH',
@@ -325,7 +334,29 @@
       if (idx !== -1) allOrders[idx] = updated;
       updateStats(allOrders);
     } catch(e) {
-      alert('Could not update status: ' + e.message);
+      alert('Could not update payment status: ' + e.message);
+    }
+  }
+
+  async function updatePickupStatus(orderId, newStatus) {
+    if (newStatus === 'picked_up') {
+      const btn = document.getElementById('pickup-' + orderId);
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    }
+    try {
+      const res = await fetch(`/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pickupStatus: newStatus }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const updated = await res.json();
+      const idx = allOrders.findIndex(o => o.id === orderId);
+      if (idx !== -1) allOrders[idx] = updated;
+      updateStats(allOrders);
+      renderTable();
+    } catch(e) {
+      alert('Could not update pickup status: ' + e.message);
     }
   }
 
@@ -338,7 +369,7 @@
       renderTable();
       document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
     } catch(e) {
-      document.getElementById('ordersBody').innerHTML = `<tr><td colspan="7" class="state-msg">Error loading orders: ${e.message}</td></tr>`;
+      document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8" class="state-msg">Error loading orders: ${e.message}</td></tr>`;
     }
   }
 

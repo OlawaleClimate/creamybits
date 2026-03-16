@@ -33,6 +33,7 @@ async function initDB() {
       stripe_session_id TEXT,
       stripe_id        TEXT,
       status           TEXT NOT NULL DEFAULT 'pending_payment',
+      pickup_status    TEXT NOT NULL DEFAULT 'pending',
       placed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       paid_at          TIMESTAMPTZ,
       customer_name    TEXT,
@@ -44,6 +45,7 @@ async function initDB() {
       allergies        TEXT,
       items            JSONB
     );
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS pickup_status TEXT NOT NULL DEFAULT 'pending';
   `);
   console.log('✅ DB ready');
 }
@@ -58,14 +60,15 @@ async function readOrders() {
 async function saveOrder(order) {
   await pool.query(
     `INSERT INTO orders
-       (id, stripe_session_id, status, placed_at,
+       (id, stripe_session_id, status, pickup_status, placed_at,
         customer_name, customer_email, customer_phone,
         pickup_day, pickup_date, pickup_time, allergies, items)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
     [
       order.id,
       order.stripeSessionId,
       order.status,
+      'pending',
       order.placedAt,
       order.customerName,
       order.customerEmail,
@@ -83,9 +86,10 @@ async function updateOrder(orderId, patch) {
   const sets = [];
   const vals = [];
   let i = 1;
-  if (patch.status)               { sets.push(`status=$${i++}`);    vals.push(patch.status); }
-  if (patch.paidAt)               { sets.push(`paid_at=$${i++}`);   vals.push(patch.paidAt); }
-  if (patch.stripePaymentIntent)  { sets.push(`stripe_id=$${i++}`); vals.push(patch.stripePaymentIntent); }
+  if (patch.status)               { sets.push(`status=$${i++}`);         vals.push(patch.status); }
+  if (patch.pickupStatus)         { sets.push(`pickup_status=$${i++}`);  vals.push(patch.pickupStatus); }
+  if (patch.paidAt)               { sets.push(`paid_at=$${i++}`);        vals.push(patch.paidAt); }
+  if (patch.stripePaymentIntent)  { sets.push(`stripe_id=$${i++}`);      vals.push(patch.stripePaymentIntent); }
   if (!sets.length) return null;
   vals.push(orderId);
   const { rows } = await pool.query(
@@ -101,6 +105,7 @@ function rowToOrder(r) {
     stripeSessionId:      r.stripe_session_id,
     stripePaymentIntent:  r.stripe_id,
     status:               r.status,
+    pickupStatus:         r.pickup_status || 'pending',
     placedAt:             r.placed_at,
     paidAt:               r.paid_at,
     customerName:         r.customer_name,
@@ -387,12 +392,28 @@ async function sendPickupEmail(order) {
 }
 
 app.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
-  const { status } = req.body;
-  if (!['pending_payment','paid','ready','completed','cancelled','picked_up'].includes(status))
-    return res.status(400).json({ error: 'Invalid status.' });
-  const updated = await updateOrder(req.params.id, { status });
+  const { status, pickupStatus } = req.body;
+  const patch = {};
+
+  if (status !== undefined) {
+    if (!['pending_payment','paid','cancelled'].includes(status))
+      return res.status(400).json({ error: 'Invalid payment status.' });
+    patch.status = status;
+  }
+
+  if (pickupStatus !== undefined) {
+    if (!['pending','ready','picked_up'].includes(pickupStatus))
+      return res.status(400).json({ error: 'Invalid pickup status.' });
+    patch.pickupStatus = pickupStatus;
+  }
+
+  if (!Object.keys(patch).length)
+    return res.status(400).json({ error: 'Nothing to update.' });
+
+  const updated = await updateOrder(req.params.id, patch);
   if (!updated) return res.status(404).json({ error: 'Order not found.' });
-  if (status === 'picked_up') {
+
+  if (pickupStatus === 'picked_up') {
     try { await sendPickupEmail(updated); }
     catch (e) { console.error('Pickup email failed:', e.message); }
   }
