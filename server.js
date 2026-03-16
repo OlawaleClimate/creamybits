@@ -46,8 +46,133 @@ async function initDB() {
       items            JSONB
     );
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS pickup_status TEXT NOT NULL DEFAULT 'pending';
+
+    CREATE TABLE IF NOT EXISTS products (
+      id           TEXT PRIMARY KEY,
+      name         TEXT NOT NULL,
+      description  TEXT,
+      category     TEXT NOT NULL,
+      image_url    TEXT,
+      emoji        TEXT DEFAULT '🥧',
+      price        NUMERIC(10,2) NOT NULL,
+      unit_label   TEXT,
+      variants     JSONB,
+      variant_type TEXT NOT NULL DEFAULT 'none',
+      sort_order   INTEGER DEFAULT 0,
+      active       BOOLEAN DEFAULT true,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
+
+  // Seed products if table is empty
+  const { rowCount } = await pool.query('SELECT 1 FROM products LIMIT 1');
+  if (rowCount === 0) await seedProducts();
+
   console.log('✅ DB ready');
+}
+
+const SEED_PRODUCTS = [
+  // Drinks
+  { name:'Chapman Drink', description:'A vibrant mocktail made with fruity sodas, orange juice, bitters, cucumber & orange slices. Sweet, tangy & refreshing.', category:'drinks', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0694_a92c3db89b559e91af51103cd9a5d408.jpg', emoji:'🍹', price:2, unitLabel:'', variantType:'none', sortOrder:0 },
+  // Puff Puff
+  { name:'Puff Puff – Plain', description:'Soft, golden, lightly sweet fried dough bites. Like donuts but better.', category:'puffpuff', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0825_cb8e3a3adcb8a5085cd030e6a7fcf663.jpg', emoji:'🍡', price:25, unitLabel:'Box of 20', variantType:'none', sortOrder:0 },
+  { name:'Puff Puff – Glazed', description:'Choose your glazes and toppings for a custom box of 25.', category:'puffpuff', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0755_2_96f845450cddf102a09c28a87f7b1167.jpg', emoji:'🍡', price:30, unitLabel:'Box of 25', variantType:'glazed', sortOrder:1 },
+  // Pastries
+  { name:'Meat Pies', description:'Buttery, flaky pastry with a rich filling of seasoned ground meat and vegetables.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_3285_c87d40489ab3711ac2b16a5a4df89245.jpg', emoji:'🥧', price:18, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:18},{label:'One Dozen',price:32}], sortOrder:0 },
+  { name:'Chicken Pies', description:'Made with chicken breast/thighs and vegetables (diced carrot & Irish potatoes).', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_9879_78e76b0f366f72abacbd9c46b054fc04.jpg', emoji:'🍗', price:20, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:20},{label:'One Dozen',price:38}], sortOrder:1 },
+  { name:'Fish Pies', description:'Buttery dough filled with mackerel fish and vegetables (carrots & bell peppers).', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0698_f4de2dd83e8d89f4ae9efe6ddb426950.jpg', emoji:'🐟', price:20, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:20},{label:'One Dozen',price:40}], sortOrder:2 },
+  { name:'Vegetable Spring Roll', description:'Light crispy rolls filled with a tasty blend of fresh vegetables.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0697_d7d65768d88b2f3b1edab07c47f32575.jpg', emoji:'🥢', price:15, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:15},{label:'One Dozen',price:30}], sortOrder:3 },
+  { name:'Chicken Spring Rolls', description:'Light crispy rolls filled with seasoned chicken and vegetables.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0696_a70f39a37847bbb7937d7501703007a5.jpg', emoji:'🥢', price:20, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:20},{label:'One Dozen',price:35}], sortOrder:4 },
+  { name:'Beef Samosa', description:'Crispy fried pastry filled with a savory blend of meat and vegetables.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_9228_854dccf3d9c58f76304c3f7e8de92efe.jpg', emoji:'🥟', price:30, unitLabel:'Box of 12', variantType:'none', sortOrder:5 },
+  { name:'Sausage Rolls', description:'Buttery flaky pastry wrapped around a rich, savory sausage filling.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0685_jpg_d0b8e3c6c077caa5b670c96cd1f0c0f3.jpg', emoji:'🌭', price:18, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:18},{label:'One Dozen',price:32}], sortOrder:6 },
+  { name:'Egg Rolls', description:'A whole boiled egg wrapped in lightly sweet dough, fried golden and fluffy.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_6948_41b239fec49a0df547678e64b7bda15f.jpg', emoji:'🥚', price:20, unitLabel:'', variantType:'options', variants:[{label:'Half Dozen',price:20},{label:'One Dozen',price:40}], sortOrder:7 },
+  { name:'Shrimp Roll', description:'Crispy shrimp rolls — a crowd favourite for any occasion.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0699_3ac264c9da4876dce7b1ba8fc91ba9ef.jpg', emoji:'🍤', price:38, unitLabel:'Box of 12', variantType:'none', sortOrder:8 },
+  { name:'Small Chops Pack – Mini', description:'3 Puff Puff · 1 Mini Meatpie · 1 Chicken Wing · 1 Spring Roll. Min. order: 10 packs.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/c11257d6_100d_4f73_8f2c_e813caa3c1c3_f8ad95a2cef6ad0373839df9fe5ebb29.jpg', emoji:'🍽️', price:9, unitLabel:'per pack', variantType:'none', sortOrder:9 },
+  { name:'Small Chops Platter', description:'30 puff puffs · 10 spring rolls · 10 beef samosas or mini meat pies · 10 chicken wings · 6 shrimp rolls.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_8996_e9f5c980d465bf4cc90154fb85eebf53.jpg', emoji:'🍽️', price:100, unitLabel:'', variantType:'none', sortOrder:10 },
+  { name:'Chin-Chin', description:'Best for snacking individually and when you have guests over.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_7004_7c6f14c8bc6cfd373128876a10ac1af8.jpg', emoji:'🍬', price:20, unitLabel:'', variantType:'options', variants:[{label:'48oz',price:20},{label:'68oz',price:30}], sortOrder:11 },
+  { name:'Shawarma', description:'Flavourful wraps made fresh to order.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0627_cc6f0100301efffcc0d4a0c1ba637e57.jpg', emoji:'🌯', price:10, unitLabel:'', variantType:'options', variants:[{label:'Chicken Shawarma',price:10},{label:'Chicken + Sausage',price:12}], sortOrder:12 },
+  { name:'Pastry Variety Box', description:'Includes 4 Meat Pies, 4 Chicken Pies, 4 Sausage Rolls & Puff Puff.', category:'pastries', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_9879_46fc71c086ab007798ab73dcea6906ce.jpg', emoji:'🎁', price:40, unitLabel:'', variantType:'none', sortOrder:13 },
+  // Catering
+  { name:'Catering: Mini Meatpies', description:'Perfect for events. Available in bulk trays.', category:'catering', imageUrl:'', emoji:'🥧', price:40, unitLabel:'', variantType:'options', variants:[{label:'Mini Box (25 pcs)',price:40},{label:'Half Tray (50 pcs)',price:75},{label:'Full Tray (100 pcs)',price:150}], sortOrder:0 },
+  { name:'Catering: Vegetable Spring Rolls', description:'Crispy veggie rolls in half or full tray quantities.', category:'catering', imageUrl:'', emoji:'🥢', price:50, unitLabel:'', variantType:'options', variants:[{label:'Half Tray (20 pcs)',price:50},{label:'Full Tray (45 pcs)',price:100}], sortOrder:1 },
+  { name:'Catering: Beef Samosa', description:'Catering-size orders of crispy beef samosas.', category:'catering', imageUrl:'', emoji:'🥟', price:50, unitLabel:'', variantType:'options', variants:[{label:'Half Tray (20 pcs)',price:50},{label:'Full Tray (45 pcs)',price:100}], sortOrder:2 },
+  { name:'Catering: Puff Puff', description:'Large-batch puff puff for events and gatherings.', category:'catering', imageUrl:'', emoji:'🍡', price:50, unitLabel:'', variantType:'options', variants:[{label:'Half Tray',price:50},{label:'Full Tray',price:100}], sortOrder:3 },
+  { name:'Catering: Chicken Wings', description:'Juicy, seasoned chicken wings in bulk quantities.', category:'catering', imageUrl:'', emoji:'🍗', price:40, unitLabel:'', variantType:'options', variants:[{label:'25 pcs',price:40},{label:'50 pcs',price:70},{label:'100 pcs',price:140}], sortOrder:4 },
+  { name:'Catering: Peppered Gizzard', description:'Bold, spicy peppered gizzard — a party staple.', category:'catering', imageUrl:'', emoji:'🌶️', price:40, unitLabel:'', variantType:'options', variants:[{label:'Mini Tray',price:40},{label:'Half Tray',price:80},{label:'Full Tray',price:160}], sortOrder:5 },
+];
+
+async function seedProducts() {
+  for (const p of SEED_PRODUCTS) {
+    await saveProduct(p);
+  }
+  console.log(`✅ Seeded ${SEED_PRODUCTS.length} products`);
+}
+
+function rowToProduct(r) {
+  return {
+    id:          r.id,
+    name:        r.name,
+    description: r.description,
+    category:    r.category,
+    imageUrl:    r.image_url,
+    emoji:       r.emoji,
+    price:       parseFloat(r.price),
+    unitLabel:   r.unit_label,
+    variants:    r.variants,
+    variantType: r.variant_type,
+    sortOrder:   r.sort_order,
+    active:      r.active,
+    createdAt:   r.created_at,
+  };
+}
+
+async function readProducts(adminMode = false) {
+  const q = adminMode
+    ? 'SELECT * FROM products ORDER BY sort_order, created_at'
+    : 'SELECT * FROM products WHERE active=true ORDER BY sort_order, created_at';
+  const { rows } = await pool.query(q);
+  return rows.map(rowToProduct);
+}
+
+async function saveProduct(p) {
+  const id = p.id || uuidv4();
+  await pool.query(
+    `INSERT INTO products
+       (id, name, description, category, image_url, emoji, price,
+        unit_label, variants, variant_type, sort_order, active)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+    [
+      id, p.name, p.description || '', p.category, p.imageUrl || '',
+      p.emoji || '🥧', p.price, p.unitLabel || '',
+      p.variants ? JSON.stringify(p.variants) : null,
+      p.variantType || 'none', p.sortOrder || 0,
+      p.active !== false,
+    ]
+  );
+  return id;
+}
+
+async function updateProductById(id, patch) {
+  const colMap = {
+    name:'name', description:'description', category:'category',
+    imageUrl:'image_url', emoji:'emoji', price:'price',
+    unitLabel:'unit_label', variants:'variants', variantType:'variant_type',
+    sortOrder:'sort_order', active:'active',
+  };
+  const sets = [], vals = [];
+  let i = 1;
+  for (const [key, col] of Object.entries(colMap)) {
+    if (patch[key] !== undefined) {
+      sets.push(`${col}=$${i++}`);
+      vals.push(key === 'variants' ? JSON.stringify(patch[key]) : patch[key]);
+    }
+  }
+  if (!sets.length) return null;
+  vals.push(id);
+  const { rows } = await pool.query(
+    `UPDATE products SET ${sets.join(',')} WHERE id=$${i} RETURNING *`, vals
+  );
+  return rows[0] ? rowToProduct(rows[0]) : null;
 }
 
 async function readOrders() {
@@ -349,9 +474,59 @@ app.get('/admin/logout', (req, res) => {
   res.redirect('/admin-login.html');
 });
 
+// ── Public products API ───────────────────────────────────────────────────────
+app.get('/products', async (_req, res) => {
+  res.json(await readProducts(false));
+});
+
 // ── Admin API ─────────────────────────────────────────────────────────────────
 app.get('/admin/orders', requireAdmin, async (_req, res) => {
   res.json(await readOrders());
+});
+
+app.get('/admin/products', requireAdmin, async (_req, res) => {
+  res.json(await readProducts(true));
+});
+
+app.post('/admin/products', requireAdmin, async (req, res) => {
+  const { name, description, category, imageUrl, emoji, price,
+          unitLabel, variants, variantType, sortOrder, active } = req.body;
+  if (!name || !category || price == null)
+    return res.status(400).json({ error: 'name, category, price required.' });
+  if (!['drinks','puffpuff','pastries','catering'].includes(category))
+    return res.status(400).json({ error: 'Invalid category.' });
+  if (!['none','options','glazed'].includes(variantType || 'none'))
+    return res.status(400).json({ error: 'Invalid variantType.' });
+  const id = await saveProduct({
+    name: name.trim(), description, category, imageUrl, emoji,
+    price: parseFloat(price), unitLabel, variants,
+    variantType: variantType || 'none',
+    sortOrder: parseInt(sortOrder) || 0,
+    active: active !== false,
+  });
+  const { rows } = await pool.query('SELECT * FROM products WHERE id=$1', [id]);
+  res.status(201).json(rowToProduct(rows[0]));
+});
+
+app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
+  const allowed = ['name','description','category','imageUrl','emoji','price',
+                   'unitLabel','variants','variantType','sortOrder','active'];
+  const patch = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) patch[key] = req.body[key];
+  }
+  if (!Object.keys(patch).length)
+    return res.status(400).json({ error: 'Nothing to update.' });
+  if (patch.price !== undefined) patch.price = parseFloat(patch.price);
+  if (patch.sortOrder !== undefined) patch.sortOrder = parseInt(patch.sortOrder) || 0;
+  const updated = await updateProductById(req.params.id, patch);
+  if (!updated) return res.status(404).json({ error: 'Product not found.' });
+  res.json(updated);
+});
+
+app.delete('/admin/products/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
 });
 
 async function sendPickupEmail(order) {

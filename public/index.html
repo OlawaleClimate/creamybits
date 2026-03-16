@@ -341,354 +341,27 @@
   </div>
 
   <!-- DRINKS -->
-  <div class="cat-group" data-group="drinks">
+  <div class="cat-group" data-group="drinks" id="cat-drinks">
     <div class="cat-group-label"><span>🥤</span> Drinks</div>
-    <div class="product-grid">
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0694_a92c3db89b559e91af51103cd9a5d408.jpg" alt="Chapman Drink" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍹</div>
-        <div class="product-body">
-          <div class="product-name">Chapman Drink</div>
-          <div class="product-desc">A vibrant mocktail made with fruity sodas, orange juice, bitters, cucumber &amp; orange slices. Sweet, tangy &amp; refreshing.</div>
-          <div class="product-price">$2.00</div>
-          <button class="add-btn" onclick="addToCart('Chapman Drink','',2,this)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order
-          </button>
-        </div>
-      </div>
-
-    </div>
+    <div class="product-grid" id="grid-drinks"></div>
   </div>
 
   <!-- PUFF PUFF -->
-  <div class="cat-group" data-group="puffpuff">
+  <div class="cat-group" data-group="puffpuff" id="cat-puffpuff">
     <div class="cat-group-label"><span>🍡</span> Puff Puff</div>
-    <div class="product-grid">
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0825_cb8e3a3adcb8a5085cd030e6a7fcf663.jpg" alt="Puff Puff Plain" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍡</div>
-        <div class="product-body">
-          <div class="product-name">Puff Puff – Plain</div>
-          <div class="product-desc">Soft, golden, lightly sweet fried dough bites. Like donuts but better.</div>
-          <div class="product-price">$25.00 <span>· Box of 20</span></div>
-          <button class="add-btn" onclick="addToCart('Puff Puff – Plain','Box of 20',25,this)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order
-          </button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0755_2_96f845450cddf102a09c28a87f7b1167.jpg" alt="Puff Puff Glazed" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍡</div>
-        <div class="product-body">
-          <div class="product-name">Puff Puff – Glazed</div>
-          <div class="product-desc">Choose your glazes and toppings for a custom box of 25.</div>
-          <div class="product-price">$30.00 <span>· Box of 25</span></div>
-          <select class="variant-select" id="gf1"><option value="" disabled selected>Flavor 1</option><option>Cinnamon Sugar</option><option>White Chocolate</option><option>Chocolate</option><option>Caramel</option><option>Biscoff</option><option>Strawberry</option></select>
-          <select class="variant-select" id="gf2"><option value="" disabled selected>Flavor 2</option><option>Caramel</option><option>Chocolate</option><option>White Chocolate</option><option>Biscoff</option><option>Cinnamon Sugar</option><option>Strawberry</option></select>
-          <select class="variant-select" id="gt"><option value="" disabled selected>Topping (optional)</option><option>Coconut</option><option>Biscoff Crumbs</option><option>Oreo Crumbs</option></select>
-          <button class="add-btn" onclick="addGlazed(this)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order
-          </button>
-        </div>
-      </div>
-
-    </div>
+    <div class="product-grid" id="grid-puffpuff"></div>
   </div>
 
   <!-- PASTRIES -->
-  <div class="cat-group" data-group="pastries">
+  <div class="cat-group" data-group="pastries" id="cat-pastries">
     <div class="cat-group-label"><span>🥐</span> Pastries</div>
-    <div class="product-grid">
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_3285_c87d40489ab3711ac2b16a5a4df89245.jpg" alt="Meat Pies" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🥧</div>
-        <div class="product-body">
-          <div class="product-name">Meat Pies</div>
-          <div class="product-desc">Buttery, flaky pastry with a rich filling of seasoned ground meat and vegetables.</div>
-          <div class="product-price">From $18.00</div>
-          <select class="variant-select" id="mp-v">
-            <option value="Half Dozen|18">Half Dozen – $18.00</option>
-            <option value="One Dozen|32">One Dozen – $32.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Meat Pies','mp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_9879_78e76b0f366f72abacbd9c46b054fc04.jpg" alt="Chicken Pies" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍗</div>
-        <div class="product-body">
-          <div class="product-name">Chicken Pies</div>
-          <div class="product-desc">Made with chicken breast/thighs and vegetables (diced carrot &amp; Irish potatoes).</div>
-          <div class="product-price">From $20.00</div>
-          <select class="variant-select" id="cp-v">
-            <option value="Half Dozen|20">Half Dozen – $20.00</option>
-            <option value="One Dozen|38">One Dozen – $38.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Chicken Pies','cp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0698_f4de2dd83e8d89f4ae9efe6ddb426950.jpg" alt="Fish Pies" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🐟</div>
-        <div class="product-body">
-          <div class="product-name">Fish Pies</div>
-          <div class="product-desc">Buttery dough filled with mackerel fish and vegetables (carrots &amp; bell peppers).</div>
-          <div class="product-price">From $20.00</div>
-          <select class="variant-select" id="fp-v">
-            <option value="Half Dozen|20">Half Dozen – $20.00</option>
-            <option value="One Dozen|40">One Dozen – $40.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Fish Pies','fp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0697_d7d65768d88b2f3b1edab07c47f32575.jpg" alt="Vegetable Spring Roll" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🥢</div>
-        <div class="product-body">
-          <div class="product-name">Vegetable Spring Roll</div>
-          <div class="product-desc">Light crispy rolls filled with a tasty blend of fresh vegetables.</div>
-          <div class="product-price">From $15.00</div>
-          <select class="variant-select" id="vr-v">
-            <option value="Half Dozen|15">Half Dozen – $15.00</option>
-            <option value="One Dozen|30">One Dozen – $30.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Vegetable Spring Roll','vr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0696_a70f39a37847bbb7937d7501703007a5.jpg" alt="Chicken Spring Rolls" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🥢</div>
-        <div class="product-body">
-          <div class="product-name">Chicken Spring Rolls</div>
-          <div class="product-desc">Light crispy rolls filled with seasoned chicken and vegetables.</div>
-          <div class="product-price">From $20.00</div>
-          <select class="variant-select" id="cr-v">
-            <option value="Half Dozen|20">Half Dozen – $20.00</option>
-            <option value="One Dozen|35">One Dozen – $35.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Chicken Spring Rolls','cr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_9228_854dccf3d9c58f76304c3f7e8de92efe.jpg" alt="Beef Samosa" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🥟</div>
-        <div class="product-body">
-          <div class="product-name">Beef Samosa</div>
-          <div class="product-desc">Crispy fried pastry filled with a savory blend of meat and vegetables.</div>
-          <div class="product-price">$30.00 <span>· Box of 12</span></div>
-          <button class="add-btn" onclick="addToCart('Beef Samosa','Box of 12',30,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0685_jpg_d0b8e3c6c077caa5b670c96cd1f0c0f3.jpg" alt="Sausage Rolls" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🌭</div>
-        <div class="product-body">
-          <div class="product-name">Sausage Rolls</div>
-          <div class="product-desc">Buttery flaky pastry wrapped around a rich, savory sausage filling.</div>
-          <div class="product-price">From $18.00</div>
-          <select class="variant-select" id="sr-v">
-            <option value="Half Dozen|18">Half Dozen – $18.00</option>
-            <option value="One Dozen|32">One Dozen – $32.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Sausage Rolls','sr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_6948_41b239fec49a0df547678e64b7bda15f.jpg" alt="Egg Rolls" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🥚</div>
-        <div class="product-body">
-          <div class="product-name">Egg Rolls</div>
-          <div class="product-desc">A whole boiled egg wrapped in lightly sweet dough, fried golden and fluffy.</div>
-          <div class="product-price">From $20.00</div>
-          <select class="variant-select" id="er-v">
-            <option value="Half Dozen|20">Half Dozen – $20.00</option>
-            <option value="One Dozen|40">One Dozen – $40.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Egg Rolls','er-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0699_3ac264c9da4876dce7b1ba8fc91ba9ef.jpg" alt="Shrimp Roll" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍤</div>
-        <div class="product-body">
-          <div class="product-name">Shrimp Roll</div>
-          <div class="product-desc">Crispy shrimp rolls — a crowd favourite for any occasion.</div>
-          <div class="product-price">$38.00 <span>· Box of 12</span></div>
-          <button class="add-btn" onclick="addToCart('Shrimp Roll','Box of 12',38,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/c11257d6_100d_4f73_8f2c_e813caa3c1c3_f8ad95a2cef6ad0373839df9fe5ebb29.jpg" alt="Small Chops Mini" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍽️</div>
-        <div class="product-body">
-          <div class="product-name">Small Chops Pack – Mini</div>
-          <div class="product-desc">3 Puff Puff · 1 Mini Meatpie · 1 Chicken Wing · 1 Spring Roll. Min. order: 10 packs.</div>
-          <div class="product-price">$9.00 <span>· per pack</span></div>
-          <button class="add-btn" onclick="addToCart('Small Chops Pack – Mini','Min. 10 packs',9,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_8996_e9f5c980d465bf4cc90154fb85eebf53.jpg" alt="Small Chops Platter" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍽️</div>
-        <div class="product-body">
-          <div class="product-name">Small Chops Platter</div>
-          <div class="product-desc">30 puff puffs · 10 spring rolls · 10 beef samosas or mini meat pies · 10 chicken wings · 6 shrimp rolls.</div>
-          <div class="product-price">$100.00</div>
-          <button class="add-btn" onclick="addToCart('Small Chops Platter','Full Platter',100,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_7004_7c6f14c8bc6cfd373128876a10ac1af8.jpg" alt="Chin-Chin" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🍬</div>
-        <div class="product-body">
-          <div class="product-name">Chin-Chin</div>
-          <div class="product-desc">Best for snacking individually and when you have guests over.</div>
-          <div class="product-price">From $20.00</div>
-          <select class="variant-select" id="cc-v">
-            <option value="48oz|20">48 oz – $20.00</option>
-            <option value="68oz|30">68 oz – $30.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Chin-Chin','cc-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_0627_cc6f0100301efffcc0d4a0c1ba637e57.jpg" alt="Shawarma" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🌯</div>
-        <div class="product-body">
-          <div class="product-name">Shawarma</div>
-          <div class="product-desc">Flavourful wraps made fresh to order.</div>
-          <div class="product-price">From $10.00</div>
-          <select class="variant-select" id="sw-v">
-            <option value="Chicken Shawarma|10">Chicken Shawarma – $10.00</option>
-            <option value="Chicken + Sausage|12">Chicken + Sausage – $12.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Shawarma','sw-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <img class="product-img" src="https://www.jotform.com/uploads/holarwhaley2/form_files/img_9879_46fc71c086ab007798ab73dcea6906ce.jpg" alt="Pastry Variety Box" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="product-img-placeholder" style="display:none">🎁</div>
-        <div class="product-body">
-          <div class="product-name">Pastry Variety Box</div>
-          <div class="product-desc">Includes 4 Meat Pies, 4 Chicken Pies, 4 Sausage Rolls &amp; Puff Puff.</div>
-          <div class="product-price">$40.00</div>
-          <button class="add-btn" onclick="addToCart('Pastry Variety Box','',40,this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-    </div>
+    <div class="product-grid" id="grid-pastries"></div>
   </div>
 
   <!-- CATERING -->
-  <div class="cat-group" data-group="catering">
+  <div class="cat-group" data-group="catering" id="cat-catering">
     <div class="cat-group-label"><span>🍾</span> Catering</div>
-    <div class="product-grid">
-
-      <div class="product-card">
-        <div class="product-img-placeholder">🥧</div>
-        <div class="product-body">
-          <div class="product-name">Catering: Mini Meatpies</div>
-          <div class="product-desc">Perfect for events. Available in bulk trays.</div>
-          <div class="product-price">From $40.00</div>
-          <select class="variant-select" id="cmp-v">
-            <option value="Mini Box (25 pcs)|40">Mini Box (25 pcs) – $40.00</option>
-            <option value="Half Tray (50 pcs)|75">Half Tray (50 pcs) – $75.00</option>
-            <option value="Full Tray (100 pcs)|150">Full Tray (100 pcs) – $150.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Catering: Mini Meatpies','cmp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img-placeholder">🥢</div>
-        <div class="product-body">
-          <div class="product-name">Catering: Vegetable Spring Rolls</div>
-          <div class="product-desc">Crispy veggie rolls in half or full tray quantities.</div>
-          <div class="product-price">From $50.00</div>
-          <select class="variant-select" id="cvr-v">
-            <option value="Half Tray (20 pcs)|50">Half Tray (20 pcs) – $50.00</option>
-            <option value="Full Tray (45 pcs)|100">Full Tray (45 pcs) – $100.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Catering: Veg Spring Rolls','cvr-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img-placeholder">🥟</div>
-        <div class="product-body">
-          <div class="product-name">Catering: Beef Samosa</div>
-          <div class="product-desc">Catering-size orders of crispy beef samosas.</div>
-          <div class="product-price">From $50.00</div>
-          <select class="variant-select" id="cbs-v">
-            <option value="Half Tray (20 pcs)|50">Half Tray (20 pcs) – $50.00</option>
-            <option value="Full Tray (45 pcs)|100">Full Tray (45 pcs) – $100.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Catering: Beef Samosa','cbs-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img-placeholder">🍡</div>
-        <div class="product-body">
-          <div class="product-name">Catering: Puff Puff</div>
-          <div class="product-desc">Large-batch puff puff for events and gatherings.</div>
-          <div class="product-price">From $50.00</div>
-          <select class="variant-select" id="cpp-v">
-            <option value="Half Tray|50">Half Tray – $50.00</option>
-            <option value="Full Tray|100">Full Tray – $100.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Catering: Puff Puff','cpp-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img-placeholder">🍗</div>
-        <div class="product-body">
-          <div class="product-name">Catering: Chicken Wings</div>
-          <div class="product-desc">Juicy, seasoned chicken wings in bulk quantities.</div>
-          <div class="product-price">From $40.00</div>
-          <select class="variant-select" id="cw-v">
-            <option value="25 pcs|40">25 pcs – $40.00</option>
-            <option value="50 pcs|70">50 pcs – $70.00</option>
-            <option value="100 pcs|140">100 pcs – $140.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Catering: Chicken Wings','cw-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img-placeholder">🌶️</div>
-        <div class="product-body">
-          <div class="product-name">Catering: Peppered Gizzard</div>
-          <div class="product-desc">Bold, spicy peppered gizzard — a party staple.</div>
-          <div class="product-price">From $40.00</div>
-          <select class="variant-select" id="pg-v">
-            <option value="Mini Tray|40">Mini Tray – $40.00</option>
-            <option value="Half Tray|80">Half Tray – $80.00</option>
-            <option value="Full Tray|160">Full Tray – $160.00</option>
-          </select>
-          <button class="add-btn" onclick="addVariant('Catering: Peppered Gizzard','pg-v',this)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add to Order</button>
-        </div>
-      </div>
-
-    </div>
+    <div class="product-grid" id="grid-catering"></div>
   </div>
 </section>
 
@@ -870,11 +543,11 @@
     sel.click();
   }
 
-  function addGlazed(btn) {
-    const f1 = document.getElementById('gf1').value || 'No Flavor 1';
-    const f2 = document.getElementById('gf2').value || 'No Flavor 2';
-    const t  = document.getElementById('gt').value  || 'No Topping';
-    addToCart('Puff Puff – Glazed', f1 + ' / ' + f2 + ' / ' + t, 30, btn);
+  function addGlazed(btn, gf1Id, gf2Id, gtId, price) {
+    const f1 = document.getElementById(gf1Id).value || 'No Flavor 1';
+    const f2 = document.getElementById(gf2Id).value || 'No Flavor 2';
+    const t  = document.getElementById(gtId).value  || 'No Topping';
+    addToCart('Puff Puff – Glazed', f1 + ' / ' + f2 + ' / ' + t, price, btn);
   }
 
   function flashBtn(btn) {
@@ -1084,6 +757,64 @@
       btn.textContent = 'Pay Securely with Stripe →';
     }
   }
+
+  // ── Dynamic product loading ─────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  const ADD_SVG = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+
+  function renderProductCard(p) {
+    const imgEl = p.imageUrl
+      ? `<img class="product-img" src="${escHtml(p.imageUrl)}" alt="${escHtml(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="product-img-placeholder" style="display:none">${p.emoji||'🥧'}</div>`
+      : `<div class="product-img-placeholder">${p.emoji||'🥧'}</div>`;
+
+    let priceHtml = '', controlsHtml = '';
+    const nm = JSON.stringify(p.name);
+
+    if (p.variantType === 'none') {
+      const unit = p.unitLabel ? ` <span>· ${escHtml(p.unitLabel)}</span>` : '';
+      priceHtml = `<div class="product-price">$${p.price.toFixed(2)}${unit}</div>`;
+      const v = JSON.stringify(p.unitLabel || '');
+      controlsHtml = `<button class="add-btn" onclick="addToCart(${nm},${v},${p.price},this)">${ADD_SVG} Add to Order</button>`;
+    } else if (p.variantType === 'options') {
+      priceHtml = `<div class="product-price">From $${p.price.toFixed(2)}</div>`;
+      const sid = `v-${p.id}`;
+      const opts = (p.variants||[]).map(v=>`<option value="${escHtml(v.label)}|${v.price}">${escHtml(v.label)} – $${Number(v.price).toFixed(2)}</option>`).join('');
+      controlsHtml = `<select class="variant-select" id="${sid}">${opts}</select>
+        <button class="add-btn" onclick="addVariant(${nm},'${sid}',this)">${ADD_SVG} Add to Order</button>`;
+    } else if (p.variantType === 'glazed') {
+      const unit = p.unitLabel ? ` <span>· ${escHtml(p.unitLabel)}</span>` : '';
+      priceHtml = `<div class="product-price">$${p.price.toFixed(2)}${unit}</div>`;
+      const gf1 = `gf1-${p.id}`, gf2 = `gf2-${p.id}`, gt = `gt-${p.id}`;
+      controlsHtml = `
+        <select class="variant-select" id="${gf1}"><option value="" disabled selected>Flavor 1</option><option>Cinnamon Sugar</option><option>White Chocolate</option><option>Chocolate</option><option>Caramel</option><option>Biscoff</option><option>Strawberry</option></select>
+        <select class="variant-select" id="${gf2}"><option value="" disabled selected>Flavor 2</option><option>Caramel</option><option>Chocolate</option><option>White Chocolate</option><option>Biscoff</option><option>Cinnamon Sugar</option><option>Strawberry</option></select>
+        <select class="variant-select" id="${gt}"><option value="" disabled selected>Topping (optional)</option><option>Coconut</option><option>Biscoff Crumbs</option><option>Oreo Crumbs</option></select>
+        <button class="add-btn" onclick="addGlazed(this,'${gf1}','${gf2}','${gt}',${p.price})">${ADD_SVG} Add to Order</button>`;
+    }
+
+    return `<div class="product-card">${imgEl}<div class="product-body"><div class="product-name">${escHtml(p.name)}</div><div class="product-desc">${escHtml(p.description||'')}</div>${priceHtml}${controlsHtml}</div></div>`;
+  }
+
+  async function loadProducts() {
+    try {
+      const products = await fetch('/products').then(r => r.json());
+      ['drinks','puffpuff','pastries','catering'].forEach(cat => {
+        const grid = document.getElementById('grid-' + cat);
+        if (!grid) return;
+        const catProducts = products.filter(p => p.category === cat);
+        grid.innerHTML = catProducts.map(renderProductCard).join('');
+        const group = document.getElementById('cat-' + cat);
+        if (group) group.style.display = catProducts.length ? '' : 'none';
+      });
+    } catch(e) {
+      console.error('Failed to load products:', e);
+    }
+  }
+
+  loadProducts();
 
   // ── Category filter tabs ────────────────────────────────────────────────
   document.getElementById('catTabs').addEventListener('click', e => {

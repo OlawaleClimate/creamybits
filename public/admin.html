@@ -83,6 +83,59 @@
     /* Empty / loading state */
     .state-msg { text-align: center; padding: 3rem; color: var(--gray); }
 
+    /* Admin tabs */
+    .admin-tabs { display: flex; gap: .5rem; padding: 1rem 2rem 0; border-bottom: 2px solid #e5e7eb; background: #fff; }
+    .admin-tab { padding: .6rem 1.4rem; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color .2s, border-color .2s; }
+    .admin-tab.active { color: var(--black); border-bottom-color: var(--black); }
+    .admin-tab:hover:not(.active) { color: var(--black); }
+
+    /* Products section */
+    .products-section { display: none; }
+    .products-section.active { display: block; }
+    .orders-section { display: block; }
+    .orders-section.hidden { display: none; }
+
+    .section-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; flex-wrap: wrap; gap: 1rem; }
+    .add-product-btn { padding: .6rem 1.25rem; background: var(--pink); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+    .add-product-btn:hover { opacity: .85; }
+
+    /* Products table */
+    .prod-img-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; background: #f3f4f6; display: block; }
+    .prod-img-placeholder { width: 44px; height: 44px; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .active-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .4rem; }
+    .dot-on  { background: #22c55e; }
+    .dot-off { background: #d1d5db; }
+
+    /* Product modal */
+    .prod-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .prod-modal-overlay.open { display: flex; }
+    .prod-modal { background: #fff; border-radius: 20px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,.2); }
+    .prod-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.75rem 1rem; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 1; }
+    .prod-modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+    .prod-modal-close { background: none; border: none; cursor: pointer; color: var(--gray); font-size: 1.4rem; line-height: 1; padding: 0; }
+    .prod-modal-body { padding: 1.5rem 1.75rem; display: grid; gap: 1rem; }
+    .prod-modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .prod-field label { display: block; font-size: .82rem; font-weight: 700; color: var(--gray); margin-bottom: .35rem; text-transform: uppercase; letter-spacing: .04em; }
+    .prod-field input, .prod-field select, .prod-field textarea { width: 100%; padding: .55rem .8rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; background: #fff; }
+    .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { outline: none; border-color: var(--black); }
+    .prod-field textarea { resize: vertical; min-height: 70px; }
+    .variant-rows { display: flex; flex-direction: column; gap: .5rem; }
+    .variant-row { display: flex; gap: .5rem; align-items: center; }
+    .variant-row input { flex: 1; }
+    .variant-row input.price-in { flex: 0 0 90px; }
+    .remove-variant-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 .2rem; }
+    .add-variant-row-btn { background: none; border: 1.5px dashed #d1d5db; color: var(--gray); border-radius: 8px; padding: .4rem .9rem; font-size: .82rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: border-color .2s, color .2s; }
+    .add-variant-row-btn:hover { border-color: var(--black); color: var(--black); }
+    .prod-modal-footer { padding: 1rem 1.75rem 1.5rem; display: flex; gap: .75rem; justify-content: flex-end; border-top: 1px solid #f0f0f0; }
+    .prod-save-btn { padding: .65rem 1.75rem; background: var(--black); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 700; cursor: pointer; font-size: .95rem; }
+    .prod-save-btn:hover { opacity: .85; }
+    .prod-cancel-btn { padding: .65rem 1.25rem; background: #f3f4f6; color: var(--black); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; font-size: .95rem; }
+    .prod-error { color: #dc2626; font-size: .85rem; min-height: 1.2em; }
+    .edit-btn  { padding: .3rem .8rem; background: #3b82f6; color: #fff; border: none; border-radius: 7px; font-size: .8rem; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; }
+    .edit-btn:hover { opacity: .85; }
+    .del-btn   { padding: .3rem .8rem; background: #ef4444; color: #fff; border: none; border-radius: 7px; font-size: .8rem; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; }
+    .del-btn:hover { opacity: .85; }
+
     @media(max-width:900px){
       .stats-row { grid-template-columns: 1fr 1fr; }
     }
@@ -104,6 +157,15 @@
     <a href="/admin/logout" class="logout-btn">Sign Out</a>
   </div>
 </div>
+
+<!-- Admin tab navigation -->
+<div class="admin-tabs">
+  <button class="admin-tab active" id="tabOrders" onclick="switchTab('orders')">📋 Orders</button>
+  <button class="admin-tab" id="tabProducts" onclick="switchTab('products')">🛍️ Products</button>
+</div>
+
+<!-- ── ORDERS SECTION ─────────────────────────────────────── -->
+<div class="orders-section" id="ordersSection">
 
 <div class="stats-row" id="statsRow">
   <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-value" id="statTotal">–</div></div>
@@ -153,6 +215,123 @@
       <tr><td colspan="8" class="state-msg">Loading orders…</td></tr>
     </tbody>
   </table>
+</div>
+
+</div><!-- end orders-section -->
+
+<!-- ── PRODUCTS SECTION ──────────────────────────────────────── -->
+<div class="products-section" id="productsSection">
+  <div class="section-toolbar">
+    <div style="font-size:1rem;font-weight:700;color:var(--black)">All Products</div>
+    <button class="add-product-btn" onclick="openProductModal()">+ Add Product</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Variants</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="productsBody">
+        <tr><td colspan="7" class="state-msg">Loading products…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── PRODUCT ADD/EDIT MODAL ────────────────────────────────── -->
+<div class="prod-modal-overlay" id="prodModalOverlay">
+  <div class="prod-modal">
+    <div class="prod-modal-header">
+      <h3 id="prodModalTitle">Add Product</h3>
+      <button class="prod-modal-close" onclick="closeProdModal()">✕</button>
+    </div>
+    <div class="prod-modal-body">
+      <p class="prod-error" id="prodError"></p>
+      <input type="hidden" id="prodId" />
+
+      <div class="prod-modal-row">
+        <div class="prod-field">
+          <label>Name *</label>
+          <input type="text" id="prodName" placeholder="e.g. Meat Pies" />
+        </div>
+        <div class="prod-field">
+          <label>Category *</label>
+          <select id="prodCategory">
+            <option value="drinks">Drinks</option>
+            <option value="puffpuff">Puff Puff</option>
+            <option value="pastries">Pastries</option>
+            <option value="catering">Catering</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="prod-field">
+        <label>Description</label>
+        <textarea id="prodDesc" placeholder="Short product description"></textarea>
+      </div>
+
+      <div class="prod-modal-row">
+        <div class="prod-field">
+          <label>Image URL</label>
+          <input type="url" id="prodImageUrl" placeholder="https://…" />
+        </div>
+        <div class="prod-field">
+          <label>Emoji (placeholder)</label>
+          <input type="text" id="prodEmoji" placeholder="🥧" maxlength="4" />
+        </div>
+      </div>
+
+      <div class="prod-modal-row">
+        <div class="prod-field">
+          <label>Base / Display Price ($) *</label>
+          <input type="number" id="prodPrice" placeholder="18.00" min="0" step="0.01" />
+        </div>
+        <div class="prod-field">
+          <label>Unit Label</label>
+          <input type="text" id="prodUnitLabel" placeholder='e.g. "Box of 12"' />
+        </div>
+      </div>
+
+      <div class="prod-modal-row">
+        <div class="prod-field">
+          <label>Variant Type *</label>
+          <select id="prodVariantType" onchange="onVariantTypeChange()">
+            <option value="none">None (fixed price)</option>
+            <option value="options">Options (dropdown)</option>
+            <option value="glazed">Glazed (Puff Puff special)</option>
+          </select>
+        </div>
+        <div class="prod-field">
+          <label>Sort Order</label>
+          <input type="number" id="prodSortOrder" value="0" min="0" />
+        </div>
+      </div>
+
+      <div id="variantsSection" style="display:none">
+        <div class="prod-field">
+          <label>Variants (label + price each)</label>
+          <div class="variant-rows" id="variantRows"></div>
+          <button type="button" class="add-variant-row-btn" onclick="addVariantRow()" style="margin-top:.5rem">+ Add Option</button>
+        </div>
+      </div>
+
+      <div class="prod-field" style="display:flex;align-items:center;gap:.75rem">
+        <input type="checkbox" id="prodActive" checked style="width:auto;margin:0" />
+        <label for="prodActive" style="text-transform:none;letter-spacing:0;font-size:.9rem;cursor:pointer">Product is active (visible on site)</label>
+      </div>
+    </div>
+    <div class="prod-modal-footer">
+      <button class="prod-cancel-btn" onclick="closeProdModal()">Cancel</button>
+      <button class="prod-save-btn" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -383,6 +562,161 @@
   loadOrders();
   // Auto-refresh every 60 seconds
   setInterval(loadOrders, 60000);
+
+  // ── Tab switching ───────────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.getElementById('ordersSection').classList.toggle('hidden', tab !== 'orders');
+    document.getElementById('productsSection').classList.toggle('active', tab === 'products');
+    document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
+    document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
+    if (tab === 'products') loadAllProducts();
+  }
+
+  // ── Products management ─────────────────────────────────────────────────
+  let allProducts = [];
+
+  async function loadAllProducts() {
+    try {
+      const res = await fetch('/admin/products');
+      if (res.redirected || res.status === 302) { location.href = '/admin-login.html'; return; }
+      allProducts = await res.json();
+      renderProductsTable();
+    } catch(e) {
+      document.getElementById('productsBody').innerHTML = `<tr><td colspan="7" class="state-msg">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderProductsTable() {
+    const tbody = document.getElementById('productsBody');
+    if (!allProducts.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="state-msg">No products yet.</td></tr>';
+      return;
+    }
+    const CAT_LABELS = { drinks:'Drinks', puffpuff:'Puff Puff', pastries:'Pastries', catering:'Catering' };
+    tbody.innerHTML = allProducts.map(p => {
+      const imgEl = p.imageUrl
+        ? `<img class="prod-img-thumb" src="${p.imageUrl}" alt="${p.name}" onerror="this.style.display='none'">`
+        : `<div class="prod-img-placeholder">${p.emoji||'🥧'}</div>`;
+      const variantSummary = p.variantType === 'none' ? '—'
+        : p.variantType === 'glazed' ? 'Glazed special'
+        : (p.variants||[]).map(v=>`${v.label} $${Number(v.price).toFixed(2)}`).join(', ');
+      return `<tr>
+        <td>${imgEl}</td>
+        <td><strong>${p.name}</strong></td>
+        <td>${CAT_LABELS[p.category]||p.category}</td>
+        <td>$${p.price.toFixed(2)}</td>
+        <td style="font-size:.8rem;color:#6b7280;max-width:180px;white-space:normal">${variantSummary}</td>
+        <td><span class="active-dot ${p.active?'dot-on':'dot-off'}"></span>${p.active?'Active':'Hidden'}</td>
+        <td style="display:flex;gap:.4rem">
+          <button class="edit-btn" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+          <button class="del-btn" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Modal helpers
+  function onVariantTypeChange() {
+    const vt = document.getElementById('prodVariantType').value;
+    document.getElementById('variantsSection').style.display = vt === 'options' ? '' : 'none';
+  }
+
+  function addVariantRow(label='', price='') {
+    const row = document.createElement('div');
+    row.className = 'variant-row';
+    row.innerHTML = `<input type="text" placeholder="Label (e.g. Half Dozen)" value="${label}" />
+      <input type="number" class="price-in" placeholder="Price" min="0" step="0.01" value="${price}" />
+      <button type="button" class="remove-variant-btn" onclick="this.parentElement.remove()">✕</button>`;
+    document.getElementById('variantRows').appendChild(row);
+  }
+
+  function openProductModal(product) {
+    document.getElementById('prodError').textContent = '';
+    document.getElementById('prodId').value = product ? product.id : '';
+    document.getElementById('prodModalTitle').textContent = product ? 'Edit Product' : 'Add Product';
+    document.getElementById('prodName').value = product ? product.name : '';
+    document.getElementById('prodCategory').value = product ? product.category : 'pastries';
+    document.getElementById('prodDesc').value = product ? (product.description||'') : '';
+    document.getElementById('prodImageUrl').value = product ? (product.imageUrl||'') : '';
+    document.getElementById('prodEmoji').value = product ? (product.emoji||'') : '';
+    document.getElementById('prodPrice').value = product ? product.price : '';
+    document.getElementById('prodUnitLabel').value = product ? (product.unitLabel||'') : '';
+    document.getElementById('prodVariantType').value = product ? product.variantType : 'none';
+    document.getElementById('prodSortOrder').value = product ? product.sortOrder : 0;
+    document.getElementById('prodActive').checked = product ? product.active : true;
+    // Variants
+    const rows = document.getElementById('variantRows');
+    rows.innerHTML = '';
+    if (product && product.variants) {
+      product.variants.forEach(v => addVariantRow(v.label, v.price));
+    }
+    onVariantTypeChange();
+    document.getElementById('prodModalOverlay').classList.add('open');
+  }
+
+  function editProduct(p) { openProductModal(p); }
+
+  function closeProdModal() {
+    document.getElementById('prodModalOverlay').classList.remove('open');
+  }
+
+  async function saveProduct() {
+    document.getElementById('prodError').textContent = '';
+    const id = document.getElementById('prodId').value;
+    const variantType = document.getElementById('prodVariantType').value;
+
+    let variants = null;
+    if (variantType === 'options') {
+      variants = Array.from(document.querySelectorAll('#variantRows .variant-row')).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return { label: inputs[0].value.trim(), price: parseFloat(inputs[1].value) || 0 };
+      }).filter(v => v.label);
+    }
+
+    const body = {
+      name:        document.getElementById('prodName').value.trim(),
+      category:    document.getElementById('prodCategory').value,
+      description: document.getElementById('prodDesc').value.trim(),
+      imageUrl:    document.getElementById('prodImageUrl').value.trim(),
+      emoji:       document.getElementById('prodEmoji').value.trim(),
+      price:       parseFloat(document.getElementById('prodPrice').value),
+      unitLabel:   document.getElementById('prodUnitLabel').value.trim(),
+      variantType,
+      variants,
+      sortOrder:   parseInt(document.getElementById('prodSortOrder').value) || 0,
+      active:      document.getElementById('prodActive').checked,
+    };
+
+    if (!body.name) return (document.getElementById('prodError').textContent = 'Name is required.');
+    if (!body.price && body.price !== 0) return (document.getElementById('prodError').textContent = 'Price is required.');
+
+    try {
+      const url    = id ? `/admin/products/${id}` : '/admin/products';
+      const method = id ? 'PATCH' : 'POST';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data   = await res.json();
+      if (!res.ok) return (document.getElementById('prodError').textContent = data.error || 'Save failed.');
+      closeProdModal();
+      await loadAllProducts();
+    } catch(e) {
+      document.getElementById('prodError').textContent = 'Error: ' + e.message;
+    }
+  }
+
+  async function deleteProduct(id, name) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+      await fetch(`/admin/products/${id}`, { method: 'DELETE' });
+      await loadAllProducts();
+    } catch(e) {
+      alert('Delete failed: ' + e.message);
+    }
+  }
+
+  // Close prod modal on overlay click
+  document.getElementById('prodModalOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('prodModalOverlay')) closeProdModal();
+  });
 </script>
 </body>
 </html>
