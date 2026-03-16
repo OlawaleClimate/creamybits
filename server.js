@@ -760,6 +760,11 @@ app.get('/admin', requireAdmin, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Full menu page
+app.get('/menu', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'menu.html'));
+});
+
 // Fallback SPA
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
