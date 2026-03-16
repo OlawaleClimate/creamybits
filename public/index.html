@@ -139,7 +139,7 @@
     .form-input:focus { outline: none; border-color: #0f0f0f; }
     .form-input.error { border-color: #ec4899; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-    .form-hint { font-size: .75rem; color: #9ca3af; margin-top: .3rem; }
+    .form-hint { font-size: .75rem; color: #4b5563; margin-top: .3rem; }
     .allergy-note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: .75rem 1rem; font-size: .82rem; color: #c2410c; margin-bottom: 1rem; line-height: 1.5; }
     .modal-footer { padding: 1rem 1.75rem 1.5rem; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
     .form-error { color: #dc2626; font-size: .82rem; margin-bottom: .75rem; display: none; }
@@ -162,6 +162,10 @@
     .cal-day.today { outline: 2px solid #e5e7eb; }
     .cal-day.cal-day-closed { color: #c0392b; text-decoration: line-through; cursor: not-allowed; }
     .cal-day.selectable:focus { outline: 2px solid #8b5cf6; outline-offset: 2px; }
+
+    /* ── FOCUS VISIBLE ── */
+    *:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 3px; border-radius: 3px; }
+    .form-input:focus-visible, .variant-select:focus-visible { outline: none; border-color: #0f0f0f; }
     .cal-selected-label { text-align: center; padding: .4rem; font-size: .82rem; color: #7c3aed; font-weight: 600; min-height: 1.5rem; }
 
     /* ── CTA BANNER ── */
@@ -266,7 +270,7 @@
 <a href="#menu" class="skip-link">Skip to main content</a>
 
 <!-- NAV -->
-<nav>
+<nav aria-label="Main navigation">
   <button class="nav-logo" onclick="scrollTo({top:0,behavior:'smooth'})" aria-label="CreamyBits – scroll to top">
     <img src="/logo.png" alt="" aria-hidden="true" />
   </button>
@@ -295,7 +299,7 @@
 <!-- HERO -->
 <section class="hero" id="home" aria-label="Introduction">
   <div class="hero-left">
-    <div class="badge">🔥 Weekend Pick-up · Albuquerque, NM</div>
+    <div class="badge"><span aria-hidden="true">🔥</span> Weekend Pick-up · Albuquerque, NM</div>
     <h1 class="hero-headline">Hit Different.<br>
       <span class="colorful">
         <span class="c c1">E</span><span class="c c2">v</span><span class="c c3">e</span><span class="c c4">r</span><span class="c c5">y</span> <span class="c c6">B</span><span class="cdot">ite.</span>
@@ -309,7 +313,7 @@
   </div>
   <div class="hero-right">
     <div class="hero-img-box">
-      <span style="font-size:8rem;z-index:1;filter:drop-shadow(0 8px 32px rgba(0,0,0,.5))">🥧</span>
+      <span style="font-size:8rem;z-index:1;filter:drop-shadow(0 8px 32px rgba(0,0,0,.5))" aria-hidden="true">🥧</span>
       <div class="review-card" aria-label="Customer review">
         <div class="stars" aria-hidden="true">★★★★★</div>
         <p>"The best African pastries in New Mexico. Those puff puffs are unreal!"</p>
@@ -321,17 +325,17 @@
 <!-- FEATURES -->
 <section class="features" aria-label="Features">
   <div class="feature">
-    <div class="feature-icon fi-blue">🌾</div>
+    <div class="feature-icon fi-blue" aria-hidden="true">🌾</div>
     <h3>Premium Ingredients</h3>
     <p>We use only the finest locally sourced flour and real butter for that perfect flake in every bite.</p>
   </div>
   <div class="feature">
-    <div class="feature-icon fi-pink">👩‍🍳</div>
+    <div class="feature-icon fi-pink" aria-hidden="true">👩‍🍳</div>
     <h3>Handcrafted Fresh</h3>
     <p>Made from scratch every time — no shortcuts, no preservatives, just real African flavors.</p>
   </div>
   <div class="feature">
-    <div class="feature-icon fi-yellow">📦</div>
+    <div class="feature-icon fi-yellow" aria-hidden="true">📦</div>
     <h3>Weekend Pick-Up</h3>
     <p>Order online, pay securely, and pick up Saturday or Sunday in Albuquerque, NM.</p>
   </div>
@@ -355,25 +359,25 @@
 
   <!-- DRINKS -->
   <div class="cat-group" data-group="drinks" id="cat-drinks">
-    <div class="cat-group-label"><span>🥤</span> Drinks</div>
+    <div class="cat-group-label"><span aria-hidden="true">🥤</span> Drinks</div>
     <div class="product-grid" id="grid-drinks"></div>
   </div>
 
   <!-- PUFF PUFF -->
   <div class="cat-group" data-group="puffpuff" id="cat-puffpuff">
-    <div class="cat-group-label"><span>🍡</span> Puff Puff</div>
+    <div class="cat-group-label"><span aria-hidden="true">🍡</span> Puff Puff</div>
     <div class="product-grid" id="grid-puffpuff"></div>
   </div>
 
   <!-- PASTRIES -->
   <div class="cat-group" data-group="pastries" id="cat-pastries">
-    <div class="cat-group-label"><span>🥐</span> Pastries</div>
+    <div class="cat-group-label"><span aria-hidden="true">🥐</span> Pastries</div>
     <div class="product-grid" id="grid-pastries"></div>
   </div>
 
   <!-- CATERING -->
   <div class="cat-group" data-group="catering" id="cat-catering">
-    <div class="cat-group-label"><span>🍾</span> Catering</div>
+    <div class="cat-group-label"><span aria-hidden="true">🍾</span> Catering</div>
     <div class="product-grid" id="grid-catering"></div>
   </div>
 </section>
@@ -497,7 +501,7 @@
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()" aria-hidden="true"></div>
 <div class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Your order" aria-hidden="true">
   <div class="cart-header">
-    <h3>Your Order 🛍️</h3>
+    <h3>Your Order <span aria-hidden="true">🛍️</span></h3>
     <button class="cart-close" onclick="closeCart()" aria-label="Close cart">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
@@ -932,8 +936,8 @@
 
   function renderProductCard(p) {
     const imgEl = p.imageUrl
-      ? `<img class="product-img" src="${escHtml(p.imageUrl)}" alt="${escHtml(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="product-img-placeholder" style="display:none">${p.emoji||'🥧'}</div>`
-      : `<div class="product-img-placeholder">${p.emoji||'🥧'}</div>`;
+      ? `<img class="product-img" src="${escHtml(p.imageUrl)}" alt="${escHtml(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="product-img-placeholder" style="display:none" aria-hidden="true">${p.emoji||'🥧'}</div>`
+      : `<div class="product-img-placeholder" aria-hidden="true">${p.emoji||'🥧'}</div>`;
 
     let priceHtml = '', controlsHtml = '';
     const nm = JSON.stringify(p.name);
