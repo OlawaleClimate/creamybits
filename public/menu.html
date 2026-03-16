@@ -215,30 +215,8 @@
 
 <!-- FULL MENU -->
 <section id="menu" aria-label="Full menu">
-  <div class="cat-tabs" id="catTabs" role="tablist" aria-label="Menu categories">
-    <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">All</button>
-    <button class="cat-tab" data-cat="pastries" role="tab" aria-selected="false">Pastries</button>
-    <button class="cat-tab" data-cat="puffpuff" role="tab" aria-selected="false">Puff Puff</button>
-    <button class="cat-tab" data-cat="drinks" role="tab" aria-selected="false">Drinks</button>
-    <button class="cat-tab" data-cat="catering" role="tab" aria-selected="false">Catering</button>
-  </div>
-
-  <div class="cat-group" data-group="pastries" id="cat-pastries">
-    <div class="cat-group-label"><span aria-hidden="true">🥐</span> Pastries</div>
-    <div class="product-grid" id="grid-pastries"></div>
-  </div>
-  <div class="cat-group" data-group="puffpuff" id="cat-puffpuff">
-    <div class="cat-group-label"><span aria-hidden="true">🍡</span> Puff Puff</div>
-    <div class="product-grid" id="grid-puffpuff"></div>
-  </div>
-  <div class="cat-group" data-group="drinks" id="cat-drinks">
-    <div class="cat-group-label"><span aria-hidden="true">🥤</span> Drinks</div>
-    <div class="product-grid" id="grid-drinks"></div>
-  </div>
-  <div class="cat-group" data-group="catering" id="cat-catering">
-    <div class="cat-group-label"><span aria-hidden="true">🍾</span> Catering</div>
-    <div class="product-grid" id="grid-catering"></div>
-  </div>
+  <div class="cat-tabs" id="catTabs" role="tablist" aria-label="Menu categories"></div>
+  <div id="catGroups"></div>
 </section>
 
 <!-- ORDER DETAILS MODAL -->
@@ -664,16 +642,49 @@
     return `<div class="product-card">${imgEl}<div class="product-body"><div class="product-name">${escHtml(p.name)}</div><div class="product-desc">${escHtml(p.description||'')}</div>${priceHtml}${controlsHtml}</div></div>`;
   }
 
+  const CAT_META = {
+    pastries: { label: 'Pastries',  emoji: '🥐' },
+    puffpuff: { label: 'Puff Puff', emoji: '🍡' },
+    drinks:   { label: 'Drinks',    emoji: '🥤' },
+    catering: { label: 'Catering',  emoji: '🍾' },
+  };
+
+  function catLabel(slug) {
+    if (CAT_META[slug]) return CAT_META[slug].label;
+    return slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  function catEmoji(slug) {
+    return CAT_META[slug] ? CAT_META[slug].emoji : '🍽️';
+  }
+
   async function loadProducts() {
     try {
       productsData = await fetch('/products').then(r => r.json());
-      ['pastries','puffpuff','drinks','catering'].forEach(cat => {
-        const grid = document.getElementById('grid-' + cat);
-        if (!grid) return;
+
+      // Build ordered list of unique categories (preserving first-seen order)
+      const cats = [];
+      productsData.forEach(p => { if (p.category && !cats.includes(p.category)) cats.push(p.category); });
+
+      // Build tabs
+      const tabsEl = document.getElementById('catTabs');
+      tabsEl.innerHTML = `<button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">All</button>`
+        + cats.map(c =>
+          `<button class="cat-tab" data-cat="${c}" role="tab" aria-selected="false">${catLabel(c)}</button>`
+        ).join('');
+
+      // Build group sections
+      const groupsEl = document.getElementById('catGroups');
+      groupsEl.innerHTML = cats.map(c => `
+        <div class="cat-group" data-group="${c}" id="cat-${c}">
+          <div class="cat-group-label"><span aria-hidden="true">${catEmoji(c)}</span> ${catLabel(c)}</div>
+          <div class="product-grid" id="grid-${c}"></div>
+        </div>`).join('');
+
+      // Populate grids
+      cats.forEach(cat => {
         const catProducts = productsData.filter(p => p.category === cat);
-        grid.innerHTML = catProducts.map(renderProductCard).join('');
-        const group = document.getElementById('cat-' + cat);
-        if (group) group.style.display = catProducts.length ? '' : 'none';
+        const grid = document.getElementById('grid-' + cat);
+        if (grid) grid.innerHTML = catProducts.map(renderProductCard).join('');
       });
     } catch(e) { console.error('Failed to load products:', e); }
   }
