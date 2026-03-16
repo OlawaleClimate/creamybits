@@ -362,12 +362,14 @@
         </div>
         <div class="prod-field">
           <label>Category *</label>
-          <select id="prodCategory">
+          <select id="prodCategory" onchange="handleCategoryChange(this)">
             <option value="drinks">Drinks</option>
             <option value="puffpuff">Puff Puff</option>
             <option value="pastries">Pastries</option>
             <option value="catering">Catering</option>
+            <option value="__new__">＋ New category…</option>
           </select>
+          <input type="text" id="newCategoryInput" placeholder="e.g. snacks" style="display:none;margin-top:.5rem" />
         </div>
       </div>
 
@@ -759,6 +761,17 @@
     document.getElementById('variantsSection').style.display = vt === 'options' ? '' : 'none';
   }
 
+  function handleCategoryChange(sel) {
+    const inp = document.getElementById('newCategoryInput');
+    if (sel.value === '__new__') {
+      inp.style.display = 'block';
+      inp.focus();
+    } else {
+      inp.style.display = 'none';
+      inp.value = '';
+    }
+  }
+
   function addVariantRow(label='', price='') {
     const row = document.createElement('div');
     row.className = 'variant-row';
@@ -773,7 +786,17 @@
     document.getElementById('prodId').value = product ? product.id : '';
     document.getElementById('prodModalTitle').textContent = product ? 'Edit Product' : 'Add Product';
     document.getElementById('prodName').value = product ? product.name : '';
-    document.getElementById('prodCategory').value = product ? product.category : 'pastries';
+    const catSel = document.getElementById('prodCategory');
+    const newCatInp = document.getElementById('newCategoryInput');
+    newCatInp.style.display = 'none'; newCatInp.value = '';
+    const knownCats = [...catSel.options].map(o => o.value).filter(v => v !== '__new__');
+    if (product && !knownCats.includes(product.category)) {
+      catSel.value = '__new__';
+      newCatInp.value = product.category;
+      newCatInp.style.display = 'block';
+    } else {
+      catSel.value = product ? product.category : 'pastries';
+    }
     document.getElementById('prodDesc').value = product ? (product.description||'') : '';
     document.getElementById('prodImageUrl').value = product ? (product.imageUrl||'') : '';
     // Reset upload UI
@@ -845,7 +868,9 @@
 
     const body = {
       name:        document.getElementById('prodName').value.trim(),
-      category:    document.getElementById('prodCategory').value,
+      category:    document.getElementById('prodCategory').value === '__new__'
+                     ? document.getElementById('newCategoryInput').value.trim().toLowerCase().replace(/\s+/g,'-')
+                     : document.getElementById('prodCategory').value,
       description: document.getElementById('prodDesc').value.trim(),
       imageUrl:    document.getElementById('prodImageUrl').value.trim(),
       emoji:       document.getElementById('prodEmoji').value.trim(),
@@ -860,6 +885,7 @@
     };
 
     if (!body.name) return (document.getElementById('prodError').textContent = 'Name is required.');
+    if (!body.category) return (document.getElementById('prodError').textContent = 'Category name is required.');
     if (!body.price && body.price !== 0) return (document.getElementById('prodError').textContent = 'Price is required.');
 
     try {
