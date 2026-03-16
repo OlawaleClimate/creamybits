@@ -8,27 +8,94 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background: #f8f8f8; color: #0f0f0f; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-    .card { background: #fff; border-radius: 24px; padding: 3.5rem 3rem; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,.08); }
-    .icon { font-size: 4rem; margin-bottom: 1.5rem; }
-    h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; margin-bottom: .75rem; }
-    p { color: #6b7280; line-height: 1.7; margin-bottom: 1.25rem; }
-    .detail { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem 1.25rem; font-size: .9rem; color: #166534; margin-bottom: 2rem; line-height: 1.65; }
-    a { display: inline-block; background: #0f0f0f; color: #fff; text-decoration: none; padding: .85rem 2rem; border-radius: 999px; font-weight: 600; font-size: .95rem; transition: opacity .2s; }
-    a:hover { opacity: .85; }
+    .card { background: #fff; border-radius: 24px; padding: 3rem 2.5rem; max-width: 520px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,.08); }
+    .icon { font-size: 3.5rem; margin-bottom: 1.25rem; text-align: center; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 900; margin-bottom: .5rem; text-align: center; }
+    .sub { color: #6b7280; line-height: 1.7; margin-bottom: 1.5rem; font-size: .95rem; text-align: center; }
+    .notice { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem 1.25rem; font-size: .88rem; color: #166534; margin-bottom: 1.5rem; line-height: 1.65; }
+
+    /* Order summary card */
+    .order-box { border: 1.5px solid #e5e7eb; border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; }
+    .order-box-header { background: #0f0f0f; color: #fff; padding: .75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; font-size: .85rem; }
+    .order-box-header strong { font-family: 'Playfair Display', serif; font-size: 1rem; }
+    .order-meta { padding: .85rem 1.25rem; border-bottom: 1px solid #f0f0f0; display: grid; grid-template-columns: 1fr 1fr; gap: .4rem .75rem; font-size: .85rem; }
+    .order-meta dt { color: #6b7280; font-weight: 600; }
+    .order-meta dd { color: #0f0f0f; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .items-table thead tr { background: #f8f8f8; }
+    .items-table th { padding: .6rem 1.25rem; text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; font-weight: 700; }
+    .items-table td { padding: .6rem 1.25rem; border-top: 1px solid #f3f4f6; }
+    .items-table .total-row td { font-weight: 700; background: #fafafa; border-top: 2px solid #e5e7eb; }
+
+    .back-btn { display: block; text-align: center; background: #0f0f0f; color: #fff; text-decoration: none; padding: .85rem 2rem; border-radius: 999px; font-weight: 600; font-size: .95rem; transition: opacity .2s; }
+    .back-btn:hover { opacity: .85; }
+    .loading { text-align: center; color: #9ca3af; padding: 2rem; }
+    .error-msg { text-align: center; color: #dc2626; padding: 1rem; font-size: .9rem; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="icon">🎉</div>
     <h1>Order Confirmed!</h1>
-    <p>Thank you for your purchase. Your payment was received successfully.</p>
-    <div class="detail">
-      📍 Pick-up is available <strong>Saturdays &amp; Sundays</strong> in Albuquerque, NM.<br>
-      We'll send the exact address and pick-up time to your email within <strong>12–24 hours</strong>.
+    <p class="sub">Your payment was received. A confirmation email is on its way to you.</p>
+
+    <div class="notice">
+      📍 Pick-up is available <strong>Saturdays &amp; Sundays, 10am – 12pm</strong> in Albuquerque, NM.<br>
+      We'll send the exact address to your email <strong>24 hours before</strong> your pick-up day.
     </div>
-    <p style="font-size:.85rem">Questions? Email us at <strong>creamybitsllc@gmail.com</strong></p>
-    <br>
-    <a href="/">Back to Menu</a>
+
+    <div id="orderSummary" class="loading">Loading your order details…</div>
+
+    <p style="font-size:.82rem;color:#9ca3af;text-align:center;margin-bottom:1.25rem">Questions? Email us at <strong>creamybitsllc@gmail.com</strong></p>
+    <a class="back-btn" href="/">Back to Menu</a>
   </div>
+
+  <script>
+    async function loadOrder() {
+      const params  = new URLSearchParams(window.location.search);
+      const orderId = params.get('order_id');
+      const el      = document.getElementById('orderSummary');
+      if (!orderId) { el.innerHTML = ''; return; }
+
+      try {
+        const res = await fetch('/orders/' + orderId);
+        if (!res.ok) { el.innerHTML = ''; return; }
+        const o = await res.json();
+
+        const items = o.items || [];
+        const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+        const shortId = o.id.slice(0, 8).toUpperCase();
+
+        const itemRows = items.map(i => `
+          <tr>
+            <td>${i.name}${i.variant ? `<br><span style="color:#6b7280;font-size:.78rem">${i.variant}</span>` : ''}</td>
+            <td style="text-align:center">${i.qty}</td>
+            <td style="text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
+          </tr>`).join('');
+
+        el.innerHTML = `
+          <div class="order-box">
+            <div class="order-box-header">
+              <strong>Your Order</strong>
+              <span style="font-family:monospace;letter-spacing:.05em">#${shortId}</span>
+            </div>
+            <dl class="order-meta">
+              <dt>Name</dt><dd>${o.customerName}</dd>
+              <dt>Pick-up</dt><dd>${o.pickupDate || o.pickupDay}</dd>
+              <dt>Time</dt><dd>${o.pickupTime}</dd>
+              <dt>Status</dt><dd>${o.status === 'paid' ? '✅ Paid' : o.status}</dd>
+            </dl>
+            <table class="items-table">
+              <thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th></tr></thead>
+              <tbody>${itemRows}</tbody>
+              <tfoot><tr class="total-row"><td colspan="2">Total</td><td style="text-align:right">$${total.toFixed(2)}</td></tr></tfoot>
+            </table>
+          </div>`;
+      } catch(e) {
+        el.innerHTML = '';
+      }
+    }
+    loadOrder();
+  </script>
 </body>
 </html>

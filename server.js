@@ -62,7 +62,17 @@ async function initDB() {
       variant_type TEXT NOT NULL DEFAULT 'none',
       sort_order   INTEGER DEFAULT 0,
       active       BOOLEAN DEFAULT true,
+      min_qty      INTEGER DEFAULT 1,
+      max_qty      INTEGER DEFAULT NULL,
       created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS min_qty INTEGER DEFAULT 1;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT NULL;
+    CREATE TABLE IF NOT EXISTS blocked_dates (
+      id         TEXT PRIMARY KEY,
+      date       DATE NOT NULL UNIQUE,
+      reason     TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS session (
       sid    VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
@@ -130,6 +140,8 @@ function rowToProduct(r) {
     variantType: r.variant_type,
     sortOrder:   r.sort_order,
     active:      r.active,
+    minQty:      r.min_qty ?? 1,
+    maxQty:      r.max_qty ?? null,
     createdAt:   r.created_at,
   };
 }
@@ -147,14 +159,16 @@ async function saveProduct(p) {
   await pool.query(
     `INSERT INTO products
        (id, name, description, category, image_url, emoji, price,
-        unit_label, variants, variant_type, sort_order, active)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        unit_label, variants, variant_type, sort_order, active, min_qty, max_qty)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
     [
       id, p.name, p.description || '', p.category, p.imageUrl || '',
       p.emoji || '🥧', p.price, p.unitLabel || '',
       p.variants ? JSON.stringify(p.variants) : null,
       p.variantType || 'none', p.sortOrder || 0,
       p.active !== false,
+      p.minQty ?? 1,
+      p.maxQty ?? null,
     ]
   );
   return id;
@@ -165,7 +179,7 @@ async function updateProductById(id, patch) {
     name:'name', description:'description', category:'category',
     imageUrl:'image_url', emoji:'emoji', price:'price',
     unitLabel:'unit_label', variants:'variants', variantType:'variant_type',
-    sortOrder:'sort_order', active:'active',
+    sortOrder:'sort_order', active:'active', minQty:'min_qty', maxQty:'max_qty',
   };
   const sets = [], vals = [];
   let i = 1;
@@ -417,6 +431,29 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid cart item.' });
   }
 
+  // Validate min/max qty against DB
+  const { rows: productRows } = await pool.query('SELECT name, min_qty, max_qty FROM products WHERE active=true');
+  const productMap = new Map(productRows.map(p => [p.name, p]));
+  for (const item of items) {
+    const prod = productMap.get(item.name);
+    if (prod) {
+      const min = prod.min_qty ?? 1;
+      const max = prod.max_qty ?? null;
+      if (item.qty < min)
+        return res.status(400).json({ error: `Minimum order for "${item.name}" is ${min}.` });
+      if (max !== null && item.qty > max)
+        return res.status(400).json({ error: `Maximum order for "${item.name}" is ${max}.` });
+    }
+  }
+
+  // Validate pickup date is not blocked
+  if (pickupDate) {
+    const dateStr = new Date(pickupDate).toISOString().slice(0,10);
+    const { rowCount } = await pool.query('SELECT 1 FROM blocked_dates WHERE date=$1', [dateStr]);
+    if (rowCount > 0)
+      return res.status(400).json({ error: 'Sorry, that pick-up date is not available. Please choose another date.' });
+  }
+
   if (!customerName || !customerEmail || !customerPhone || !pickupDay || !pickupTime || !allergies)
     return res.status(400).json({ error: 'All fields including allergy info are required.' });
 
@@ -497,6 +534,24 @@ app.get('/products', async (_req, res) => {
   res.json(await readProducts(false));
 });
 
+app.get('/blocked-dates', async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM blocked_dates ORDER BY date');
+  res.json(rows.map(r => ({ id: r.id, date: r.date.toISOString().slice(0,10), reason: r.reason })));
+});
+
+app.get('/orders/:id', async (req, res) => {
+  const { rows } = await pool.query('SELECT * FROM orders WHERE id=$1', [req.params.id]);
+  if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+  const o = rowToOrder(rows[0]);
+  // Only expose safe fields to the public (no email/phone)
+  res.json({
+    id: o.id, status: o.status, pickupStatus: o.pickupStatus,
+    customerName: o.customerName, pickupDay: o.pickupDay,
+    pickupDate: o.pickupDate, pickupTime: o.pickupTime,
+    items: o.items, placedAt: o.placedAt,
+  });
+});
+
 // ── Admin API ─────────────────────────────────────────────────────────────────
 app.get('/admin/orders', requireAdmin, async (_req, res) => {
   res.json(await readOrders());
@@ -527,7 +582,7 @@ app.get('/admin/products', requireAdmin, async (_req, res) => {
 
 app.post('/admin/products', requireAdmin, async (req, res) => {
   const { name, description, category, imageUrl, emoji, price,
-          unitLabel, variants, variantType, sortOrder, active } = req.body;
+          unitLabel, variants, variantType, sortOrder, active, minQty, maxQty } = req.body;
   if (!name || !category || price == null)
     return res.status(400).json({ error: 'name, category, price required.' });
   if (!['drinks','puffpuff','pastries','catering'].includes(category))
@@ -540,6 +595,8 @@ app.post('/admin/products', requireAdmin, async (req, res) => {
     variantType: variantType || 'none',
     sortOrder: parseInt(sortOrder) || 0,
     active: active !== false,
+    minQty: parseInt(minQty) || 1,
+    maxQty: maxQty != null && maxQty !== '' ? parseInt(maxQty) : null,
   });
   const { rows } = await pool.query('SELECT * FROM products WHERE id=$1', [id]);
   res.status(201).json(rowToProduct(rows[0]));
@@ -547,7 +604,7 @@ app.post('/admin/products', requireAdmin, async (req, res) => {
 
 app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
   const allowed = ['name','description','category','imageUrl','emoji','price',
-                   'unitLabel','variants','variantType','sortOrder','active'];
+                   'unitLabel','variants','variantType','sortOrder','active','minQty','maxQty'];
   const patch = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) patch[key] = req.body[key];
@@ -556,6 +613,8 @@ app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: 'Nothing to update.' });
   if (patch.price !== undefined) patch.price = parseFloat(patch.price);
   if (patch.sortOrder !== undefined) patch.sortOrder = parseInt(patch.sortOrder) || 0;
+  if (patch.minQty !== undefined) patch.minQty = parseInt(patch.minQty) || 1;
+  if (patch.maxQty !== undefined) patch.maxQty = patch.maxQty === null || patch.maxQty === '' ? null : parseInt(patch.maxQty);
   const updated = await updateProductById(req.params.id, patch);
   if (!updated) return res.status(404).json({ error: 'Product not found.' });
   res.json(updated);
@@ -563,6 +622,30 @@ app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
 
 app.delete('/admin/products/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Admin blocked dates ───────────────────────────────────────────────────────
+app.get('/admin/blocked-dates', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM blocked_dates ORDER BY date');
+  res.json(rows.map(r => ({ id: r.id, date: r.date.toISOString().slice(0,10), reason: r.reason })));
+});
+
+app.post('/admin/blocked-dates', requireAdmin, async (req, res) => {
+  const { date, reason } = req.body;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date))
+    return res.status(400).json({ error: 'Valid date (YYYY-MM-DD) required.' });
+  const id = uuidv4();
+  await pool.query(
+    'INSERT INTO blocked_dates (id, date, reason) VALUES ($1,$2,$3) ON CONFLICT (date) DO UPDATE SET reason=$3',
+    [id, date, reason || '']
+  );
+  const { rows } = await pool.query('SELECT * FROM blocked_dates WHERE date=$1', [date]);
+  res.status(201).json({ id: rows[0].id, date: rows[0].date.toISOString().slice(0,10), reason: rows[0].reason });
+});
+
+app.delete('/admin/blocked-dates/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM blocked_dates WHERE id=$1', [req.params.id]);
   res.json({ ok: true });
 });
 

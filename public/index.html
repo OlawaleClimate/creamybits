@@ -503,8 +503,8 @@
 
 <script>
   // ── Cart state ──────────────────────────────────────────────────────────
-  let cart = [];
-
+  let cart = [];  let productsData = [];  // populated by loadProducts()
+  let blockedDatesSet = new Set(); // ISO date strings YYYY-MM-DD
   // ── Mobile nav ─────────────────────────────────────────────────────────
   function toggleMenu() {
     document.getElementById('navLinks').classList.toggle('mobile-open');
@@ -517,9 +517,18 @@
 
   // ── Add to cart ─────────────────────────────────────────────────────────
   function addToCart(name, variant, price, btn) {
+    const prod = productsData.find(p => p.name === name);
+    const maxQty = prod?.maxQty ?? null;
     const existing = cart.find(i => i.name === name && i.variant === variant);
-    if (existing) existing.qty++;
-    else cart.push({ name, variant, price: parseFloat(price), qty: 1 });
+    if (existing) {
+      if (maxQty !== null && existing.qty >= maxQty) {
+        alert(`Maximum order quantity for “${name}” is ${maxQty}.`);
+        return;
+      }
+      existing.qty++;
+    } else {
+      cart.push({ name, variant, price: parseFloat(price), qty: 1 });
+    }
     updateCart();
     if (btn) flashBtn(btn);
     openCart();
@@ -592,8 +601,20 @@
   }
 
   function changeQty(idx, delta) {
-    cart[idx].qty += delta;
-    if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    const item = cart[idx];
+    const prod = productsData.find(p => p.name === item.name);
+    const minQty = prod?.minQty ?? 1;
+    const maxQty = prod?.maxQty ?? null;
+    const newQty = item.qty + delta;
+    if (delta > 0 && maxQty !== null && newQty > maxQty) {
+      alert(`Maximum order quantity for “${item.name}” is ${maxQty}.`);
+      return;
+    }
+    if (newQty <= 0) {
+      cart.splice(idx, 1);
+    } else {
+      item.qty = newQty;
+    }
     updateCart();
   }
 
@@ -639,15 +660,18 @@
         if (now >= cutoff) isPastCutoff = true;
       }
       const isBookable = isWeekend && isFuture && !isPastCutoff;
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isBlocked = blockedDatesSet.has(dateStr);
       const isSelected = calSelectedDate && date.toDateString() === calSelectedDate.toDateString();
       const isToday  = date.toDateString() === today.toDateString();
       let cls = 'cal-day';
-      if (isBookable) cls += ' selectable';
+      if (isBookable && !isBlocked) cls += ' selectable';
       if (isSelected) cls += ' selected';
       if (isToday) cls += ' today';
       if (isWeekend && isFuture && isPastCutoff) cls += ' cal-day-closed';
-      const clickable = isBookable ? `onclick="selectDate(${calYear},${calMonth},${d})"` : '';
-      const title = isWeekend && isFuture && isPastCutoff ? `title="Orders closed (cutoff was 12PM ${dow===6?'Friday':'Saturday'})"` : '';
+      if (isBlocked && isWeekend && isFuture && !isPastCutoff) cls += ' cal-day-closed';
+      const clickable = (isBookable && !isBlocked) ? `onclick="selectDate(${calYear},${calMonth},${d})"` : '';
+      const title = isWeekend && isFuture && isPastCutoff ? `title="Orders closed (cutoff was 12PM ${dow===6?'Friday':'Saturday'})"` : isBlocked ? `title="Not available"` : '';
       grid.innerHTML += `<div class="${cls}" ${clickable} ${title}>${d}</div>`;
     }
   }
@@ -728,6 +752,17 @@
       return;
     }
 
+    // Min qty enforcement
+    for (const item of cart) {
+      const prod = productsData.find(p => p.name === item.name);
+      const minQty = prod?.minQty ?? 1;
+      if (item.qty < minQty) {
+        errorEl.textContent = `Minimum order for "${item.name}" is ${minQty}.`;
+        errorEl.style.display = 'block';
+        return;
+      }
+    }
+
     errorEl.style.display = 'none';
     btn.disabled = true;
     btn.textContent = 'Redirecting to payment…';
@@ -800,11 +835,11 @@
 
   async function loadProducts() {
     try {
-      const products = await fetch('/products').then(r => r.json());
+      productsData = await fetch('/products').then(r => r.json());
       ['drinks','puffpuff','pastries','catering'].forEach(cat => {
         const grid = document.getElementById('grid-' + cat);
         if (!grid) return;
-        const catProducts = products.filter(p => p.category === cat);
+        const catProducts = productsData.filter(p => p.category === cat);
         grid.innerHTML = catProducts.map(renderProductCard).join('');
         const group = document.getElementById('cat-' + cat);
         if (group) group.style.display = catProducts.length ? '' : 'none';
@@ -814,7 +849,17 @@
     }
   }
 
+  async function loadBlockedDates() {
+    try {
+      const data = await fetch('/blocked-dates').then(r => r.json());
+      blockedDatesSet = new Set(data.map(d => d.date));
+    } catch(e) {
+      console.warn('Could not load blocked dates:', e);
+    }
+  }
+
   loadProducts();
+  loadBlockedDates();
 
   // ── Category filter tabs ────────────────────────────────────────────────
   document.getElementById('catTabs').addEventListener('click', e => {

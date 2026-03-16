@@ -136,6 +136,18 @@
     .del-btn   { padding: .3rem .8rem; background: #ef4444; color: #fff; border: none; border-radius: 7px; font-size: .8rem; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; }
     .del-btn:hover { opacity: .85; }
 
+    /* Blocked dates */
+    .blocked-section { margin: 0 2rem 2rem; background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 1.5rem; }
+    .blocked-section h4 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+    .blocked-add-row { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: flex-end; }
+    .blocked-add-row input { padding: .55rem .8rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .9rem; background: #fff; }
+    .blocked-add-row input:focus { outline: none; border-color: var(--black); }
+    .block-btn { padding: .55rem 1.1rem; background: var(--black); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: .9rem; cursor: pointer; }
+    .block-btn:hover { opacity: .85; }
+    .blocked-list { display: flex; flex-wrap: wrap; gap: .5rem; min-height: 2rem; }
+    .blocked-chip { display: inline-flex; align-items: center; gap: .4rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: .3rem .7rem; font-size: .82rem; color: #dc2626; }
+    .blocked-chip button { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+
     @media(max-width:900px){
       .stats-row { grid-template-columns: 1fr 1fr; }
     }
@@ -162,6 +174,7 @@
 <div class="admin-tabs">
   <button class="admin-tab active" id="tabOrders" onclick="switchTab('orders')">📋 Orders</button>
   <button class="admin-tab" id="tabProducts" onclick="switchTab('products')">🛍️ Products</button>
+  <button class="admin-tab" id="tabBlocked" onclick="switchTab('blocked')">🚫 Blocked Dates</button>
 </div>
 
 <!-- ── ORDERS SECTION ─────────────────────────────────────── -->
@@ -246,6 +259,29 @@
   </div>
 </div>
 
+<!-- ── BLOCKED DATES SECTION ─────────────────────────────────── -->
+<div class="products-section" id="blockedSection">
+  <div class="section-toolbar">
+    <div style="font-size:1rem;font-weight:700;color:var(--black)">Blocked Pick-up Dates</div>
+  </div>
+  <div class="blocked-section">
+    <h4>Block a date (customers won't be able to select it)</h4>
+    <div class="blocked-add-row">
+      <div>
+        <label style="display:block;font-size:.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Date</label>
+        <input type="date" id="blockDateInput" />
+      </div>
+      <div>
+        <label style="display:block;font-size:.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Reason (optional)</label>
+        <input type="text" id="blockReasonInput" placeholder='e.g. "Holiday", "Sold out"' style="width:260px" />
+      </div>
+      <button class="block-btn" onclick="addBlockedDate()">Block Date</button>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-bottom:1rem">Currently blocked dates:</p>
+    <div class="blocked-list" id="blockedList"><span style="color:#9ca3af;font-size:.85rem">No blocked dates.</span></div>
+  </div>
+</div>
+
 <!-- ── PRODUCT ADD/EDIT MODAL ────────────────────────────────── -->
 <div class="prod-modal-overlay" id="prodModalOverlay">
   <div class="prod-modal">
@@ -326,6 +362,28 @@
       <div class="prod-field" style="display:flex;align-items:center;gap:.75rem">
         <input type="checkbox" id="prodActive" checked style="width:auto;margin:0" />
         <label for="prodActive" style="text-transform:none;letter-spacing:0;font-size:.9rem;cursor:pointer">Product is active (visible on site)</label>
+      </div>
+
+      <div class="prod-modal-row">
+        <div class="prod-field">
+          <label>Min. Qty per Order</label>
+          <input type="number" id="prodMinQty" value="1" min="1" placeholder="1" />
+        </div>
+        <div class="prod-field">
+          <label>Max. Qty per Order <span style="font-weight:400;text-transform:none;letter-spacing:0">(blank = no limit)</span></label>
+          <input type="number" id="prodMaxQty" value="" min="1" placeholder="No limit" />
+        </div>
+      </div>
+
+      <div class="prod-modal-row">
+        <div class="prod-field">
+          <label>Min. Order Quantity</label>
+          <input type="number" id="prodMinQty" value="1" min="1" placeholder="1" />
+        </div>
+        <div class="prod-field">
+          <label>Max. Order Quantity <span style="font-weight:400;text-transform:none;letter-spacing:0">(blank = no limit)</span></label>
+          <input type="number" id="prodMaxQty" value="" min="1" placeholder="No limit" />
+        </div>
       </div>
     </div>
     <div class="prod-modal-footer">
@@ -568,9 +626,12 @@
   function switchTab(tab) {
     document.getElementById('ordersSection').classList.toggle('hidden', tab !== 'orders');
     document.getElementById('productsSection').classList.toggle('active', tab === 'products');
+    document.getElementById('blockedSection').classList.toggle('active', tab === 'blocked');
     document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
+    document.getElementById('tabBlocked').classList.toggle('active', tab === 'blocked');
     if (tab === 'products') loadAllProducts();
+    if (tab === 'blocked') loadBlockedDates();
   }
 
   // ── Products management ─────────────────────────────────────────────────
@@ -601,9 +662,10 @@
       const variantSummary = p.variantType === 'none' ? '—'
         : p.variantType === 'glazed' ? 'Glazed special'
         : (p.variants||[]).map(v=>`${v.label} $${Number(v.price).toFixed(2)}`).join(', ');
+      const qtyInfo = `Min: ${p.minQty ?? 1}${p.maxQty ? ' / Max: ' + p.maxQty : ''}`;
       return `<tr>
         <td>${imgEl}</td>
-        <td><strong>${p.name}</strong></td>
+        <td><strong>${p.name}</strong><br><span style="font-size:.75rem;color:#9ca3af">${qtyInfo}</span></td>
         <td>${CAT_LABELS[p.category]||p.category}</td>
         <td>$${p.price.toFixed(2)}</td>
         <td style="font-size:.8rem;color:#6b7280;max-width:180px;white-space:normal">${variantSummary}</td>
@@ -645,6 +707,8 @@
     document.getElementById('prodVariantType').value = product ? product.variantType : 'none';
     document.getElementById('prodSortOrder').value = product ? product.sortOrder : 0;
     document.getElementById('prodActive').checked = product ? product.active : true;
+    document.getElementById('prodMinQty').value = product ? (product.minQty ?? 1) : 1;
+    document.getElementById('prodMaxQty').value = (product && product.maxQty != null) ? product.maxQty : '';
     // Variants
     const rows = document.getElementById('variantRows');
     rows.innerHTML = '';
@@ -686,6 +750,8 @@
       variants,
       sortOrder:   parseInt(document.getElementById('prodSortOrder').value) || 0,
       active:      document.getElementById('prodActive').checked,
+      minQty:      parseInt(document.getElementById('prodMinQty').value) || 1,
+      maxQty:      document.getElementById('prodMaxQty').value.trim() === '' ? null : parseInt(document.getElementById('prodMaxQty').value),
     };
 
     if (!body.name) return (document.getElementById('prodError').textContent = 'Name is required.');
@@ -718,6 +784,55 @@
   document.getElementById('prodModalOverlay').addEventListener('click', e => {
     if (e.target === document.getElementById('prodModalOverlay')) closeProdModal();
   });
+
+  // ── Blocked dates ───────────────────────────────────────────────────────
+  let blockedDates = [];
+
+  async function loadBlockedDates() {
+    try {
+      const res = await fetch('/admin/blocked-dates');
+      blockedDates = await res.json();
+      renderBlockedDates();
+    } catch(e) {
+      document.getElementById('blockedList').innerHTML = `<span style="color:#dc2626">Error: ${e.message}</span>`;
+    }
+  }
+
+  function renderBlockedDates() {
+    const el = document.getElementById('blockedList');
+    if (!blockedDates.length) {
+      el.innerHTML = '<span style="color:#9ca3af;font-size:.85rem">No blocked dates.</span>';
+      return;
+    }
+    el.innerHTML = blockedDates.map(b => {
+      const label = new Date(b.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+      return `<span class="blocked-chip">${label}${b.reason ? ' – ' + b.reason : ''}<button onclick="removeBlockedDate('${b.id}')" title="Unblock">✕</button></span>`;
+    }).join('');
+  }
+
+  async function addBlockedDate() {
+    const date   = document.getElementById('blockDateInput').value;
+    const reason = document.getElementById('blockReasonInput').value.trim();
+    if (!date) return alert('Please pick a date to block.');
+    try {
+      const res = await fetch('/admin/blocked-dates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, reason }),
+      });
+      if (!res.ok) { const d = await res.json(); return alert(d.error || 'Failed'); }
+      document.getElementById('blockDateInput').value = '';
+      document.getElementById('blockReasonInput').value = '';
+      await loadBlockedDates();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function removeBlockedDate(id) {
+    try {
+      await fetch(`/admin/blocked-dates/${id}`, { method: 'DELETE' });
+      await loadBlockedDates();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
 </script>
 </body>
 </html>
