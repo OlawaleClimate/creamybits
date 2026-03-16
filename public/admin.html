@@ -317,12 +317,25 @@
       <div class="prod-modal-row">
         <div class="prod-field">
           <label>Image URL</label>
-          <input type="url" id="prodImageUrl" placeholder="https://…" />
+          <input type="url" id="prodImageUrl" placeholder="https://… (auto-filled on upload)" />
         </div>
         <div class="prod-field">
           <label>Emoji (placeholder)</label>
           <input type="text" id="prodEmoji" placeholder="🥧" maxlength="4" />
         </div>
+      </div>
+
+      <div class="prod-field">
+        <label>Upload Image from Desktop</label>
+        <div id="imgUploadArea" style="border:2px dashed #e5e7eb;border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:border-color .2s;position:relative;">
+          <input type="file" id="prodImageFile" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" />
+          <div id="imgUploadPrompt" style="color:#6b7280;font-size:.85rem;pointer-events:none;">
+            <div style="font-size:2rem;margin-bottom:.4rem;">🖼️</div>
+            Click or drag an image here (JPG, PNG, WEBP, GIF, AVIF…)
+          </div>
+          <img id="imgUploadPreview" src="" alt="Preview" style="display:none;max-height:140px;max-width:100%;border-radius:8px;object-fit:contain;" />
+        </div>
+        <p id="imgUploadStatus" style="font-size:.78rem;color:#6b7280;margin-top:.35rem;"></p>
       </div>
 
       <div class="prod-modal-row">
@@ -701,6 +714,17 @@
     document.getElementById('prodCategory').value = product ? product.category : 'pastries';
     document.getElementById('prodDesc').value = product ? (product.description||'') : '';
     document.getElementById('prodImageUrl').value = product ? (product.imageUrl||'') : '';
+    // Reset upload UI
+    document.getElementById('prodImageFile').value = '';
+    document.getElementById('imgUploadPreview').style.display = 'none';
+    document.getElementById('imgUploadPreview').src = '';
+    document.getElementById('imgUploadPrompt').style.display = '';
+    document.getElementById('imgUploadStatus').textContent = '';
+    if (product && product.imageUrl) {
+      document.getElementById('imgUploadPreview').src = product.imageUrl;
+      document.getElementById('imgUploadPreview').style.display = 'block';
+      document.getElementById('imgUploadPrompt').style.display = 'none';
+    }
     document.getElementById('prodEmoji').value = product ? (product.emoji||'') : '';
     document.getElementById('prodPrice').value = product ? product.price : '';
     document.getElementById('prodUnitLabel').value = product ? (product.unitLabel||'') : '';
@@ -729,6 +753,25 @@
     document.getElementById('prodError').textContent = '';
     const id = document.getElementById('prodId').value;
     const variantType = document.getElementById('prodVariantType').value;
+
+    // Upload image file first if one was selected
+    const fileInput = document.getElementById('prodImageFile');
+    if (fileInput.files && fileInput.files[0]) {
+      const statusEl = document.getElementById('imgUploadStatus');
+      statusEl.textContent = 'Uploading image…';
+      try {
+        const fd = new FormData();
+        fd.append('image', fileInput.files[0]);
+        const upRes  = await fetch('/admin/upload-image', { method: 'POST', body: fd });
+        const upData = await upRes.json();
+        if (!upRes.ok) throw new Error(upData.error || 'Upload failed');
+        document.getElementById('prodImageUrl').value = upData.url;
+        statusEl.textContent = 'Image uploaded ✓';
+      } catch(e) {
+        document.getElementById('prodError').textContent = 'Image upload failed: ' + e.message;
+        return;
+      }
+    }
 
     let variants = null;
     if (variantType === 'options') {
@@ -783,6 +826,33 @@
   // Close prod modal on overlay click
   document.getElementById('prodModalOverlay').addEventListener('click', e => {
     if (e.target === document.getElementById('prodModalOverlay')) closeProdModal();
+  });
+
+  // Image file picker — show preview immediately
+  document.getElementById('prodImageFile').addEventListener('change', function() {
+    const file = this.files && this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('imgUploadPreview');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('imgUploadPrompt').style.display = 'none';
+      document.getElementById('imgUploadStatus').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB) — will upload on save';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Drag-over highlight
+  document.getElementById('imgUploadArea').addEventListener('dragover', e => {
+    e.preventDefault();
+    document.getElementById('imgUploadArea').style.borderColor = '#8b5cf6';
+  });
+  document.getElementById('imgUploadArea').addEventListener('dragleave', () => {
+    document.getElementById('imgUploadArea').style.borderColor = '#e5e7eb';
+  });
+  document.getElementById('imgUploadArea').addEventListener('drop', () => {
+    document.getElementById('imgUploadArea').style.borderColor = '#e5e7eb';
   });
 
   // ── Blocked dates ───────────────────────────────────────────────────────

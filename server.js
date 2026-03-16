@@ -10,6 +10,8 @@ const { Resend }     = require('resend');
 const { v4: uuidv4 } = require('uuid');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Pool }       = require('pg');
+const multer         = require('multer');
+const fs             = require('fs');
 
 const app      = express();
 app.set('trust proxy', 1);
@@ -574,6 +576,31 @@ app.get('/admin/orders/export.csv', requireAdmin, async (_req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="creamybits-orders.csv"');
   res.send(csv);
+});
+
+// ── Image upload ──────────────────────────────────────────────────────────────
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+const imageStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+    cb(null, `${uuidv4()}${ext}`);
+  },
+});
+const imageUpload = multer({
+  storage: imageStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) return cb(null, true);
+    cb(new Error('Only image files are allowed.'));
+  },
+});
+
+app.post('/admin/upload-image', requireAdmin, imageUpload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file received.' });
+  res.json({ url: `/uploads/${req.file.filename}` });
 });
 
 app.get('/admin/products', requireAdmin, async (_req, res) => {
