@@ -11,7 +11,7 @@ const { v4: uuidv4 } = require('uuid');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Pool }       = require('pg');
 const multer         = require('multer');
-const fs             = require('fs');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 const app      = express();
 app.set('trust proxy', 1);
@@ -578,19 +578,18 @@ app.get('/admin/orders/export.csv', requireAdmin, async (_req, res) => {
   res.send(csv);
 });
 
-// ── Image upload ──────────────────────────────────────────────────────────────
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-
-const imageStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    cb(null, `${uuidv4()}${ext}`);
+// ── Image upload (Cloudflare R2) ─────────────────────────────────────────────
+const r2 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId:     process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
 });
+
 const imageUpload = multer({
-  storage: imageStorage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith('image/')) return cb(null, true);
@@ -598,9 +597,23 @@ const imageUpload = multer({
   },
 });
 
-app.post('/admin/upload-image', requireAdmin, imageUpload.single('image'), (req, res) => {
+app.post('/admin/upload-image', requireAdmin, imageUpload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file received.' });
-  res.json({ url: `/uploads/${req.file.filename}` });
+  const ext = require('path').extname(req.file.originalname).toLowerCase() || '.jpg';
+  const key = `products/${uuidv4()}${ext}`;
+  try {
+    await r2.send(new PutObjectCommand({
+      Bucket:      process.env.R2_BUCKET,
+      Key:         key,
+      Body:        req.file.buffer,
+      ContentType: req.file.mimetype,
+    }));
+    const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+    res.json({ url });
+  } catch (err) {
+    console.error('R2 upload error:', err);
+    res.status(500).json({ error: 'Image upload failed.' });
+  }
 });
 
 app.get('/admin/products', requireAdmin, async (_req, res) => {
