@@ -250,7 +250,7 @@
             </select>
           </td>
           <td>
-            <select class="status-select" onchange="updatePickupStatus('${o.id}', this.value)">
+            <select class="status-select pickup-status-select" onchange="updatePickupStatus('${o.id}', this.value)">
               ${['pending','ready','picked_up'].map(s =>
                 `<option value="${s}" ${o.pickupStatus === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
               ).join('')}
@@ -340,8 +340,15 @@
 
   async function updatePickupStatus(orderId, newStatus) {
     if (newStatus === 'picked_up') {
-      const btn = document.getElementById('pickup-' + orderId);
-      if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+      if (!confirm('Mark this order as picked up? An email will be sent to the customer.')) {
+        // Reset the select back to previous value
+        const order = allOrders.find(o => o.id === orderId);
+        if (order) {
+          const sel = document.querySelector(`#row-${orderId} .pickup-status-select`);
+          if (sel) sel.value = order.pickupStatus;
+        }
+        return;
+      }
     }
     try {
       const res = await fetch(`/admin/orders/${orderId}`, {
