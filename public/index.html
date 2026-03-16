@@ -812,13 +812,13 @@
       const unit = p.unitLabel ? ` <span>· ${escHtml(p.unitLabel)}</span>` : '';
       priceHtml = `<div class="product-price">$${p.price.toFixed(2)}${unit}</div>`;
       const v = JSON.stringify(p.unitLabel || '');
-      controlsHtml = `<button class="add-btn" onclick="addToCart(${nm},${v},${p.price},this)">${ADD_SVG} Add to Order</button>`;
+      controlsHtml = `<button class="add-btn" onclick='addToCart(${nm},${v},${p.price},this)'>${ADD_SVG} Add to Order</button>`;
     } else if (p.variantType === 'options') {
       priceHtml = `<div class="product-price">From $${p.price.toFixed(2)}</div>`;
       const sid = `v-${p.id}`;
       const opts = (p.variants||[]).map(v=>`<option value="${escHtml(v.label)}|${v.price}">${escHtml(v.label)} – $${Number(v.price).toFixed(2)}</option>`).join('');
       controlsHtml = `<select class="variant-select" id="${sid}">${opts}</select>
-        <button class="add-btn" onclick="addVariant(${nm},'${sid}',this)">${ADD_SVG} Add to Order</button>`;
+        <button class="add-btn" onclick='addVariant(${nm},"${sid}",this)'>${ADD_SVG} Add to Order</button>`;
     } else if (p.variantType === 'glazed') {
       const unit = p.unitLabel ? ` <span>· ${escHtml(p.unitLabel)}</span>` : '';
       priceHtml = `<div class="product-price">$${p.price.toFixed(2)}${unit}</div>`;
