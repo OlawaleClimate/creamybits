@@ -151,12 +151,74 @@
     @media(max-width:900px){
       .stats-row { grid-template-columns: 1fr 1fr; }
     }
+
+    /* ── Mobile ──────────────────────────────────────────────────── */
+    @media(max-width:768px){
+      .topbar { padding: 0 1rem; }
+      .topbar-logo { font-size: .95rem; }
+      .topbar-right span { display: none; }
+
+      .admin-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: .5rem 1rem 0; gap: 0; scrollbar-width: none; }
+      .admin-tabs::-webkit-scrollbar { display: none; }
+      .admin-tab { white-space: nowrap; flex-shrink: 0; padding: .55rem 1rem; font-size: .85rem; }
+
+      .stats-row { grid-template-columns: 1fr 1fr; padding: .75rem; gap: .6rem; }
+      .stat-card { padding: 1rem; }
+      .stat-value { font-size: 1.5rem; }
+
+      .controls { padding: .75rem 1rem; gap: .5rem; }
+      .search-box { flex: 1 1 100%; max-width: 100%; }
+      .filter-select { flex: 1; font-size: .85rem; padding: .5rem .7rem; }
+      .refresh-btn { font-size: .82rem; padding: .5rem .9rem; }
+
+      .section-toolbar { padding: .75rem 1rem; }
+      .table-wrap { margin: 0 .75rem .75rem; border-radius: 12px; overflow-x: auto; }
+
+      .blocked-section { margin: 0 .75rem .75rem; }
+      .blocked-add-row { flex-direction: column; }
+      .blocked-add-row input[type='text'] { width: 100% !important; }
+
+      /* modal full-screen from bottom */
+      .prod-modal-overlay { padding: 0; align-items: flex-end; }
+      .prod-modal { border-radius: 20px 20px 0 0; max-height: 92vh; }
+      .prod-modal-row { grid-template-columns: 1fr; }
+    }
+
     @media(max-width:600px){
-      .stats-row { grid-template-columns: 1fr; padding: 1rem; }
-      .controls { padding: 1rem; }
-      .table-wrap { margin: 0 1rem 1rem; }
-      th, td { padding: .65rem .75rem; }
-      .detail-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+
+      /* Orders & Products tables → card layout */
+      .table-wrap table { min-width: unset; }
+      .table-wrap thead { display: none; }
+      .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; }
+      .table-wrap tr { border-bottom: 2px solid #f3f4f6; padding: .9rem 1rem; }
+      .table-wrap tr:hover td { background: transparent; }
+      .table-wrap td {
+        border: none;
+        padding: .15rem 0;
+        font-size: .88rem;
+        white-space: normal;
+      }
+      .table-wrap td::before {
+        content: attr(data-label);
+        font-size: .7rem;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        display: block;
+        margin-bottom: .15rem;
+        margin-top: .5rem;
+      }
+      .table-wrap td[data-label='']::before { display: none; margin-top: 0; }
+      .table-wrap td[data-label='']:first-child::before { display: none; }
+
+      /* Action buttons row */
+      .td-actions { display: flex !important; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
+
+      /* Detail expand row */
+      .detail-row td { padding: .75rem 0; background: #f8f8f8 !important; border-radius: 8px; padding: .75rem !important; margin-top: .25rem; }
+      .detail-grid { grid-template-columns: 1fr; gap: .5rem; }
     }
   </style>
 </head>
@@ -482,32 +544,32 @@
 
       return `
         <tr id="row-${o.id}">
-          <td><code style="font-size:.8rem;color:#374151">${shortId}</code></td>
-          <td style="white-space:nowrap;font-size:.82rem">${formatDate(o.placedAt)}</td>
-          <td>
+          <td data-label="Order ID"><code style="font-size:.8rem;color:#374151">${shortId}</code></td>
+          <td data-label="Date" style="font-size:.82rem">${formatDate(o.placedAt)}</td>
+          <td data-label="Customer">
             <strong>${o.customerName}</strong><br>
             <span style="color:#6b7280;font-size:.78rem">${o.customerEmail}</span>
           </td>
-          <td style="white-space:nowrap">
+          <td data-label="Pickup">
             <strong>${o.pickupDay}</strong><br>
             <span style="color:#6b7280;font-size:.78rem">${o.pickupTime}</span>
           </td>
-          <td><strong>$${total}</strong></td>
-          <td>
+          <td data-label="Total"><strong>$${total}</strong></td>
+          <td data-label="Payment">
             <select class="status-select" onchange="updatePaymentStatus('${o.id}', this.value)">
               ${['pending_payment','paid','cancelled'].map(s =>
                 `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
               ).join('')}
             </select>
           </td>
-          <td>
+          <td data-label="Pickup Status">
             <select class="status-select pickup-status-select" onchange="updatePickupStatus('${o.id}', this.value)">
               ${['pending','ready','picked_up'].map(s =>
                 `<option value="${s}" ${o.pickupStatus === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
               ).join('')}
             </select>
           </td>
-          <td style="display:flex;gap:.5rem;align-items:center">
+          <td data-label="" class="td-actions" style="display:flex;gap:.5rem;align-items:center">
             ${o.pickupStatus !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
             <button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button>
           </td>
@@ -677,13 +739,13 @@
         : (p.variants||[]).map(v=>`${v.label} $${Number(v.price).toFixed(2)}`).join(', ');
       const qtyInfo = `Min: ${p.minQty ?? 1}${p.maxQty ? ' / Max: ' + p.maxQty : ''}`;
       return `<tr>
-        <td>${imgEl}</td>
-        <td><strong>${p.name}</strong><br><span style="font-size:.75rem;color:#9ca3af">${qtyInfo}</span></td>
-        <td>${CAT_LABELS[p.category]||p.category}</td>
-        <td>$${p.price.toFixed(2)}</td>
-        <td style="font-size:.8rem;color:#6b7280;max-width:180px;white-space:normal">${variantSummary}</td>
-        <td><span class="active-dot ${p.active?'dot-on':'dot-off'}"></span>${p.active?'Active':'Hidden'}</td>
-        <td style="display:flex;gap:.4rem">
+        <td data-label="Image">${imgEl}</td>
+        <td data-label="Name"><strong>${p.name}</strong><br><span style="font-size:.75rem;color:#9ca3af">${qtyInfo}</span></td>
+        <td data-label="Category">${CAT_LABELS[p.category]||p.category}</td>
+        <td data-label="Price">$${p.price.toFixed(2)}</td>
+        <td data-label="Variants" style="font-size:.8rem;color:#6b7280;white-space:normal">${variantSummary}</td>
+        <td data-label="Status"><span class="active-dot ${p.active?'dot-on':'dot-off'}"></span>${p.active?'Active':'Hidden'}</td>
+        <td data-label="" class="td-actions" style="display:flex;gap:.4rem">
           <button class="edit-btn" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
           <button class="del-btn" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
         </td>
