@@ -765,6 +765,14 @@ app.get('/menu', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'menu.html'));
 });
 
+// Legal pages
+app.get('/privacy', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+app.get('/terms', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'terms.html'));
+});
+
 // Fallback SPA
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

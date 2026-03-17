@@ -404,8 +404,15 @@
       </div>
     </div>
   </div>
-  <div class="footer-bottom">© 2026 CreamyBits LLC. All rights reserved. · Albuquerque, New Mexico</div>
+  <div class="footer-bottom">© 2026 CreamyBits LLC. All rights reserved. · Albuquerque, New Mexico<br><span style="margin-top:.5rem;display:inline-block"><a href="/privacy" style="color:#6b7280;text-decoration:none" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6b7280'">Privacy Policy</a> &nbsp;·&nbsp; <a href="/terms" style="color:#6b7280;text-decoration:none" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6b7280'">Terms &amp; Conditions</a></span></div>
 </footer>
+
+<!-- COOKIE BANNER -->
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#0f0f0f;color:#d1d5db;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:9999;flex-wrap:wrap;">
+  <span>🍪 This site uses cookies for analytics. See our <a href="/privacy" style="color:#ec4899;text-decoration:none">Privacy Policy</a>.</span>
+  <button onclick="document.getElementById('cookieBanner').style.display='none';localStorage.setItem('cb','1')" style="background:#fff;color:#0f0f0f;border:none;padding:.45rem 1.1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap">Got it</button>
+</div>
+<script>if(!localStorage.getItem('cb'))document.getElementById('cookieBanner').style.display='flex';</script>
 
 <!-- ORDER DETAILS MODAL -->
 <div class="modal-overlay" id="orderModal">
