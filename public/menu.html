@@ -652,7 +652,7 @@
       const btns = (p.variants||[]).map(v =>
         `<button class="variant-btn" data-label="${escHtml(v.label)}" data-price="${Number(v.price)}" onclick="selectVariant(this,'${pid}')">${escHtml(v.label)}<br><span style="font-weight:400;font-size:.78rem">$${Number(v.price).toFixed(2)}</span></button>`
       ).join('');
-      controlsHtml = `<div class="variant-btns" id="${pid}-btns">${btns}</div><button class="add-btn variant-add-btn" id="${pid}-addbtn" onclick="addSelectedVariant(${nm},'${pid}',this)">${ADD_SVG} Add to Order</button>`;
+      controlsHtml = `<div class="variant-btns" id="${pid}-btns">${btns}</div><button class="add-btn variant-add-btn" id="${pid}-addbtn" onclick='addSelectedVariant(${nm},"${pid}",this)'>${ADD_SVG} Add to Order</button>`;
     } else if (p.variantType === 'options_select') {
       priceHtml = `<div class="product-price">From $${p.price.toFixed(2)}</div>`;
       const sid = `v-${p.id}`;
