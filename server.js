@@ -345,10 +345,11 @@ async function sendEmails(order) {
 
   await Promise.all([
     resend.emails.send({
-      from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
-      to:   order.customerEmail,
-      subject: `Order confirmed #${shortId} – CreamyBits 🥧`,
-      html: buildEmailHtml(customerBody, itemRows, total2, order),
+      from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      reply_to: 'creamybitsllc@gmail.com',
+      to:       order.customerEmail,
+      subject:  `Order confirmed #${shortId} – CreamyBits 🥧`,
+      html:     buildEmailHtml(customerBody, itemRows, total2, order),
     }),
     resend.emails.send({
       from: `CreamyBits Orders <orders@${process.env.RESEND_FROM_DOMAIN}>`,
@@ -713,10 +714,11 @@ async function sendPickupEmail(order) {
 
   await Promise.all([
     resend.emails.send({
-      from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
-      to:   order.customerEmail,
-      subject: `Thanks for picking up your order! – CreamyBits 🥧`,
-      html: buildEmailHtml(customerBody, itemRows, total, order),
+      from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      reply_to: 'creamybitsllc@gmail.com',
+      to:       order.customerEmail,
+      subject:  `Thanks for picking up your order! – CreamyBits 🥧`,
+      html:     buildEmailHtml(customerBody, itemRows, total, order),
     }),
     resend.emails.send({
       from: `CreamyBits Orders <orders@${process.env.RESEND_FROM_DOMAIN}>`,
