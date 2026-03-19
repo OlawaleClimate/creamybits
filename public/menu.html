@@ -77,7 +77,10 @@
     .variant-btns { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
     .variant-btn { flex: 1 1 auto; min-width: 0; padding: .5rem .75rem; border-radius: 10px; border: 1.5px solid #e5e7eb; background: #fff; font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, color .15s; text-align: center; line-height: 1.3; }
     .variant-btn:hover { border-color: var(--black); background: #f9f9f9; }
+    .variant-btn.selected { background: var(--black); border-color: var(--black); color: #fff; }
     .variant-btn.added { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .variant-add-btn { display: none; width: 100%; margin-top: .1rem; }
+    .variant-add-btn.visible { display: flex; }
     .add-btn { width: 100%; background: var(--black); color: #fff; border: none; padding: .7rem; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: background .2s, transform .15s; display: flex; align-items: center; justify-content: center; gap: .4rem; }
     .add-btn:hover { background: #222; transform: scale(1.01); }
     .add-btn.added { background: #16a34a; }
@@ -340,18 +343,29 @@
     openCart();
   }
 
+  function selectVariant(btn, pid) {
+    // Deselect all sibling buttons
+    document.querySelectorAll(`#${pid}-btns .variant-btn`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    // Show the Add to Order button
+    const addBtn = document.getElementById(`${pid}-addbtn`);
+    addBtn.classList.add('visible');
+  }
+
+  function addSelectedVariant(name, pid, addBtn) {
+    const selected = document.querySelector(`#${pid}-btns .variant-btn.selected`);
+    if (!selected) return;
+    addToCart(name, selected.dataset.label, parseFloat(selected.dataset.price), addBtn);
+    // Deselect after adding
+    selected.classList.remove('selected');
+    addBtn.classList.remove('visible');
+  }
+
   function addVariant(name, selectId, btn) {
     const sel = document.getElementById(selectId);
-    if (sel._variantHandler) sel.removeEventListener('change', sel._variantHandler);
-    sel._variantHandler = function() {
-      sel._variantHandler = null;
-      sel.classList.remove('select-error');
-      const parts = sel.value.split('|');
-      addToCart(name, parts[0], parseFloat(parts[1]), btn);
-    };
-    sel.addEventListener('change', sel._variantHandler, { once: true });
-    if (!sel.value) sel.classList.add('select-error');
-    sel.focus(); sel.click();
+    if (!sel.value) { sel.classList.add('select-error'); sel.focus(); return; }
+    const parts = sel.value.split('|');
+    addToCart(name, parts[0], parseFloat(parts[1]), btn);
   }
 
   function addGlazed(btn, gf1Id, gf2Id, gtId, price) {
@@ -634,10 +648,16 @@
       controlsHtml = `<button class="add-btn" onclick='addToCart(${nm},${JSON.stringify(p.unitLabel||'')},${p.price},this)'>${ADD_SVG} Add to Order</button>`;
     } else if (p.variantType === 'options') {
       priceHtml = `<div class="product-price">From $${p.price.toFixed(2)}</div>`;
+      const pid = `vp-${p.id}`;
       const btns = (p.variants||[]).map(v =>
-        `<button class="variant-btn" onclick='addToCart(${nm},${JSON.stringify(v.label)},${Number(v.price)},this)'>${escHtml(v.label)}<br><span style="font-weight:400;font-size:.78rem">$${Number(v.price).toFixed(2)}</span></button>`
+        `<button class="variant-btn" data-label="${escHtml(v.label)}" data-price="${Number(v.price)}" onclick="selectVariant(this,'${pid}')">${escHtml(v.label)}<br><span style="font-weight:400;font-size:.78rem">$${Number(v.price).toFixed(2)}</span></button>`
       ).join('');
-      controlsHtml = `<div class="variant-btns">${btns}</div>`;
+      controlsHtml = `<div class="variant-btns" id="${pid}-btns">${btns}</div><button class="add-btn variant-add-btn" id="${pid}-addbtn" onclick="addSelectedVariant(${nm},'${pid}',this)">${ADD_SVG} Add to Order</button>`;
+    } else if (p.variantType === 'options_select') {
+      priceHtml = `<div class="product-price">From $${p.price.toFixed(2)}</div>`;
+      const sid = `v-${p.id}`;
+      const opts = (p.variants||[]).map(v=>`<option value="${escHtml(v.label)}|${v.price}">${escHtml(v.label)} – $${Number(v.price).toFixed(2)}</option>`).join('');
+      controlsHtml = `<select class="variant-select" id="${sid}">${opts}</select><button class="add-btn" onclick='addVariant(${nm},"${sid}",this)'>${ADD_SVG} Add to Order</button>`;
     } else if (p.variantType === 'glazed') {
       const unit = p.unitLabel ? ` <span>· ${escHtml(p.unitLabel)}</span>` : '';
       priceHtml = `<div class="product-price">$${p.price.toFixed(2)}${unit}</div>`;
