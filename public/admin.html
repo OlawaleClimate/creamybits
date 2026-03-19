@@ -565,14 +565,14 @@
             </select>
           </td>
           <td data-label="Pickup Status">
-            <select class="status-select pickup-status-select" onchange="updatePickupStatus('${o.id}', this.value)">
+            <select class="status-select pickup-status-select" onchange="updatePickupStatus('${o.id}', this.value)" ${o.status !== 'paid' ? 'disabled title="Only available after payment"' : ''}>
               ${['pending','ready','picked_up'].map(s =>
                 `<option value="${s}" ${o.pickupStatus === s ? 'selected' : ''}>${s.replace('_',' ')}</option>`
               ).join('')}
             </select>
           </td>
           <td data-label="" class="td-actions" style="display:flex;gap:.5rem;align-items:center">
-            ${o.pickupStatus !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
+            ${o.status !== 'paid' ? '<span style="color:#9ca3af;font-size:.8rem">Awaiting payment</span>' : o.pickupStatus !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
             <button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button>
           </td>
         </tr>
