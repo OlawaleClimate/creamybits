@@ -416,6 +416,7 @@ const checkoutLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
   message: { error: 'Too many checkout attempts. Please wait a few minutes and try again.' },
 });
 
@@ -625,7 +626,7 @@ app.post('/admin/products', requireAdmin, async (req, res) => {
           unitLabel, variants, variantType, sortOrder, active, minQty, maxQty } = req.body;
   if (!name || !category || price == null)
     return res.status(400).json({ error: 'name, category, price required.' });
-  if (!['drinks','puffpuff','pastries','catering'].includes(category))
+  if (!/^[a-z0-9-]+$/.test(category))
     return res.status(400).json({ error: 'Invalid category.' });
   if (!['none','options','glazed'].includes(variantType || 'none'))
     return res.status(400).json({ error: 'Invalid variantType.' });
@@ -778,7 +779,10 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start server immediately so Render marks deploy as live,
-// then init DB in the background
-app.listen(PORT, () => console.log(`✅  CreamyBits → http://localhost:${PORT}`));
-initDB().catch(err => console.error('DB init error:', err.message));
+// Start server only when run directly (not when required by tests)
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`✅  CreamyBits → http://localhost:${PORT}`));
+  initDB().catch(err => console.error('DB init error:', err.message));
+}
+
+module.exports = app;

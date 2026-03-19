@@ -5,7 +5,18 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "jest --forceExit"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "setupFiles": [],
+    "setupFilesAfterEnv": ["./tests/setup.js"],
+    "resetMocks": false,
+    "moduleNameMapper": {
+      "^uuid$": "<rootDir>/tests/__mocks__/uuid.js"
+    }
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1009.0",
@@ -19,5 +30,9 @@
     "resend": "^6.9.3",
     "stripe": "^16.2.0",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
