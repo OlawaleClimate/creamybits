@@ -418,8 +418,7 @@
           <label>Variant Type *</label>
           <select id="prodVariantType" onchange="onVariantTypeChange()">
             <option value="none">None (fixed price)</option>
-            <option value="options">Options – Buttons (tap to select)</option>
-            <option value="options_select">Options – Dropdown (select menu)</option>
+            <option value="options">Options (dropdown)</option>
             <option value="glazed">Glazed (Puff Puff special)</option>
           </select>
         </div>
@@ -759,7 +758,7 @@
   // Modal helpers
   function onVariantTypeChange() {
     const vt = document.getElementById('prodVariantType').value;
-    document.getElementById('variantsSection').style.display = (vt === 'options' || vt === 'options_select') ? '' : 'none';
+    document.getElementById('variantsSection').style.display = vt === 'options' ? '' : 'none';
   }
 
   function handleCategoryChange(sel) {
