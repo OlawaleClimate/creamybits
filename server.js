@@ -88,12 +88,21 @@ async function initDB() {
   const { rowCount } = await pool.query('SELECT 1 FROM products LIMIT 1');
   if (rowCount === 0) await seedProducts();
 
+  // Migration: add size variants to Chapman Drink
+  await pool.query(`
+    UPDATE products
+    SET variant_type='options',
+        variants='[{"label":"8oz","price":3},{"label":"16oz","price":6}]',
+        price=3
+    WHERE name='Chapman Drink' AND variant_type='none'
+  `);
+
   console.log('✅ DB ready');
 }
 
 const SEED_PRODUCTS = [
   // Drinks
-  { name:'Chapman Drink', description:'A vibrant mocktail made with fruity sodas, orange juice, bitters, cucumber & orange slices. Sweet, tangy & refreshing.', category:'drinks', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0694_a92c3db89b559e91af51103cd9a5d408.jpg', emoji:'🍹', price:2, unitLabel:'', variantType:'none', sortOrder:0 },
+  { name:'Chapman Drink', description:'A vibrant mocktail made with fruity sodas, orange juice, bitters, cucumber & orange slices. Sweet, tangy & refreshing.', category:'drinks', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0694_a92c3db89b559e91af51103cd9a5d408.jpg', emoji:'🍹', price:3, unitLabel:'', variantType:'options', variants:[{label:'8oz',price:3},{label:'16oz',price:6}], sortOrder:0 },
   // Puff Puff
   { name:'Puff Puff – Plain', description:'Soft, golden, lightly sweet fried dough bites. Like donuts but better.', category:'puffpuff', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0825_cb8e3a3adcb8a5085cd030e6a7fcf663.jpg', emoji:'🍡', price:25, unitLabel:'Box of 20', variantType:'none', sortOrder:0 },
   { name:'Puff Puff – Glazed', description:'Choose your glazes and toppings for a custom box of 25.', category:'puffpuff', imageUrl:'https://www.jotform.com/uploads/holarwhaley2/form_files/img_0755_2_96f845450cddf102a09c28a87f7b1167.jpg', emoji:'🍡', price:30, unitLabel:'Box of 25', variantType:'glazed', sortOrder:1 },
