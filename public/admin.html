@@ -27,6 +27,16 @@
     .stat-value.pink  { color: var(--pink); }
     .stat-value.blue  { color: #3b82f6; }
 
+    /* Weekend summary */
+    .weekend-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 2rem 0; }
+    .weekend-day-card { background: #fff; border-radius: 14px; border: 1px solid #e5e7eb; padding: 1rem 1.25rem; }
+    .weekend-day-title { font-weight: 800; font-size: .95rem; margin-bottom: .6rem; display: flex; align-items: center; gap: .5rem; }
+    .weekend-day-meta { font-size: .78rem; color: var(--gray); margin-bottom: .65rem; }
+    .weekend-qty-list { font-size: .82rem; line-height: 1.7; }
+    .weekend-qty-row { display: flex; justify-content: space-between; gap: .5rem; border-bottom: 1px solid #f3f4f6; padding: .15rem 0; }
+    .weekend-qty-row:last-child { border-bottom: none; font-weight: 700; }
+    .weekend-empty { color: var(--gray); font-size: .82rem; font-style: italic; }
+
     /* Controls */
     .controls { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 2rem; flex-wrap: wrap; }
     .search-box { flex: 1; min-width: 200px; max-width: 360px; position: relative; }
@@ -166,6 +176,7 @@
       .stats-row { grid-template-columns: 1fr 1fr; padding: .75rem; gap: .6rem; }
       .stat-card { padding: 1rem; }
       .stat-value { font-size: 1.5rem; }
+      .weekend-summary { grid-template-columns: 1fr; padding: .75rem; gap: .6rem; }
 
       .controls { padding: .75rem 1rem; gap: .5rem; }
       .search-box { flex: 1 1 100%; max-width: 100%; }
@@ -246,8 +257,21 @@
 <div class="stats-row" id="statsRow">
   <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-value" id="statTotal">–</div></div>
   <div class="stat-card"><div class="stat-label">Paid (Unprepared)</div><div class="stat-value green" id="statPaid">–</div></div>
-  <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value pink" id="statRevenue">–</div></div>
-  <div class="stat-card"><div class="stat-label">This Weekend</div><div class="stat-value blue" id="statWeekend">–</div></div>
+  <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value pink" id="statRevenue">–</div></div>
+  <div class="stat-card"><div class="stat-label">Weekend Revenue</div><div class="stat-value blue" id="statWeekendRevenue">–</div></div>
+</div>
+
+<div class="weekend-summary" id="weekendSummary">
+  <div class="weekend-day-card" id="satCard">
+    <div class="weekend-day-title">Saturday <span id="satDate" style="font-weight:400;font-size:.8rem;color:var(--gray)"></span></div>
+    <div class="weekend-day-meta" id="satMeta"></div>
+    <div class="weekend-qty-list" id="satQtyList"><span class="weekend-empty">No paid orders</span></div>
+  </div>
+  <div class="weekend-day-card" id="sunCard">
+    <div class="weekend-day-title">Sunday <span id="sunDate" style="font-weight:400;font-size:.8rem;color:var(--gray)"></span></div>
+    <div class="weekend-day-meta" id="sunMeta"></div>
+    <div class="weekend-qty-list" id="sunQtyList"><span class="weekend-empty">No paid orders</span></div>
+  </div>
 </div>
 
 <div class="controls">
@@ -506,17 +530,56 @@
     const paid    = orders.filter(o => o.status === 'paid' || o.status === 'ready');
     const revenue = orders.filter(o => ['paid','ready','completed'].includes(o.status))
                           .reduce((s, o) => s + orderTotal(o), 0);
-    // weekend = Saturday/Sunday within next 7 days
+
+    // Upcoming weekend: find next Saturday and Sunday from today
     const now = new Date();
-    const dayMs = 86400000;
-    const weekend = orders.filter(o => {
-      if (!['paid','ready'].includes(o.status)) return false;
-      return o.pickupDay === 'Saturday' || o.pickupDay === 'Sunday';
-    });
-    document.getElementById('statTotal').textContent   = orders.length;
-    document.getElementById('statPaid').textContent    = paid.length;
-    document.getElementById('statRevenue').textContent = '$' + revenue.toFixed(2);
-    document.getElementById('statWeekend').textContent = weekend.length;
+    const todayDow = now.getDay(); // 0=Sun … 6=Sat
+    const daysToSat = (6 - todayDow + 7) % 7 || 7;
+    const satDate = new Date(now); satDate.setDate(now.getDate() + daysToSat);
+    const sunDate = new Date(satDate); sunDate.setDate(satDate.getDate() + 1);
+    const fmtDate = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+    document.getElementById('satDate').textContent = fmtDate(satDate);
+    document.getElementById('sunDate').textContent = fmtDate(sunDate);
+
+    const satOrders = orders.filter(o => ['paid','ready'].includes(o.status) && o.pickupDay === 'Saturday');
+    const sunOrders = orders.filter(o => ['paid','ready'].includes(o.status) && o.pickupDay === 'Sunday');
+    const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
+
+    document.getElementById('statTotal').textContent          = orders.length;
+    document.getElementById('statPaid').textContent           = paid.length;
+    document.getElementById('statRevenue').textContent        = '$' + revenue.toFixed(2);
+    document.getElementById('statWeekendRevenue').textContent = '$' + weekendRevenue.toFixed(2);
+
+    renderWeekendDay('sat', satOrders);
+    renderWeekendDay('sun', sunOrders);
+  }
+
+  function renderWeekendDay(prefix, dayOrders) {
+    const metaEl    = document.getElementById(prefix + 'Meta');
+    const qtyEl     = document.getElementById(prefix + 'QtyList');
+    if (!dayOrders.length) {
+      metaEl.textContent = '';
+      qtyEl.innerHTML = '<span class="weekend-empty">No paid orders</span>';
+      return;
+    }
+    const rev = dayOrders.reduce((s, o) => s + orderTotal(o), 0);
+    metaEl.textContent = `${dayOrders.length} order${dayOrders.length !== 1 ? 's' : ''} · $${rev.toFixed(2)} revenue`;
+
+    // Aggregate item quantities across all orders for this day
+    const totals = {};
+    for (const o of dayOrders) {
+      for (const item of o.items) {
+        const key = item.name + (item.variant ? ` (${item.variant})` : '');
+        totals[key] = (totals[key] || 0) + item.qty;
+      }
+    }
+    const rows = Object.entries(totals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, qty]) => `<div class="weekend-qty-row"><span>${name}</span><span>×${qty}</span></div>`)
+      .join('');
+    const totalItems = Object.values(totals).reduce((s, q) => s + q, 0);
+    qtyEl.innerHTML = rows + `<div class="weekend-qty-row"><span>Total items</span><span>${totalItems}</span></div>`;
   }
 
   function renderTable() {
