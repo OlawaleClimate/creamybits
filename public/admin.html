@@ -572,7 +572,7 @@
             </select>
           </td>
           <td data-label="" class="td-actions" style="display:flex;gap:.5rem;align-items:center">
-            ${o.status !== 'paid' ? '<span style="color:#9ca3af;font-size:.8rem">Awaiting payment</span>' : o.pickupStatus !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
+            ${o.status !== 'paid' ? `<span style="color:#9ca3af;font-size:.8rem">Awaiting payment</span> <button class="del-btn" onclick="deleteOrder('${o.id}')">🗑 Delete</button>` : o.pickupStatus !== 'picked_up' ? `<button class="pickup-btn" id="pickup-${o.id}" onclick="markPickedUp('${o.id}', this)">📦 Picked Up</button>` : '<span style="color:#16a34a;font-weight:700;font-size:.82rem">✅ Done</span>'}
             <button class="expand-btn" onclick="toggleDetail('${o.id}')">Details ▾</button>
           </td>
         </tr>
@@ -906,6 +906,17 @@
     try {
       await fetch(`/admin/products/${id}`, { method: 'DELETE' });
       await loadAllProducts();
+    } catch(e) {
+      alert('Delete failed: ' + e.message);
+    }
+  }
+
+  async function deleteOrder(id) {
+    if (!confirm('Delete this pending order? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`/admin/orders/${id}`, { method: 'DELETE' });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      await loadOrders();
     } catch(e) {
       alert('Delete failed: ' + e.message);
     }

@@ -758,6 +758,15 @@ app.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
   res.json(updated);
 });
 
+app.delete('/admin/orders/:id', requireAdmin, async (req, res) => {
+  const { rows } = await pool.query('SELECT status FROM orders WHERE id=$1', [req.params.id]);
+  if (!rows.length) return res.status(404).json({ error: 'Order not found.' });
+  if (rows[0].status !== 'pending_payment')
+    return res.status(400).json({ error: 'Only pending payment orders can be deleted.' });
+  await pool.query('DELETE FROM orders WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
 // ── Admin pages ───────────────────────────────────────────────────────────────
 app.get('/admin', requireAdmin, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
