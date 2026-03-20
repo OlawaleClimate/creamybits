@@ -70,6 +70,7 @@ async function initDB() {
     );
     ALTER TABLE products ADD COLUMN IF NOT EXISTS min_qty INTEGER DEFAULT 1;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT NULL;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT NULL;
     CREATE TABLE IF NOT EXISTS blocked_dates (
       id         TEXT PRIMARY KEY,
       date       DATE NOT NULL UNIQUE,
@@ -153,6 +154,7 @@ function rowToProduct(r) {
     active:      r.active,
     minQty:      r.min_qty ?? 1,
     maxQty:      r.max_qty ?? null,
+    stock:       r.stock != null ? parseInt(r.stock) : null,
     createdAt:   r.created_at,
   };
 }
@@ -170,8 +172,8 @@ async function saveProduct(p) {
   await pool.query(
     `INSERT INTO products
        (id, name, description, category, image_url, emoji, price,
-        unit_label, variants, variant_type, sort_order, active, min_qty, max_qty)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+        unit_label, variants, variant_type, sort_order, active, min_qty, max_qty, stock)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
     [
       id, p.name, p.description || '', p.category, p.imageUrl || '',
       p.emoji || '🥧', p.price, p.unitLabel || '',
@@ -180,6 +182,7 @@ async function saveProduct(p) {
       p.active !== false,
       p.minQty ?? 1,
       p.maxQty ?? null,
+      p.stock ?? null,
     ]
   );
   return id;
@@ -190,7 +193,7 @@ async function updateProductById(id, patch) {
     name:'name', description:'description', category:'category',
     imageUrl:'image_url', emoji:'emoji', price:'price',
     unitLabel:'unit_label', variants:'variants', variantType:'variant_type',
-    sortOrder:'sort_order', active:'active', minQty:'min_qty', maxQty:'max_qty',
+    sortOrder:'sort_order', active:'active', minQty:'min_qty', maxQty:'max_qty', stock:'stock',
   };
   const sets = [], vals = [];
   let i = 1;
@@ -633,7 +636,7 @@ app.get('/admin/products', requireAdmin, async (_req, res) => {
 
 app.post('/admin/products', requireAdmin, async (req, res) => {
   const { name, description, category, imageUrl, emoji, price,
-          unitLabel, variants, variantType, sortOrder, active, minQty, maxQty } = req.body;
+          unitLabel, variants, variantType, sortOrder, active, minQty, maxQty, stock } = req.body;
   if (!name || !category || price == null)
     return res.status(400).json({ error: 'name, category, price required.' });
   if (!/^[a-z0-9-]+$/.test(category))
@@ -648,6 +651,7 @@ app.post('/admin/products', requireAdmin, async (req, res) => {
     active: active !== false,
     minQty: parseInt(minQty) || 1,
     maxQty: maxQty != null && maxQty !== '' ? parseInt(maxQty) : null,
+    stock: stock != null && stock !== '' ? parseInt(stock) : null,
   });
   const { rows } = await pool.query('SELECT * FROM products WHERE id=$1', [id]);
   res.status(201).json(rowToProduct(rows[0]));
@@ -655,7 +659,7 @@ app.post('/admin/products', requireAdmin, async (req, res) => {
 
 app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
   const allowed = ['name','description','category','imageUrl','emoji','price',
-                   'unitLabel','variants','variantType','sortOrder','active','minQty','maxQty'];
+                   'unitLabel','variants','variantType','sortOrder','active','minQty','maxQty','stock'];
   const patch = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) patch[key] = req.body[key];
@@ -666,6 +670,7 @@ app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
   if (patch.sortOrder !== undefined) patch.sortOrder = parseInt(patch.sortOrder) || 0;
   if (patch.minQty !== undefined) patch.minQty = parseInt(patch.minQty) || 1;
   if (patch.maxQty !== undefined) patch.maxQty = patch.maxQty === null || patch.maxQty === '' ? null : parseInt(patch.maxQty);
+  if (patch.stock !== undefined) patch.stock = patch.stock === null || patch.stock === '' ? null : parseInt(patch.stock);
   const updated = await updateProductById(req.params.id, patch);
   if (!updated) return res.status(404).json({ error: 'Product not found.' });
   res.json(updated);

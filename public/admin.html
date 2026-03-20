@@ -123,6 +123,7 @@
     .variant-row { display: flex; gap: .5rem; align-items: center; }
     .variant-row input { flex: 1; }
     .variant-row input.price-in { flex: 0 0 90px; }
+    .variant-row input.stock-in { flex: 0 0 75px; }
     .remove-variant-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 .2rem; }
     .add-variant-row-btn { background: none; border: 1.5px dashed #d1d5db; color: var(--gray); border-radius: 8px; padding: .4rem .9rem; font-size: .82rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: border-color .2s, color .2s; }
     .add-variant-row-btn:hover { border-color: var(--black); color: var(--black); }
@@ -309,7 +310,7 @@
           <th>Name</th>
           <th>Category</th>
           <th>Price</th>
-          <th>Variants</th>
+          <th>Variants / Stock</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -430,10 +431,15 @@
 
       <div id="variantsSection" style="display:none">
         <div class="prod-field">
-          <label>Variants (label + price each)</label>
+          <label>Variants (label + price + stock each)</label>
           <div class="variant-rows" id="variantRows"></div>
           <button type="button" class="add-variant-row-btn" onclick="addVariantRow()" style="margin-top:.5rem">+ Add Option</button>
         </div>
+      </div>
+
+      <div id="prodStockRow" class="prod-field">
+        <label>Stock <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.78rem">(blank = unlimited)</span></label>
+        <input type="number" id="prodStock" min="0" placeholder="Unlimited" />
       </div>
 
       <div class="prod-field" style="display:flex;align-items:center;gap:.75rem">
@@ -739,13 +745,16 @@
       const variantSummary = p.variantType === 'none' ? '—'
         : p.variantType === 'glazed' ? 'Glazed special'
         : (p.variants||[]).map(v=>`${v.label} $${Number(v.price).toFixed(2)}`).join(', ');
+      const stockSummary = p.variantType === 'options'
+        ? (p.variants||[]).map(v => `${v.label}: ${v.stock != null ? v.stock : '∞'}`).join(' / ')
+        : (p.stock != null ? `📦 ${p.stock} in stock` : '∞ unlimited');
       const qtyInfo = `Min: ${p.minQty ?? 1}${p.maxQty ? ' / Max: ' + p.maxQty : ''}`;
       return `<tr>
         <td data-label="Image">${imgEl}</td>
         <td data-label="Name"><strong>${p.name}</strong><br><span style="font-size:.75rem;color:#9ca3af">${qtyInfo}</span></td>
         <td data-label="Category">${CAT_LABELS[p.category]||p.category}</td>
         <td data-label="Price">$${p.price.toFixed(2)}</td>
-        <td data-label="Variants" style="font-size:.8rem;color:#6b7280;white-space:normal">${variantSummary}</td>
+        <td data-label="Variants / Stock" style="font-size:.8rem;color:#6b7280;white-space:normal">${variantSummary === '—' ? stockSummary : variantSummary + '<br><span style="color:#374151;font-size:.75rem">' + stockSummary + '</span>'}</td>
         <td data-label="Status"><span class="active-dot ${p.active?'dot-on':'dot-off'}"></span>${p.active?'Active':'Hidden'}</td>
         <td data-label="" class="td-actions" style="display:flex;gap:.4rem">
           <button class="edit-btn" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
@@ -759,6 +768,7 @@
   function onVariantTypeChange() {
     const vt = document.getElementById('prodVariantType').value;
     document.getElementById('variantsSection').style.display = vt === 'options' ? '' : 'none';
+    document.getElementById('prodStockRow').style.display = vt === 'options' ? 'none' : '';
   }
 
   function handleCategoryChange(sel) {
@@ -772,11 +782,12 @@
     }
   }
 
-  function addVariantRow(label='', price='') {
+  function addVariantRow(label='', price='', stock='') {
     const row = document.createElement('div');
     row.className = 'variant-row';
     row.innerHTML = `<input type="text" placeholder="Label (e.g. Half Dozen)" value="${label}" />
       <input type="number" class="price-in" placeholder="Price" min="0" step="0.01" value="${price}" />
+      <input type="number" class="stock-in" placeholder="Stock" min="0" value="${stock}" />
       <button type="button" class="remove-variant-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('variantRows').appendChild(row);
   }
@@ -818,11 +829,12 @@
     document.getElementById('prodActive').checked = product ? product.active : true;
     document.getElementById('prodMinQty').value = product ? (product.minQty ?? 1) : 1;
     document.getElementById('prodMaxQty').value = (product && product.maxQty != null) ? product.maxQty : '';
+    document.getElementById('prodStock').value = (product && product.stock != null) ? product.stock : '';
     // Variants
     const rows = document.getElementById('variantRows');
     rows.innerHTML = '';
     if (product && product.variants) {
-      product.variants.forEach(v => addVariantRow(v.label, v.price));
+      product.variants.forEach(v => addVariantRow(v.label, v.price, v.stock ?? ''));
     }
     onVariantTypeChange();
     document.getElementById('prodModalOverlay').classList.add('open');
@@ -862,7 +874,12 @@
     if (variantType === 'options') {
       variants = Array.from(document.querySelectorAll('#variantRows .variant-row')).map(row => {
         const inputs = row.querySelectorAll('input');
-        return { label: inputs[0].value.trim(), price: parseFloat(inputs[1].value) || 0 };
+        const stockVal = inputs[2] ? inputs[2].value.trim() : '';
+        return {
+          label: inputs[0].value.trim(),
+          price: parseFloat(inputs[1].value) || 0,
+          stock: stockVal === '' ? null : parseInt(stockVal),
+        };
       }).filter(v => v.label);
     }
 
@@ -882,6 +899,7 @@
       active:      document.getElementById('prodActive').checked,
       minQty:      parseInt(document.getElementById('prodMinQty').value) || 1,
       maxQty:      document.getElementById('prodMaxQty').value.trim() === '' ? null : parseInt(document.getElementById('prodMaxQty').value),
+      stock:       variantType === 'options' ? null : (document.getElementById('prodStock').value.trim() === '' ? null : parseInt(document.getElementById('prodStock').value)),
     };
 
     if (!body.name) return (document.getElementById('prodError').textContent = 'Name is required.');
