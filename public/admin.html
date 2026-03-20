@@ -36,6 +36,17 @@
     .weekend-qty-row { display: flex; justify-content: space-between; gap: .5rem; border-bottom: 1px solid #f3f4f6; padding: .15rem 0; }
     .weekend-qty-row:last-child { border-bottom: none; font-weight: 700; }
     .weekend-empty { color: var(--gray); font-size: .82rem; font-style: italic; }
+    /* Customer order list */
+    .weekend-customers { padding: .75rem 2rem 0; }
+    .weekend-customers-card { background: #fff; border-radius: 14px; border: 1px solid #e5e7eb; padding: 1rem 1.25rem; }
+    .weekend-customers-title { font-weight: 800; font-size: .95rem; margin-bottom: .75rem; }
+    .wc-day-group { margin-bottom: 1rem; }
+    .wc-day-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray); margin-bottom: .4rem; padding-bottom: .25rem; border-bottom: 2px solid #f0f0f0; }
+    .wc-customer-row { display: flex; gap: .75rem; padding: .45rem 0; border-bottom: 1px solid #f8f8f8; font-size: .83rem; align-items: flex-start; }
+    .wc-customer-row:last-child { border-bottom: none; }
+    .wc-name { font-weight: 700; min-width: 140px; flex-shrink: 0; }
+    .wc-time { font-size: .75rem; color: var(--gray); white-space: nowrap; flex-shrink: 0; }
+    .wc-items { flex: 1; color: #374151; }
 
     /* Controls */
     .controls { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 2rem; flex-wrap: wrap; }
@@ -177,6 +188,8 @@
       .stat-card { padding: 1rem; }
       .stat-value { font-size: 1.5rem; }
       .weekend-summary { grid-template-columns: 1fr; padding: .75rem; gap: .6rem; }
+      .weekend-customers { padding: .75rem; }
+      .wc-name { min-width: 100px; }
 
       .controls { padding: .75rem 1rem; gap: .5rem; }
       .search-box { flex: 1 1 100%; max-width: 100%; }
@@ -271,6 +284,13 @@
     <div class="weekend-day-title">Sunday <span id="sunDate" style="font-weight:400;font-size:.8rem;color:var(--gray)"></span></div>
     <div class="weekend-day-meta" id="sunMeta"></div>
     <div class="weekend-qty-list" id="sunQtyList"><span class="weekend-empty">No paid orders</span></div>
+  </div>
+</div>
+
+<div class="weekend-customers" id="weekendCustomers">
+  <div class="weekend-customers-card">
+    <div class="weekend-customers-title">📃 Weekend Order List by Customer</div>
+    <div id="weekendCustomerList"><span class="weekend-empty">No paid orders this weekend</span></div>
   </div>
 </div>
 
@@ -553,6 +573,7 @@
 
     renderWeekendDay('sat', satOrders);
     renderWeekendDay('sun', sunOrders);
+    renderWeekendCustomers(satOrders, sunOrders, fmtDate(satDate), fmtDate(sunDate));
   }
 
   function renderWeekendDay(prefix, dayOrders) {
@@ -580,6 +601,38 @@
       .join('');
     const totalItems = Object.values(totals).reduce((s, q) => s + q, 0);
     qtyEl.innerHTML = rows + `<div class="weekend-qty-row"><span>Total items</span><span>${totalItems}</span></div>`;
+  }
+
+  function renderWeekendCustomers(satOrders, sunOrders, satLabel, sunLabel) {
+    const el = document.getElementById('weekendCustomerList');
+    const groups = [
+      { label: `Saturday — ${satLabel}`, orders: satOrders },
+      { label: `Sunday — ${sunLabel}`,   orders: sunOrders },
+    ].filter(g => g.orders.length);
+
+    if (!groups.length) {
+      el.innerHTML = '<span class="weekend-empty">No paid orders this weekend</span>';
+      return;
+    }
+
+    el.innerHTML = groups.map(g => {
+      const rows = g.orders
+        .sort((a, b) => (a.pickupTime || '').localeCompare(b.pickupTime || ''))
+        .map(o => {
+          const itemStr = o.items
+            .map(i => `${i.name}${i.variant ? ` (${i.variant})` : ''} ×${i.qty}`)
+            .join(', ');
+          return `<div class="wc-customer-row">
+            <span class="wc-name">${o.customerName}</span>
+            <span class="wc-time">${o.pickupTime || '–'}</span>
+            <span class="wc-items">${itemStr}</span>
+          </div>`;
+        }).join('');
+      return `<div class="wc-day-group">
+        <div class="wc-day-label">${g.label} &mdash; ${g.orders.length} order${g.orders.length !== 1 ? 's' : ''}</div>
+        ${rows}
+      </div>`;
+    }).join('');
   }
 
   function renderTable() {
