@@ -524,10 +524,33 @@
   }
 
   // ── Add to cart ─────────────────────────────────────────────────────────
+  function getStock(prod, variantLabel) {
+    if (!prod) return null;
+    if (prod.variantType === 'options' && variantLabel) {
+      const v = (prod.variants || []).find(vv => vv.label === variantLabel);
+      return v?.stock ?? null;
+    }
+    return prod.stock ?? null;
+  }
+
+  function flashError(btn, msg) {
+    const original = btn.innerHTML;
+    btn.innerHTML = msg;
+    btn.style.background = '#ef4444';
+    setTimeout(() => { btn.innerHTML = original; btn.style.background = ''; }, 2000);
+  }
+
   function addToCart(name, variant, price, btn) {
     const prod = productsData.find(p => p.name === name);
     const maxQty = prod?.maxQty ?? null;
+    const stock  = getStock(prod, variant);
     const existing = cart.find(i => i.name === name && i.variant === variant);
+    const currentQty = existing ? existing.qty : 0;
+    if (stock !== null && currentQty >= stock) {
+      const msg = stock === 0 ? '✕ Out of stock' : `Only ${stock} left!`;
+      if (btn) flashError(btn, msg); else alert(msg);
+      return;
+    }
     if (existing) {
       if (maxQty !== null && existing.qty >= maxQty) {
         alert(`Maximum order quantity for “${name}” is ${maxQty}.`);
@@ -584,30 +607,44 @@
       el.innerHTML = '<div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty.<br>Add some delicious items!</p></div>';
       return;
     }
-    el.innerHTML = cart.map((item, idx) => `
+    el.innerHTML = cart.map((item, idx) => {
+      const prod = productsData.find(p => p.name === item.name);
+      const stock  = getStock(prod, item.variant);
+      const maxQty = prod?.maxQty ?? null;
+      const atLimit = (stock !== null && item.qty >= stock) || (maxQty !== null && item.qty >= maxQty);
+      return `
       <div class="cart-item">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           ${item.variant ? `<div class="cart-item-variant">${item.variant}</div>` : ''}
           <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+          ${stock !== null && item.qty >= stock ? `<div style="color:#ef4444;font-size:.75rem;margin-top:.2rem">Only ${stock} left in stock</div>` : ''}
         </div>
         <div class="cart-item-qty">
           <button class="qty-btn" onclick="changeQty(${idx},-1)" aria-label="Decrease quantity of ${item.name}">−</button>
           <span class="qty-val" aria-label="Quantity: ${item.qty}">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty(${idx},1)"  aria-label="Increase quantity of ${item.name}">+</button>
+          <button class="qty-btn" onclick="changeQty(${idx},1)" aria-label="Increase quantity of ${item.name}" ${atLimit ? 'disabled style="opacity:.35;cursor:not-allowed"' : ''}>+</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   function changeQty(idx, delta) {
     const item = cart[idx];
-    const prod = productsData.find(p => p.name === item.name);
+    const prod   = productsData.find(p => p.name === item.name);
     const minQty = prod?.minQty ?? 1;
     const maxQty = prod?.maxQty ?? null;
+    const stock  = getStock(prod, item.variant);
     const newQty = item.qty + delta;
-    if (delta > 0 && maxQty !== null && newQty > maxQty) {
-      alert(`Maximum order quantity for “${item.name}” is ${maxQty}.`);
-      return;
+    if (delta > 0) {
+      if (stock !== null && newQty > stock) {
+        alert(stock === 0 ? `"${item.name}" is out of stock.` : `Only ${stock} left in stock for "${item.name}${item.variant ? ` (${item.variant})` : ''}".`);
+        return;
+      }
+      if (maxQty !== null && newQty > maxQty) {
+        alert(`Maximum order quantity for "${item.name}" is ${maxQty}.`);
+        return;
+      }
     }
     if (newQty <= 0) {
       cart.splice(idx, 1);
