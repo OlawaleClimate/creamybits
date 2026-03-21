@@ -80,6 +80,14 @@
     .pickup-btn { padding: .35rem .9rem; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
     .pickup-btn:hover { opacity: .85; }
     .pickup-btn:disabled { opacity: .5; cursor: default; }
+    .move-pickup-btn { padding: .3rem .75rem; background: #f3f4f6; color: #374151; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: border-color .2s; }
+    .move-pickup-btn:hover { border-color: #374151; }
+    .pickup-editor { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; background:#fff7ed; border:1.5px solid #f97316; border-radius:10px; padding:.5rem .75rem; margin-top:.4rem; }
+    .pickup-editor select { border:1.5px solid #e5e7eb; border-radius:7px; padding:.28rem .55rem; font-family:'DM Sans',sans-serif; font-size:.82rem; background:#fff; cursor:pointer; }
+    .pickup-editor select:focus { outline:none; border-color:#f97316; }
+    .pickup-save-btn { padding:.28rem .8rem; background:#f97316; color:#fff; border:none; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:700; cursor:pointer; }
+    .pickup-save-btn:hover { opacity:.85; }
+    .pickup-cancel-btn { padding:.28rem .7rem; background:none; color:#6b7280; border:none; font-family:'DM Sans',sans-serif; font-size:.82rem; cursor:pointer; }
     .col-label { font-size: .7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: .25rem; }
 
     /* Status select inline */
@@ -635,6 +643,33 @@
     }).join('');
   }
 
+  function openPickupEditor(orderId) {
+    document.getElementById('pickup-editor-' + orderId).style.display = 'flex';
+  }
+  function closePickupEditor(orderId) {
+    document.getElementById('pickup-editor-' + orderId).style.display = 'none';
+  }
+
+  async function savePickupMove(orderId) {
+    const day  = document.getElementById('pe-day-'  + orderId).value;
+    const time = document.getElementById('pe-time-' + orderId).value;
+    try {
+      const res = await fetch(`/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pickupDay: day, pickupTime: time }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Failed'); }
+      const updated = await res.json();
+      const idx = allOrders.findIndex(o => o.id === orderId);
+      if (idx !== -1) allOrders[idx] = updated;
+      updateStats(allOrders);
+      renderTable();
+    } catch(e) {
+      alert('Could not move pickup: ' + e.message);
+    }
+  }
+
   function renderTable() {
     const q      = document.getElementById('searchInput').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
@@ -675,8 +710,20 @@
             <span style="color:#6b7280;font-size:.78rem">${o.customerEmail}</span>
           </td>
           <td data-label="Pickup">
-            <strong>${o.pickupDay}</strong><br>
-            <span style="color:#6b7280;font-size:.78rem">${o.pickupTime}</span>
+            <strong id="pickup-day-${o.id}">${o.pickupDay}</strong><br>
+            <span style="color:#6b7280;font-size:.78rem" id="pickup-time-${o.id}">${o.pickupTime}</span><br>
+            <button class="move-pickup-btn" style="margin-top:.3rem" onclick="openPickupEditor('${o.id}')">📅 Move</button>
+            <div class="pickup-editor" id="pickup-editor-${o.id}" style="display:none">
+              <select id="pe-day-${o.id}">
+                <option value="Saturday" ${o.pickupDay==='Saturday'?'selected':''}>Saturday</option>
+                <option value="Sunday" ${o.pickupDay==='Sunday'?'selected':''}>Sunday</option>
+              </select>
+              <select id="pe-time-${o.id}">
+                ${['10:00 AM','11:00 AM','12:00 PM'].map(t=>`<option value="${t}" ${o.pickupTime===t?'selected':''}>${t}</option>`).join('')}
+              </select>
+              <button class="pickup-save-btn" onclick="savePickupMove('${o.id}')">Save</button>
+              <button class="pickup-cancel-btn" onclick="closePickupEditor('${o.id}')">Cancel</button>
+            </div>
           </td>
           <td data-label="Total"><strong>$${total}</strong></td>
           <td data-label="Payment">

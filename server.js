@@ -251,6 +251,9 @@ async function updateOrder(orderId, patch) {
   if (patch.pickupStatus)         { sets.push(`pickup_status=$${i++}`);  vals.push(patch.pickupStatus); }
   if (patch.paidAt)               { sets.push(`paid_at=$${i++}`);        vals.push(patch.paidAt); }
   if (patch.stripePaymentIntent)  { sets.push(`stripe_id=$${i++}`);      vals.push(patch.stripePaymentIntent); }
+  if (patch.pickupDay  !== undefined) { sets.push(`pickup_day=$${i++}`);  vals.push(patch.pickupDay); }
+  if (patch.pickupDate !== undefined) { sets.push(`pickup_date=$${i++}`); vals.push(patch.pickupDate); }
+  if (patch.pickupTime !== undefined) { sets.push(`pickup_time=$${i++}`); vals.push(patch.pickupTime); }
   if (!sets.length) return null;
   vals.push(orderId);
   const { rows } = await pool.query(
@@ -744,7 +747,7 @@ async function sendPickupEmail(order) {
 }
 
 app.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
-  const { status, pickupStatus } = req.body;
+  const { status, pickupStatus, pickupDay, pickupDate, pickupTime } = req.body;
   const patch = {};
 
   if (status !== undefined) {
@@ -757,6 +760,19 @@ app.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
     if (!['pending','ready','picked_up'].includes(pickupStatus))
       return res.status(400).json({ error: 'Invalid pickup status.' });
     patch.pickupStatus = pickupStatus;
+  }
+
+  if (pickupDay !== undefined) {
+    if (!['Saturday', 'Sunday'].includes(pickupDay))
+      return res.status(400).json({ error: 'Pick-up day must be Saturday or Sunday.' });
+    patch.pickupDay = pickupDay;
+  }
+  if (pickupDate !== undefined) patch.pickupDate = pickupDate || null;
+  if (pickupTime !== undefined) {
+    const validTimes = ['10:00 AM', '11:00 AM', '12:00 PM'];
+    if (!validTimes.includes(pickupTime))
+      return res.status(400).json({ error: 'Invalid pickup time.' });
+    patch.pickupTime = pickupTime;
   }
 
   if (!Object.keys(patch).length)
