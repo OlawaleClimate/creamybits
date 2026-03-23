@@ -646,8 +646,8 @@
     const rev = dayOrders.reduce((s, o) => s + orderTotal(o), 0);
     metaEl.textContent = `${dayOrders.length} order${dayOrders.length !== 1 ? 's' : ''} · $${rev.toFixed(2)} revenue`;
 
-    if (!dayEnded) {
-      qtyEl.innerHTML = '<span class="weekend-empty" style="font-style:normal;color:#9ca3af">📋 Summary available after day ends</span>';
+    if (dayEnded) {
+      qtyEl.innerHTML = '<span class="weekend-empty" style="font-style:normal;color:#9ca3af">Day complete</span>';
       return;
     }
 
@@ -769,13 +769,14 @@
           </td>
           <td data-label="Pickup">
             <strong id="pickup-day-${o.id}">${(() => {
-              if (o.pickupDate && /^\d{4}-\d{2}-\d{2}$/.test(o.pickupDate)) {
-                const [y,m,d] = o.pickupDate.split('-').map(Number);
-                return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+              const iso = parsePickupISO(o.pickupDate);
+              if (iso) {
+                const [y,m,d] = iso.split('-').map(Number);
+                const label = new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).replace(',','');
+                return `${label} · ${o.pickupTime || '–'}`;
               }
-              return o.pickupDay || '–';
+              return `${o.pickupDay || '–'} · ${o.pickupTime || '–'}`;
             })()}</strong><br>
-            <span style="color:#6b7280;font-size:.78rem" id="pickup-time-${o.id}">${o.pickupTime}</span><br>
             <button class="move-pickup-btn" style="margin-top:.3rem" onclick="openPickupEditor('${o.id}')">📅 Move</button>
             <div class="pickup-editor" id="pickup-editor-${o.id}" style="display:none">
               <select id="pe-day-${o.id}">
