@@ -559,35 +559,42 @@
     const revenue = orders.filter(o => ['paid','ready','completed'].includes(o.status))
                           .reduce((s, o) => s + orderTotal(o), 0);
 
-    // Current/upcoming weekend:
-    //   Sat  → today (Sat) + tomorrow (Sun)
-    //   Sun  → yesterday (Sat) + today (Sun)
-    //   Mon–Fri → next Sat + next Sun
+    // Weekend window rules:
+    //   Saturday  → today + tomorrow (Sat + Sun)
+    //   Sunday    → yesterday + today (Sat + Sun)
+    //   Mon–Fri   → coming Sat + Sun  (resets on Monday; revenue = 0 until orders placed)
+    // Sat product summary unlocks at Sun 00:00  (satISO < todayISO)
+    // Sun product summary unlocks at Mon 00:00  (sunISO < todayISO)
+    //   — on Monday we've already switched to the next weekend so sunISO is in the future,
+    //     meaning sunEnded=false automatically; last weekend's Sunday data disappears.
     const now = new Date();
     const todayDow = now.getDay(); // 0=Sun … 6=Sat
     let satDate, sunDate;
-    if (todayDow === 6) {          // Saturday
+    if (todayDow === 6) {
       satDate = new Date(now);
       sunDate = new Date(now); sunDate.setDate(now.getDate() + 1);
-    } else if (todayDow === 0) {   // Sunday
+    } else if (todayDow === 0) {
       satDate = new Date(now); satDate.setDate(now.getDate() - 1);
       sunDate = new Date(now);
-    } else {                       // Mon–Fri: find coming Saturday
+    } else {                       // Mon–Fri: coming Saturday
       const daysToSat = 6 - todayDow;
       satDate = new Date(now); satDate.setDate(now.getDate() + daysToSat);
       sunDate = new Date(satDate); sunDate.setDate(satDate.getDate() + 1);
     }
 
-    const toISO  = d => d.toISOString().split('T')[0]; // YYYY-MM-DD
-    const satISO = toISO(satDate);
-    const sunISO = toISO(sunDate);
+    const toISO    = d => d.toISOString().split('T')[0];
+    const satISO   = toISO(satDate);
+    const sunISO   = toISO(sunDate);
     const todayISO = toISO(now);
-    const fmtDate  = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    // e.g. "Mar 28" for card headers
+    const fmtShort = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    // e.g. "Sat, Mar 28" for customer list group labels
+    const fmtFull  = d => d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
 
-    document.getElementById('satDate').textContent = fmtDate(satDate);
-    document.getElementById('sunDate').textContent = fmtDate(sunDate);
+    document.getElementById('satDate').textContent = fmtShort(satDate);
+    document.getElementById('sunDate').textContent = fmtShort(sunDate);
 
-    // Filter by specific pickupDate for this weekend (not just pickupDay string)
+    // Revenue: only orders scheduled for THIS weekend's exact dates
     const satOrders = orders.filter(o => ['paid','ready'].includes(o.status) && o.pickupDate === satISO);
     const sunOrders = orders.filter(o => ['paid','ready'].includes(o.status) && o.pickupDate === sunISO);
     const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
@@ -597,12 +604,11 @@
     document.getElementById('statRevenue').textContent        = '$' + revenue.toFixed(2);
     document.getElementById('statWeekendRevenue').textContent = '$' + weekendRevenue.toFixed(2);
 
-    // Product breakdown + customer list only visible after that day has ended
-    const satEnded = satISO < todayISO;
-    const sunEnded = sunISO < todayISO;
+    const satEnded = satISO < todayISO; // true from Sun 00:00 onward
+    const sunEnded = sunISO < todayISO; // true from Mon 00:00 (but by then we show next weekend)
     renderWeekendDay('sat', satOrders, satEnded);
     renderWeekendDay('sun', sunOrders, sunEnded);
-    renderWeekendCustomers(satOrders, sunOrders, fmtDate(satDate), fmtDate(sunDate), satEnded, sunEnded);
+    renderWeekendCustomers(satOrders, sunOrders, fmtFull(satDate), fmtFull(sunDate), satEnded, sunEnded);
   }
 
   function renderWeekendDay(prefix, dayOrders, dayEnded) {
@@ -640,8 +646,8 @@
   function renderWeekendCustomers(satOrders, sunOrders, satLabel, sunLabel, satEnded, sunEnded) {
     const el = document.getElementById('weekendCustomerList');
     const groups = [
-      { label: `Saturday — ${satLabel}`, orders: satOrders, ended: satEnded },
-      { label: `Sunday — ${sunLabel}`,   orders: sunOrders, ended: sunEnded },
+      { label: `${satLabel}`, orders: satOrders, ended: satEnded },
+      { label: `${sunLabel}`, orders: sunOrders, ended: sunEnded },
     ].filter(g => g.orders.length);
 
     if (!groups.length) {
@@ -738,7 +744,9 @@
             <span style="color:#6b7280;font-size:.78rem">${o.customerEmail}</span>
           </td>
           <td data-label="Pickup">
-            <strong id="pickup-day-${o.id}">${o.pickupDay}</strong><br>
+            <strong id="pickup-day-${o.id}">${o.pickupDate
+              ? new Date(o.pickupDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })
+              : o.pickupDay}</strong><br>
             <span style="color:#6b7280;font-size:.78rem" id="pickup-time-${o.id}">${o.pickupTime}</span><br>
             <button class="move-pickup-btn" style="margin-top:.3rem" onclick="openPickupEditor('${o.id}')">📅 Move</button>
             <div class="pickup-editor" id="pickup-editor-${o.id}" style="display:none">
