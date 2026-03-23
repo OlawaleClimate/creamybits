@@ -595,12 +595,14 @@
     document.getElementById('sunDate').textContent = fmtShort(sunDate);
 
     // Revenue: orders matching this weekend's ISO date, OR legacy orders with no ISO date but matching pickupDay name
+    // Include 'completed' so fulfilled Saturday orders still appear in the summary on Sunday
+    const weekendStatuses = ['paid', 'ready', 'completed'];
     const satOrders = orders.filter(o =>
-      ['paid','ready'].includes(o.status) &&
+      weekendStatuses.includes(o.status) &&
       (o.pickupDate === satISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'saturday'))
     );
     const sunOrders = orders.filter(o =>
-      ['paid','ready'].includes(o.status) &&
+      weekendStatuses.includes(o.status) &&
       (o.pickupDate === sunISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'sunday'))
     );
     const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
