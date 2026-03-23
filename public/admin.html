@@ -610,16 +610,10 @@
     // Include 'completed' so fulfilled Saturday orders still appear in the summary on Sunday
     const weekendStatuses = ['paid', 'ready', 'completed'];
     const satOrders = orders.filter(o =>
-      weekendStatuses.includes(o.status) && (
-        parsePickupISO(o.pickupDate) === satISO ||
-        (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'saturday')
-      )
+      weekendStatuses.includes(o.status) && parsePickupISO(o.pickupDate) === satISO
     );
     const sunOrders = orders.filter(o =>
-      weekendStatuses.includes(o.status) && (
-        parsePickupISO(o.pickupDate) === sunISO ||
-        (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'sunday')
-      )
+      weekendStatuses.includes(o.status) && parsePickupISO(o.pickupDate) === sunISO
     );
     const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
 
@@ -681,7 +675,8 @@
 
     el.innerHTML = groups.map(g => {
       const body = g.ended
-        ? g.orders
+        ? ''
+        : g.orders
             .sort((a, b) => (a.pickupTime || '').localeCompare(b.pickupTime || ''))
             .map(o => {
               const itemStr = o.items
@@ -692,8 +687,7 @@
                 <span class="wc-time">${o.pickupTime || '–'}</span>
                 <span class="wc-items">${itemStr}</span>
               </div>`;
-            }).join('')
-        : `<div class="wc-customer-row"><span class="weekend-empty" style="font-style:normal;color:#9ca3af">📋 Customer list available after day ends</span></div>`;
+            }).join('');
       return `<div class="wc-day-group">
         <div class="wc-day-label">${g.label} &mdash; ${g.orders.length} order${g.orders.length !== 1 ? 's' : ''}</div>
         ${body}
