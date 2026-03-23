@@ -582,7 +582,8 @@
       sunDate = new Date(satDate); sunDate.setDate(satDate.getDate() + 1);
     }
 
-    const toISO    = d => d.toISOString().split('T')[0];
+    // Use local date components (not UTC toISOString) to avoid timezone bleed at night
+    const toISO    = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const satISO   = toISO(satDate);
     const sunISO   = toISO(sunDate);
     const todayISO = toISO(now);
