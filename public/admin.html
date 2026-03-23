@@ -745,7 +745,7 @@
           </td>
           <td data-label="Pickup">
             <strong id="pickup-day-${o.id}">${o.pickupDate
-              ? new Date(o.pickupDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })
+              ? (([y,m,d]) => new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}))(o.pickupDate.split('-').map(Number))
               : o.pickupDay}</strong><br>
             <span style="color:#6b7280;font-size:.78rem" id="pickup-time-${o.id}">${o.pickupTime}</span><br>
             <button class="move-pickup-btn" style="margin-top:.3rem" onclick="openPickupEditor('${o.id}')">📅 Move</button>
