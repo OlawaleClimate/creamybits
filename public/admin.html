@@ -744,9 +744,13 @@
             <span style="color:#6b7280;font-size:.78rem">${o.customerEmail}</span>
           </td>
           <td data-label="Pickup">
-            <strong id="pickup-day-${o.id}">${o.pickupDate
-              ? (([y,m,d]) => new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}))(o.pickupDate.split('-').map(Number))
-              : o.pickupDay}</strong><br>
+            <strong id="pickup-day-${o.id}">${(() => {
+              if (o.pickupDate && /^\d{4}-\d{2}-\d{2}$/.test(o.pickupDate)) {
+                const [y,m,d] = o.pickupDate.split('-').map(Number);
+                return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+              }
+              return o.pickupDay || '–';
+            })()}</strong><br>
             <span style="color:#6b7280;font-size:.78rem" id="pickup-time-${o.id}">${o.pickupTime}</span><br>
             <button class="move-pickup-btn" style="margin-top:.3rem" onclick="openPickupEditor('${o.id}')">📅 Move</button>
             <div class="pickup-editor" id="pickup-editor-${o.id}" style="display:none">
