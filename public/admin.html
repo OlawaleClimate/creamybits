@@ -703,13 +703,13 @@
   }
 
   async function savePickupMove(orderId) {
-    const day  = document.getElementById('pe-day-'  + orderId).value;
+    const date = document.getElementById('pe-date-' + orderId).value;
     const time = document.getElementById('pe-time-' + orderId).value;
     try {
       const res = await fetch(`/admin/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickupDay: day, pickupTime: time }),
+        body: JSON.stringify({ pickupDate: date, pickupTime: time }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Failed'); }
       const updated = await res.json();
@@ -773,10 +773,7 @@
             })()}</strong><br>
             <button class="move-pickup-btn" style="margin-top:.3rem" onclick="openPickupEditor('${o.id}')">📅 Move</button>
             <div class="pickup-editor" id="pickup-editor-${o.id}" style="display:none">
-              <select id="pe-day-${o.id}">
-                <option value="Saturday" ${o.pickupDay==='Saturday'?'selected':''}>Saturday</option>
-                <option value="Sunday" ${o.pickupDay==='Sunday'?'selected':''}>Sunday</option>
-              </select>
+              <input type="date" id="pe-date-${o.id}" value="${parsePickupISO(o.pickupDate) || ''}" />
               <select id="pe-time-${o.id}">
                 ${['10:00 AM','11:00 AM','12:00 PM'].map(t=>`<option value="${t}" ${o.pickupTime===t?'selected':''}>${t}</option>`).join('')}
               </select>
