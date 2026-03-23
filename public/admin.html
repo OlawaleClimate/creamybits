@@ -554,6 +554,16 @@
     return `<span class="badge ${cls}">${label}</span>`;
   }
 
+  // Normalise any pickupDate format to YYYY-MM-DD
+  function toPickupISO(raw) {
+    if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    const MON = {January:'01',February:'02',March:'03',April:'04',May:'05',June:'06',July:'07',August:'08',September:'09',October:'10',November:'11',December:'12'};
+    const m = raw.match(/^(\w+)\s+(\d+),\s*(\d{4})$/);
+    if (m && MON[m[1]]) return `${m[3]}-${MON[m[1]]}-${String(m[2]).padStart(2,'0')}`;
+    return '';
+  }
+
   function updateStats(orders) {
     const paid    = orders.filter(o => o.status === 'paid' || o.status === 'ready');
     const revenue = orders.filter(o => ['paid','ready','completed'].includes(o.status))
@@ -600,11 +610,11 @@
     const weekendStatuses = ['paid', 'ready', 'completed'];
     const satOrders = orders.filter(o =>
       weekendStatuses.includes(o.status) &&
-      (o.pickupDate === satISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'saturday'))
+      (toPickupISO(o.pickupDate) === satISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'saturday'))
     );
     const sunOrders = orders.filter(o =>
       weekendStatuses.includes(o.status) &&
-      (o.pickupDate === sunISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'sunday'))
+      (toPickupISO(o.pickupDate) === sunISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'sunday'))
     );
     const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
 

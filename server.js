@@ -520,7 +520,15 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
       customerEmail: customerEmail.trim().toLowerCase(),
       customerPhone: customerPhone.trim(),
       pickupDay,
-      pickupDate: pickupDate || '',
+      pickupDate: (() => {
+        if (!pickupDate) return '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(pickupDate)) return pickupDate;
+        // Normalize "Month D, YYYY" → "YYYY-MM-DD"
+        const MON = {January:'01',February:'02',March:'03',April:'04',May:'05',June:'06',July:'07',August:'08',September:'09',October:'10',November:'11',December:'12'};
+        const mm = pickupDate.match(/^(\w+)\s+(\d+),\s*(\d{4})$/);
+        if (mm && MON[mm[1]]) return `${mm[3]}-${MON[mm[1]]}-${String(mm[2]).padStart(2,'0')}`;
+        return '';
+      })(),
       pickupTime,
       allergies: allergies.trim(),
       items,

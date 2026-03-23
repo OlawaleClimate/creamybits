@@ -789,8 +789,9 @@
     calSelectedDate = new Date(y, m, d);
     const dayName = calSelectedDate.getDay() === 6 ? 'Saturday' : 'Sunday';
     const formatted = MONTHS[m] + ' ' + d + ', ' + y;
+    const isoDate = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     document.getElementById('pickupDay').value  = dayName;
-    document.getElementById('pickupDate').value = formatted;
+    document.getElementById('pickupDate').value = isoDate;
     document.getElementById('calSelectedLabel').textContent = '✓ ' + dayName + ', ' + formatted;
     renderCal();
     // Restore focus to the newly selected cell
