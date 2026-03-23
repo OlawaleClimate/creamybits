@@ -637,7 +637,13 @@
       return;
     }
     const rev = dayOrders.reduce((s, o) => s + orderTotal(o), 0);
-    metaEl.textContent = `${dayOrders.length} order${dayOrders.length !== 1 ? 's' : ''} · $${rev.toFixed(2)} revenue`;
+    // Find the pickup date for this group (all orders have same pickupDate)
+    let pickupISO = '';
+    if (dayOrders.length) {
+      pickupISO = toPickupISO(dayOrders[0].pickupDate);
+    }
+    const pickupLabel = pickupISO ? new Date(pickupISO).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : '';
+    metaEl.textContent = `${pickupLabel ? pickupLabel + ' · ' : ''}${dayOrders.length} order${dayOrders.length !== 1 ? 's' : ''} · $${rev.toFixed(2)} revenue`;
 
     if (dayEnded) {
       qtyEl.innerHTML = '<span class="weekend-empty" style="font-style:italic;color:#9ca3af">Day complete</span>';
@@ -662,9 +668,15 @@
 
   function renderWeekendCustomers(satOrders, sunOrders, satLabel, sunLabel, satEnded, sunEnded) {
     const el = document.getElementById('weekendCustomerList');
+    // Use actual pickup date for group label
+    function pickupLabel(orders) {
+      if (!orders.length) return '';
+      const iso = toPickupISO(orders[0].pickupDate);
+      return iso ? new Date(iso).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : '';
+    }
     const groups = [
-      { label: `${satLabel}`, orders: satOrders, ended: satEnded },
-      { label: `${sunLabel}`, orders: sunOrders, ended: sunEnded },
+      { label: pickupLabel(satOrders), orders: satOrders, ended: satEnded },
+      { label: pickupLabel(sunOrders), orders: sunOrders, ended: sunEnded },
     ].filter(g => g.orders.length);
 
     if (!groups.length) {
