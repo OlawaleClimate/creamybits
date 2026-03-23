@@ -605,16 +605,14 @@
     document.getElementById('satDate').textContent = fmtShort(satDate);
     document.getElementById('sunDate').textContent = fmtShort(sunDate);
 
-    // Revenue: orders matching this weekend's ISO date, OR legacy orders with no ISO date but matching pickupDay name
-    // Include 'completed' so fulfilled Saturday orders still appear in the summary on Sunday
+    // Match only by exact ISO pickup date — pickupDay name alone is ambiguous (which week?)
+    // Include 'completed' so fulfilled orders still appear in the summary
     const weekendStatuses = ['paid', 'ready', 'completed'];
     const satOrders = orders.filter(o =>
-      weekendStatuses.includes(o.status) &&
-      (toPickupISO(o.pickupDate) === satISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'saturday'))
+      weekendStatuses.includes(o.status) && toPickupISO(o.pickupDate) === satISO
     );
     const sunOrders = orders.filter(o =>
-      weekendStatuses.includes(o.status) &&
-      (toPickupISO(o.pickupDate) === sunISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'sunday'))
+      weekendStatuses.includes(o.status) && toPickupISO(o.pickupDate) === sunISO
     );
     const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
 
