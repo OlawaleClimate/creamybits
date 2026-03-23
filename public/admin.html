@@ -594,9 +594,15 @@
     document.getElementById('satDate').textContent = fmtShort(satDate);
     document.getElementById('sunDate').textContent = fmtShort(sunDate);
 
-    // Revenue: only orders scheduled for THIS weekend's exact dates
-    const satOrders = orders.filter(o => ['paid','ready'].includes(o.status) && o.pickupDate === satISO);
-    const sunOrders = orders.filter(o => ['paid','ready'].includes(o.status) && o.pickupDate === sunISO);
+    // Revenue: orders matching this weekend's ISO date, OR legacy orders with no ISO date but matching pickupDay name
+    const satOrders = orders.filter(o =>
+      ['paid','ready'].includes(o.status) &&
+      (o.pickupDate === satISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'saturday'))
+    );
+    const sunOrders = orders.filter(o =>
+      ['paid','ready'].includes(o.status) &&
+      (o.pickupDate === sunISO || (!o.pickupDate && (o.pickupDay || '').toLowerCase() === 'sunday'))
+    );
     const weekendRevenue = [...satOrders, ...sunOrders].reduce((s, o) => s + orderTotal(o), 0);
 
     document.getElementById('statTotal').textContent          = orders.length;
