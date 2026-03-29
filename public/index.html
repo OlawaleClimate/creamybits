@@ -529,7 +529,8 @@
 
 <script>
   // ── Cart state ──────────────────────────────────────────────────────────
-  let cart = [];  let productsData = [];  // populated by loadProducts()
+  let cart = JSON.parse(localStorage.getItem('cb_cart') || '[]');
+  let productsData = [];  // populated by loadProducts()
   let blockedDatesSet = new Set(); // ISO date strings YYYY-MM-DD
   // ── Mobile nav ─────────────────────────────────────────────────────────
   function toggleMenu() {
@@ -636,6 +637,7 @@
         document.body.classList.remove('has-cart-bar');
       }
     }
+    localStorage.setItem('cb_cart', JSON.stringify(cart));
   }
 
   function renderCartItems() {
@@ -1045,6 +1047,7 @@
     }
   }
 
+  updateCart();
   loadProducts();
   loadBlockedDates();
 

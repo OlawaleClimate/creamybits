@@ -318,7 +318,8 @@
 </div>
 
 <script>
-  let cart = [], productsData = [], blockedDatesSet = new Set();
+  let cart = JSON.parse(localStorage.getItem('cb_cart') || '[]');
+  let productsData = [], blockedDatesSet = new Set();
 
   function toggleMenu() {
     const nav = document.getElementById('navLinks');
@@ -418,6 +419,7 @@
         document.body.classList.remove('has-cart-bar');
       }
     }
+    localStorage.setItem('cb_cart', JSON.stringify(cart));
   }
 
   function renderCartItems() {
@@ -758,6 +760,7 @@
     } catch(e) { console.warn('Could not load blocked dates:', e); }
   }
 
+  updateCart();
   loadProducts();
   loadBlockedDates();
 
