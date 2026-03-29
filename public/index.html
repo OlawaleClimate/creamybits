@@ -42,7 +42,7 @@
     .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
     /* ── HERO ── */
-    .hero { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 1fr 1fr; align-items: center; background: linear-gradient(135deg,#fce7f3 0%,#fff 40%,#fef9c3 100%); padding: 4rem 5rem; overflow: hidden; position: relative; }
+    .hero { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 1fr 1fr; align-items: center; background: linear-gradient(135deg,#fce7f3 0%,#fff 40%,#fef9c3 100%); padding: 4rem 5rem; overflow: hidden; position: relative; border-radius: 0 0 2.5rem 2.5rem; }
     .hero::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 20% 50%, rgba(244,114,182,.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(250,204,21,.12) 0%, transparent 50%); }
     .hero-left { position: relative; z-index: 2; }
     .badge { display: inline-flex; align-items: center; background: var(--black); color: #fff; font-size: .85rem; font-weight: 600; padding: .45rem 1.1rem; border-radius: 999px; margin-bottom: 1.5rem; }
@@ -254,6 +254,36 @@
       .product-grid { grid-template-columns: 1fr; }
     }
 
+    /* ── FROSTED GLASS NAV ── */
+    nav { transition: background .35s ease, box-shadow .35s ease; }
+    nav.scrolled { background: rgba(15,15,15,.82) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgba(255,255,255,.07); }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+      .reveal.visible { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials { background: #fff; padding: 2.5rem 5rem 3.5rem; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; max-width: 1100px; margin: 0 auto; }
+    .testimonial-card { background: #f8f8f8; border-radius: 20px; padding: 1.5rem 1.75rem; }
+    .testimonial-stars { color: #facc15; font-size: .9rem; margin-bottom: .55rem; }
+    .testimonial-text { font-size: .88rem; color: #374151; line-height: 1.65; margin-bottom: .85rem; font-style: italic; }
+    .testimonial-author { font-size: .8rem; font-weight: 700; color: #111; }
+    @media(max-width:1000px) { .testimonials { padding: 2rem 2rem 3rem; } }
+    @media(max-width:680px) { .testimonials { padding: 2rem 1.25rem 2.5rem; } .testimonials-grid { grid-template-columns: 1fr; gap: 1rem; } }
+
+    /* ── MOBILE CART BAR ── */
+    .mobile-cart-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 350; display: none; align-items: center; justify-content: space-between; background: linear-gradient(135deg,#ec4899,#8b5cf6); color: #fff; padding: 1rem 1.5rem; border: none; width: 100%; font-family: 'DM Sans',sans-serif; cursor: pointer; transform: translateY(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); box-shadow: 0 -4px 24px rgba(139,92,246,.4); }
+    .mobile-cart-bar.show { display: flex; }
+    .mobile-cart-bar.up { transform: translateY(0); }
+    .mcb-left { display: flex; align-items: center; gap: .65rem; font-weight: 700; font-size: .95rem; }
+    .mcb-right { font-weight: 700; font-size: .95rem; }
+    @media(min-width:681px) { .mobile-cart-bar { display: none !important; } }
+    @media(max-width:680px) { body.has-cart-bar { padding-bottom: 64px; } }
+
     /* ── SKIP LINK ── */
     .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: var(--black); color: #fff; padding: .6rem 1.2rem; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: .9rem; }
     .skip-link:focus { left: 1rem; }
@@ -327,26 +357,54 @@
 
 <!-- FEATURES -->
 <section class="features" aria-label="Features">
-  <div class="feature">
+  <div class="feature reveal">
     <div class="feature-icon fi-blue" aria-hidden="true">🌾</div>
     <h3>Premium Ingredients</h3>
     <p>We use only the finest locally sourced flour and real butter for that perfect flake in every bite.</p>
   </div>
-  <div class="feature">
+  <div class="feature reveal" style="transition-delay:.15s">
     <div class="feature-icon fi-pink" aria-hidden="true">👩‍🍳</div>
     <h3>Handcrafted Fresh</h3>
     <p>Made from scratch every time — no shortcuts, no preservatives, just real African flavors.</p>
   </div>
-  <div class="feature">
+  <div class="feature reveal" style="transition-delay:.3s">
     <div class="feature-icon fi-yellow" aria-hidden="true">📦</div>
     <h3>Easy Online Order</h3>
     <p>Order online, pay securely, and we'll have everything ready for you in Albuquerque, NM.</p>
   </div>
 </section>
 
+<!-- WAVE DIVIDER: features → testimonials -->
+<div style="background:#fff;overflow:hidden;line-height:0" aria-hidden="true">
+  <svg viewBox="0 0 1440 50" preserveAspectRatio="none" style="display:block;width:100%;height:50px">
+    <path d="M0,0 Q360,50 720,25 Q1080,0 1440,50 L1440,0 L0,0 Z" fill="#f8f8f8"/>
+  </svg>
+</div>
+
+<!-- SOCIAL PROOF -->
+<section class="testimonials" aria-label="Customer reviews">
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Ordered the pastry variety box and it was gone in minutes. Meat pies are absolutely unreal — taste just like home."</p>
+      <span class="testimonial-author">— Temi A., Albuquerque</span>
+    </div>
+    <div class="testimonial-card reveal" style="transition-delay:.15s">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"The glazed puff puffs were the highlight of our family gathering. Everyone kept asking where they came from!"</p>
+      <span class="testimonial-author">— Chidi O., Rio Rancho</span>
+    </div>
+    <div class="testimonial-card reveal" style="transition-delay:.3s">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Best African pastries in New Mexico. The chin-chin and chicken pies are my weekly treat. Never disappoints."</p>
+      <span class="testimonial-author">— Funke B., Albuquerque</span>
+    </div>
+  </div>
+</section>
+
 <!-- FEATURED PRODUCTS -->
 <section id="menu" aria-label="Featured products">
-  <div class="section-header">
+  <div class="section-header reveal">
     <div class="section-tag">Menu &amp; Order</div>
     <h2>Fresh from our kitchen</h2>
     <p>Pick-up available Saturdays &amp; Sundays only. Weekday bulk / catering orders available on request.</p>
@@ -364,7 +422,7 @@
 <!-- CTA BANNER -->
 <section class="cta-banner" aria-label="Call to action">
   <div class="cta-bg"></div>
-  <div class="cta-content">
+  <div class="cta-content reveal">
     <h2>Ready to treat yourself?</h2>
     <p>Browse our full menu, build your order, and pay securely online.</p>
     <button class="btn-gradient" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">View Full Menu</button>
@@ -599,6 +657,21 @@
     countEl.style.display = count > 0 ? 'flex' : 'none';
     document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
     renderCartItems();
+    // Mobile cart bar
+    const bar = document.getElementById('mobileCartBar');
+    if (bar) {
+      document.getElementById('mobileCartLabel').textContent = count + ' item' + (count !== 1 ? 's' : '');
+      document.getElementById('mobileCartTotal').textContent = '$' + total.toFixed(2);
+      if (count > 0) {
+        bar.classList.add('show');
+        requestAnimationFrame(() => bar.classList.add('up'));
+        document.body.classList.add('has-cart-bar');
+      } else {
+        bar.classList.remove('up');
+        setTimeout(() => bar.classList.remove('show'), 320);
+        document.body.classList.remove('has-cart-bar');
+      }
+    }
   }
 
   function renderCartItems() {
@@ -979,7 +1052,7 @@
         <button class="add-btn" onclick="addGlazed(this,'${gf1}','${gf2}','${gt}',${p.price})">${ADD_SVG} Add to Order</button>`;
     }
 
-    return `<div class="product-card">${imgEl}<div class="product-body"><div class="product-name">${escHtml(p.name)}</div><div class="product-desc">${escHtml(p.description||'')}</div>${priceHtml}${controlsHtml}</div></div>`;
+    return `<div class="product-card reveal">${imgEl}<div class="product-body"><div class="product-name">${escHtml(p.name)}</div><div class="product-desc">${escHtml(p.description||'')}</div>${priceHtml}${controlsHtml}</div></div>`;
   }
 
   const FEATURED_NAMES = ['Meat Pies','Pastry Variety Box','Chicken Pies','Chin-Chin','Egg Rolls','Sausage Rolls'];
@@ -993,6 +1066,7 @@
         FEATURED_NAMES.some(n => p.name.toLowerCase().includes(n.toLowerCase()))
       );
       grid.innerHTML = featured.map(renderProductCard).join('');
+      grid.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     } catch(e) {
       console.error('Failed to load products:', e);
     }
@@ -1021,6 +1095,28 @@
     if (document.getElementById('orderModal').classList.contains('open')) { closeModal(); return; }
     if (document.getElementById('cartDrawer').classList.contains('open')) { closeCart(); }
   });
+
+  // Frosted glass nav on scroll
+  window.addEventListener('scroll', () => {
+    document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // Scroll reveal observer
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 </script>
+
+<!-- MOBILE CART BAR -->
+<button class="mobile-cart-bar" id="mobileCartBar" onclick="openCart()" aria-label="View cart">
+  <span class="mcb-left">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    <span id="mobileCartLabel">0 items</span>
+  </span>
+  <span class="mcb-right" id="mobileCartTotal">$0.00</span>
+</button>
 </body>
 </html>
