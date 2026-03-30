@@ -814,16 +814,16 @@ app.get('/luxe-form', (_req, res) => {
 
 app.post('/luxe-inquiry', express.json(), async (req, res) => {
   const { firstName, lastName, email, phone, eventType, guests, eventDate, eventTime,
-          addr1, addr2, city, state, zip, services, description } = req.body;
+          city, state, zip, services, description } = req.body;
 
   if (!firstName || !lastName || !email || !phone || !eventType || !guests ||
-      !eventDate || !eventTime || !addr1 || !city || !state || !zip ||
+      !eventDate || !eventTime || !city || !state || !zip ||
       !services || services.length === 0) {
     return res.status(400).json({ error: 'Missing required fields.' });
   }
 
   const fullName = `${firstName} ${lastName}`;
-  const address  = [addr1, addr2, city, state, zip].filter(Boolean).join(', ');
+  const address  = [city, state, zip].filter(Boolean).join(', ');
   const servicesList = services.map(s => `<li>${s}</li>`).join('');
 
   const html = `

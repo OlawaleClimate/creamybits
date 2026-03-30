@@ -234,6 +234,7 @@
             <option value="">Please Select</option>
             <option>Wedding</option>
             <option>Birthday</option>
+            <option>Graduation</option>
             <option>Corporate Event</option>
             <option>Baby Shower</option>
             <option>Other</option>
@@ -284,15 +285,6 @@
 
       <div class="section-label">Event Location</div>
 
-      <div class="form-group">
-        <label for="addr1">Street Address <span class="req">*</span></label>
-        <input class="form-input" id="addr1" type="text" placeholder="123 Main St" autocomplete="address-line1" />
-        <div class="field-error" id="err-addr1">Please enter the street address.</div>
-      </div>
-      <div class="form-group">
-        <label for="addr2">Street Address Line 2</label>
-        <input class="form-input" id="addr2" type="text" placeholder="Suite, venue name, etc." autocomplete="address-line2" />
-      </div>
       <div class="addr-city-row">
         <div class="form-group">
           <label for="city">City <span class="req">*</span></label>
@@ -345,7 +337,7 @@
 
       <div class="form-group">
         <label for="description">Tell us more about your event</label>
-        <textarea class="form-input" id="description" rows="4" placeholder="If you do not see what you want on the menu, please explain in detail here..."></textarea>
+        <textarea class="form-input" id="description" rows="4" placeholder="If you do not see what you want on the service list, please explain in detail here..."></textarea>
         <div class="form-hint">Optional — but the more detail, the better we can serve you.</div>
       </div>
 
@@ -389,7 +381,7 @@
   function validate() {
     let ok = true;
 
-    const required = ['firstName', 'lastName', 'email', 'phone', 'eventType', 'guests', 'addr1', 'city', 'state', 'zip', 'eventTime'];
+    const required = ['firstName', 'lastName', 'email', 'phone', 'eventType', 'guests', 'city', 'state', 'zip', 'eventTime'];
     required.forEach(id => {
       const val = document.getElementById(id).value.trim();
       const fail = !val;
@@ -445,8 +437,6 @@
       guests:      document.getElementById('guests').value.trim(),
       eventDate:   `${yr}-${mo}-${dy}`,
       eventTime:   document.getElementById('eventTime').value.trim(),
-      addr1:       document.getElementById('addr1').value.trim(),
-      addr2:       document.getElementById('addr2').value.trim(),
       city:        document.getElementById('city').value.trim(),
       state:       document.getElementById('state').value,
       zip:         document.getElementById('zip').value.trim(),
