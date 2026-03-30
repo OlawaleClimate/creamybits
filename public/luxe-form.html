@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luxe Set Up – Catering Inquiry · CreamyBits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --black: #0f0f0f;
+      --dark: #1a1209;
+      --white: #ffffff;
+      --gray: #6b7280;
+      --light: #fdfaf3;
+      --border: #e5dcc8;
+      --error: #dc2626;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(160deg, #1a1209 0%, #2e1f0a 50%, #1a1209 100%);
+      min-height: 100vh;
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    .page-header {
+      text-align: center;
+      padding: 3rem 1.5rem 2rem;
+    }
+    .logo-wrap {
+      width: 80px; height: 80px; border-radius: 50%; overflow: hidden;
+      background: #fff; margin: 0 auto 1.25rem;
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 0 6px rgba(201,168,76,.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 900;
+      color: var(--gold-light);
+      margin-bottom: .5rem;
+      letter-spacing: .01em;
+    }
+    .page-header p {
+      color: rgba(255,255,255,.65);
+      font-size: .95rem;
+    }
+
+    /* ── FORM CARD ── */
+    .form-wrap {
+      max-width: 720px;
+      margin: 0 auto 4rem;
+      padding: 0 1.25rem;
+    }
+    .form-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem 2.25rem;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+      border-top: 4px solid var(--gold);
+    }
+
+    /* ── SECTION DIVIDER ── */
+    .section-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: .5rem;
+      margin: 2rem 0 1.25rem;
+    }
+    .section-label:first-of-type { margin-top: 0; }
+
+    /* ── FIELDS ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block; font-size: .85rem; font-weight: 600;
+      color: #374151; margin-bottom: .4rem;
+    }
+    .req { color: var(--gold); margin-left: 2px; }
+    .form-input {
+      width: 100%; padding: .65rem .9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem; background: #fff;
+      color: var(--black);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,.15);
+    }
+    .form-input.error { border-color: var(--error); }
+    select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2.25rem; cursor: pointer; }
+    textarea.form-input { resize: vertical; min-height: 100px; }
+    .form-hint { font-size: .75rem; color: #9ca3af; margin-top: .3rem; }
+
+    /* ── DATE ROW ── */
+    .date-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
+
+    /* ── ADDRESS ── */
+    .addr-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .addr-city-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: .9rem; }
+
+    /* ── CHECKBOXES ── */
+    .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .75rem; margin-top: .25rem; }
+    .checkbox-item { display: flex; align-items: center; gap: .55rem; cursor: pointer; }
+    .checkbox-item input[type="checkbox"] {
+      width: 18px; height: 18px; accent-color: var(--gold);
+      cursor: pointer; flex-shrink: 0; border-radius: 4px;
+    }
+    .checkbox-item span { font-size: .88rem; color: #374151; user-select: none; }
+
+    /* ── ERROR TEXT ── */
+    .field-error { color: var(--error); font-size: .78rem; margin-top: .3rem; display: none; }
+    .form-alert {
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 10px; padding: .85rem 1rem;
+      color: var(--error); font-size: .88rem;
+      margin-bottom: 1.25rem; display: none;
+    }
+    .form-success {
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 10px; padding: 1.25rem 1.5rem;
+      color: #166534; font-size: .95rem; line-height: 1.6;
+      display: none; text-align: center;
+    }
+    .form-success strong { display: block; font-size: 1.1rem; margin-bottom: .4rem; }
+
+    /* ── SUBMIT ── */
+    .btn-submit {
+      width: 100%; padding: 1rem;
+      background: linear-gradient(135deg, #c9a84c, #a0782a);
+      color: #fff; border: none; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      box-shadow: 0 4px 20px rgba(201,168,76,.35);
+      margin-top: 1.5rem;
+      letter-spacing: .02em;
+    }
+    .btn-submit:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ── FOOTER ── */
+    .form-footer {
+      text-align: center;
+      color: rgba(255,255,255,.4);
+      font-size: .8rem;
+      padding: 0 1.5rem 3rem;
+    }
+    .form-footer a { color: rgba(255,255,255,.55); text-decoration: none; }
+    .form-footer a:hover { color: var(--gold-light); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:600px) {
+      .form-card { padding: 1.75rem 1.25rem; }
+      .form-row, .addr-row, .addr-city-row { grid-template-columns: 1fr; }
+      .date-row { grid-template-columns: 1fr 1fr 1fr; }
+      .checkbox-group { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo-wrap">
+    <img src="/logo.png" alt="CreamyBits" />
+  </div>
+  <h1>Luxe Set Up – Catering Inquiry</h1>
+  <p>Please fill out your event details and we'll be in touch.</p>
+</div>
+
+<div class="form-wrap">
+  <div class="form-card">
+    <p class="form-alert" id="formAlert"></p>
+    <div class="form-success" id="formSuccess">
+      <strong>✓ Inquiry Received!</strong>
+      Thank you — we've received your catering inquiry and will be in touch shortly.
+    </div>
+
+    <form id="luxeForm" novalidate>
+
+      <div class="section-label">Contact Information</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name <span class="req">*</span></label>
+          <input class="form-input" id="firstName" type="text" placeholder="Jane" autocomplete="given-name" />
+          <div class="field-error" id="err-firstName">Please enter your first name.</div>
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name <span class="req">*</span></label>
+          <input class="form-input" id="lastName" type="text" placeholder="Doe" autocomplete="family-name" />
+          <div class="field-error" id="err-lastName">Please enter your last name.</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email Address <span class="req">*</span></label>
+          <input class="form-input" id="email" type="email" placeholder="example@example.com" autocomplete="email" />
+          <div class="field-error" id="err-email">Please enter a valid email address.</div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number <span class="req">*</span></label>
+          <input class="form-input" id="phone" type="tel" placeholder="(505) 000-0000" autocomplete="tel" />
+          <div class="field-error" id="err-phone">Please enter a valid phone number.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Event Details</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="eventType">Event Type <span class="req">*</span></label>
+          <select class="form-input" id="eventType">
+            <option value="">Please Select</option>
+            <option>Wedding</option>
+            <option>Birthday</option>
+            <option>Corporate Event</option>
+            <option>Baby Shower</option>
+            <option>Other</option>
+          </select>
+          <div class="field-error" id="err-eventType">Please select an event type.</div>
+        </div>
+        <div class="form-group">
+          <label for="guests">Number of Guests <span class="req">*</span></label>
+          <input class="form-input" id="guests" type="number" min="1" placeholder="e.g. 50" />
+          <div class="field-error" id="err-guests">Please enter the number of guests.</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date of Event <span class="req">*</span></label>
+          <div class="date-row">
+            <select class="form-input" id="eventMonth">
+              <option value="">Month</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            <select class="form-input" id="eventDay">
+              <option value="">Day</option>
+            </select>
+            <select class="form-input" id="eventYear">
+              <option value="">Year</option>
+            </select>
+          </div>
+          <div class="field-error" id="err-eventDate">Please select a valid future date.</div>
+        </div>
+        <div class="form-group">
+          <label for="eventTime">Time of Event <span class="req">*</span></label>
+          <input class="form-input" id="eventTime" type="text" placeholder="e.g. 6:00 PM" />
+          <div class="field-error" id="err-eventTime">Please enter the event time.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Event Location</div>
+
+      <div class="form-group">
+        <label for="addr1">Street Address <span class="req">*</span></label>
+        <input class="form-input" id="addr1" type="text" placeholder="123 Main St" autocomplete="address-line1" />
+        <div class="field-error" id="err-addr1">Please enter the street address.</div>
+      </div>
+      <div class="form-group">
+        <label for="addr2">Street Address Line 2</label>
+        <input class="form-input" id="addr2" type="text" placeholder="Suite, venue name, etc." autocomplete="address-line2" />
+      </div>
+      <div class="addr-city-row">
+        <div class="form-group">
+          <label for="city">City <span class="req">*</span></label>
+          <input class="form-input" id="city" type="text" placeholder="Albuquerque" autocomplete="address-level2" />
+          <div class="field-error" id="err-city">Please enter the city.</div>
+        </div>
+        <div class="form-group">
+          <label for="state">State <span class="req">*</span></label>
+          <select class="form-input" id="state" autocomplete="address-level1">
+            <option value="">State</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+            <option>WI</option><option>WY</option>
+          </select>
+          <div class="field-error" id="err-state">Please select a state.</div>
+        </div>
+        <div class="form-group">
+          <label for="zip">Zip Code <span class="req">*</span></label>
+          <input class="form-input" id="zip" type="text" placeholder="87101" autocomplete="postal-code" maxlength="10" />
+          <div class="field-error" id="err-zip">Please enter the zip code.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Services</div>
+
+      <div class="form-group">
+        <label>Type of Services Needed <span class="req">*</span></label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" value="Pastries" /><span>Pastries</span></label>
+          <label class="checkbox-item"><input type="checkbox" value="Smallchops/Canapes" /><span>Smallchops / Canapés</span></label>
+          <label class="checkbox-item"><input type="checkbox" value="Mocktails" /><span>Mocktails</span></label>
+          <label class="checkbox-item"><input type="checkbox" value="Nigerian Food Menu" /><span>Nigerian Food Menu</span></label>
+          <label class="checkbox-item"><input type="checkbox" value="Pick up order" /><span>Pick up Order</span></label>
+          <label class="checkbox-item"><input type="checkbox" value="Other" /><span>Other</span></label>
+        </div>
+        <div class="field-error" id="err-services">Please select at least one service.</div>
+      </div>
+
+      <div class="section-label">Additional Info</div>
+
+      <div class="form-group">
+        <label for="description">Tell us more about your event</label>
+        <textarea class="form-input" id="description" rows="4" placeholder="If you do not see what you want on the menu, please explain in detail here..."></textarea>
+        <div class="form-hint">Optional — but the more detail, the better we can serve you.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Submit Inquiry →</button>
+
+    </form>
+  </div>
+</div>
+
+<div class="form-footer">
+  <p>© 2026 CreamyBits LLC · Albuquerque, NM · <a href="/">Back to Home</a></p>
+</div>
+
+<script>
+  // Populate day options
+  const dayEl = document.getElementById('eventDay');
+  for (let d = 1; d <= 31; d++) {
+    const opt = document.createElement('option');
+    opt.value = String(d).padStart(2, '0');
+    opt.textContent = d;
+    dayEl.appendChild(opt);
+  }
+
+  // Populate year options (current year + 3)
+  const yearEl = document.getElementById('eventYear');
+  const curYear = new Date().getFullYear();
+  for (let y = curYear; y <= curYear + 3; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearEl.appendChild(opt);
+  }
+
+  function showError(id, show) {
+    const el = document.getElementById('err-' + id);
+    if (el) el.style.display = show ? 'block' : 'none';
+    const input = document.getElementById(id);
+    if (input) input.classList.toggle('error', show);
+  }
+
+  function validate() {
+    let ok = true;
+
+    const required = ['firstName', 'lastName', 'email', 'phone', 'eventType', 'guests', 'addr1', 'city', 'state', 'zip', 'eventTime'];
+    required.forEach(id => {
+      const val = document.getElementById(id).value.trim();
+      const fail = !val;
+      showError(id, fail);
+      if (fail) ok = false;
+    });
+
+    // Email format
+    const emailVal = document.getElementById('email').value.trim();
+    if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      showError('email', true);
+      ok = false;
+    }
+
+    // Date
+    const mo = document.getElementById('eventMonth').value;
+    const dy = document.getElementById('eventDay').value;
+    const yr = document.getElementById('eventYear').value;
+    const dateOk = mo && dy && yr;
+    showError('eventDate', !dateOk);
+    if (!dateOk) ok = false;
+
+    // Services
+    const checked = [...document.querySelectorAll('.checkbox-group input:checked')];
+    showError('services', checked.length === 0);
+    if (checked.length === 0) ok = false;
+
+    return ok;
+  }
+
+  document.getElementById('luxeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    document.getElementById('formAlert').style.display = 'none';
+
+    if (!validate()) {
+      document.getElementById('formAlert').textContent = 'Please fill in all required fields.';
+      document.getElementById('formAlert').style.display = 'block';
+      document.getElementById('formAlert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    const mo = document.getElementById('eventMonth').value;
+    const dy = document.getElementById('eventDay').value;
+    const yr = document.getElementById('eventYear').value;
+    const services = [...document.querySelectorAll('.checkbox-group input:checked')].map(c => c.value);
+
+    const payload = {
+      firstName:   document.getElementById('firstName').value.trim(),
+      lastName:    document.getElementById('lastName').value.trim(),
+      email:       document.getElementById('email').value.trim(),
+      phone:       document.getElementById('phone').value.trim(),
+      eventType:   document.getElementById('eventType').value,
+      guests:      document.getElementById('guests').value.trim(),
+      eventDate:   `${yr}-${mo}-${dy}`,
+      eventTime:   document.getElementById('eventTime').value.trim(),
+      addr1:       document.getElementById('addr1').value.trim(),
+      addr2:       document.getElementById('addr2').value.trim(),
+      city:        document.getElementById('city').value.trim(),
+      state:       document.getElementById('state').value,
+      zip:         document.getElementById('zip').value.trim(),
+      services,
+      description: document.getElementById('description').value.trim(),
+    };
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    try {
+      const res = await fetch('/luxe-inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+
+      document.getElementById('luxeForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      document.getElementById('formAlert').textContent = 'Something went wrong: ' + err.message + '. Please try again or email us directly.';
+      document.getElementById('formAlert').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Submit Inquiry →';
+    }
+  });
+</script>
+</body>
+</html>

@@ -520,15 +520,7 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
       customerEmail: customerEmail.trim().toLowerCase(),
       customerPhone: customerPhone.trim(),
       pickupDay,
-      pickupDate: (() => {
-        if (!pickupDate) return '';
-        if (/^\d{4}-\d{2}-\d{2}$/.test(pickupDate)) return pickupDate;
-        // Normalize "Month D, YYYY" → "YYYY-MM-DD"
-        const MON = {January:'01',February:'02',March:'03',April:'04',May:'05',June:'06',July:'07',August:'08',September:'09',October:'10',November:'11',December:'12'};
-        const mm = pickupDate.match(/^(\w+)\s+(\d+),\s*(\d{4})$/);
-        if (mm && MON[mm[1]]) return `${mm[3]}-${MON[mm[1]]}-${String(mm[2]).padStart(2,'0')}`;
-        return '';
-      })(),
+      pickupDate: pickupDate || '',
       pickupTime,
       allergies: allergies.trim(),
       items,
@@ -813,6 +805,62 @@ app.get('/admin', requireAdmin, (_req, res) => {
 // Full menu page
 app.get('/menu', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'menu.html'));
+});
+
+// Luxe catering inquiry form
+app.get('/luxe-form', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'luxe-form.html'));
+});
+
+app.post('/luxe-inquiry', express.json(), async (req, res) => {
+  const { firstName, lastName, email, phone, eventType, guests, eventDate, eventTime,
+          addr1, addr2, city, state, zip, services, description } = req.body;
+
+  if (!firstName || !lastName || !email || !phone || !eventType || !guests ||
+      !eventDate || !eventTime || !addr1 || !city || !state || !zip ||
+      !services || services.length === 0) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+
+  const fullName = `${firstName} ${lastName}`;
+  const address  = [addr1, addr2, city, state, zip].filter(Boolean).join(', ');
+  const servicesList = services.map(s => `<li>${s}</li>`).join('');
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
+      <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:2rem;border-radius:12px 12px 0 0;text-align:center">
+        <h1 style="color:#f0d080;font-size:1.4rem;margin:0">✨ Luxe Catering Inquiry</h1>
+      </div>
+      <div style="background:#fff;border:1px solid #e5dcc8;border-top:none;border-radius:0 0 12px 12px;padding:2rem">
+        <table style="width:100%;border-collapse:collapse;font-size:.93rem">
+          <tr><td style="padding:.5rem .75rem;font-weight:700;width:160px;color:#6b7280">Name</td><td style="padding:.5rem .75rem">${fullName}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Email</td><td style="padding:.5rem .75rem"><a href="mailto:${email}">${email}</a></td></tr>
+          <tr><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Phone</td><td style="padding:.5rem .75rem">${phone}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Event Type</td><td style="padding:.5rem .75rem">${eventType}</td></tr>
+          <tr><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Date</td><td style="padding:.5rem .75rem">${eventDate}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Time</td><td style="padding:.5rem .75rem">${eventTime}</td></tr>
+          <tr><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Location</td><td style="padding:.5rem .75rem">${address}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Guests</td><td style="padding:.5rem .75rem">${guests}</td></tr>
+          <tr><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280;vertical-align:top">Services</td><td style="padding:.5rem .75rem"><ul style="margin:0;padding-left:1.2rem">${servicesList}</ul></td></tr>
+          ${description ? `<tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280;vertical-align:top">Details</td><td style="padding:.5rem .75rem">${description}</td></tr>` : ''}
+        </table>
+      </div>
+      <p style="text-align:center;color:#9ca3af;font-size:.78rem;margin-top:1rem">CreamyBits LLC · Albuquerque, NM</p>
+    </div>`;
+
+  try {
+    await resend.emails.send({
+      from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to:       process.env.ADMIN_EMAIL,
+      reply_to: email,
+      subject:  `Luxe Catering Inquiry – ${fullName} · ${eventType} on ${eventDate}`,
+      html,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Luxe inquiry email error:', err.message);
+    res.status(500).json({ error: 'Failed to send inquiry.' });
+  }
 });
 
 // Legal pages
