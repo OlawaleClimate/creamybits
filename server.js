@@ -93,6 +93,21 @@ async function initDB() {
       sort_order  INTEGER DEFAULT 0,
       active      BOOLEAN DEFAULT true
     );
+
+    CREATE TABLE IF NOT EXISTS luxe_bookings (
+      id                TEXT PRIMARY KEY,
+      stripe_session_id TEXT,
+      status            TEXT NOT NULL DEFAULT 'pending_payment',
+      placed_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      paid_at           TIMESTAMPTZ,
+      customer_name     TEXT,
+      customer_email    TEXT,
+      customer_phone    TEXT,
+      event_type        TEXT,
+      guest_count       TEXT,
+      event_date        TEXT,
+      notes             TEXT
+    );
   `);
 
   // Seed products if table is empty
@@ -441,6 +456,68 @@ async function sendEmails(order) {
   ]);
 }
 
+async function sendLuxeBookingEmails(booking) {
+  const customerHtml = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
+      <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:2rem;border-radius:12px 12px 0 0;text-align:center">
+        <h1 style="color:#f0d080;font-size:1.3rem;margin:0">✨ CreamyBits Luxe</h1>
+        <p style="color:rgba(240,208,128,.7);font-size:.82rem;margin:.4rem 0 0">Consultation Booking Confirmed</p>
+      </div>
+      <div style="background:#fff;border:1px solid #e5dcc8;border-top:none;border-radius:0 0 12px 12px;padding:2rem">
+        <h2 style="margin:0 0 .5rem;font-size:1.1rem">Hi ${booking.customer_name} 👋</h2>
+        <p style="color:#4b4b4b;line-height:1.65;margin:0 0 1.25rem">
+          Your $40 consultation deposit has been received. We'll reach out within 1–2 business days
+          to schedule your consultation. Your deposit will be credited toward your total if you move forward with CreamyBits Luxe.
+        </p>
+        <table style="width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:1.25rem">
+          <tr><td style="padding:.4rem .6rem;color:#6b7280;width:130px;font-weight:600">Event type</td><td style="padding:.4rem .6rem">${booking.event_type}</td></tr>
+          ${booking.event_date ? `<tr style="background:#fdfaf3"><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Event date</td><td style="padding:.4rem .6rem">${booking.event_date}</td></tr>` : ''}
+          ${booking.guest_count ? `<tr><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Est. guests</td><td style="padding:.4rem .6rem">${booking.guest_count}</td></tr>` : ''}
+          <tr style="background:#fdfaf3"><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Deposit paid</td><td style="padding:.4rem .6rem;color:#16a34a;font-weight:700">$40.00 ✓</td></tr>
+        </table>
+        <p style="font-size:.8rem;color:#9ca3af;margin:0">
+          Note: The $40 consultation fee is non-refundable if you choose not to proceed with our services.
+        </p>
+      </div>
+      <p style="text-align:center;color:#9ca3af;font-size:.75rem;margin-top:1rem">CreamyBits LLC · Albuquerque, NM · creamybitsllc@gmail.com</p>
+    </div>`;
+
+  const adminHtml = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
+      <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:1.5rem 2rem;border-radius:12px 12px 0 0">
+        <h1 style="color:#f0d080;font-size:1.2rem;margin:0">✨ New Luxe Consultation Booking</h1>
+      </div>
+      <div style="background:#fff;border:1px solid #e5dcc8;border-top:none;border-radius:0 0 12px 12px;padding:2rem">
+        <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+          <tr><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280;width:130px">Name</td><td style="padding:.45rem .6rem">${booking.customer_name}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Email</td><td style="padding:.45rem .6rem"><a href="mailto:${booking.customer_email}">${booking.customer_email}</a></td></tr>
+          <tr><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Phone</td><td style="padding:.45rem .6rem">${booking.customer_phone}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Event type</td><td style="padding:.45rem .6rem">${booking.event_type}</td></tr>
+          ${booking.event_date ? `<tr><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Event date</td><td style="padding:.45rem .6rem">${booking.event_date}</td></tr>` : ''}
+          ${booking.guest_count ? `<tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Est. guests</td><td style="padding:.45rem .6rem">${booking.guest_count}</td></tr>` : ''}
+          ${booking.notes ? `<tr><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280;vertical-align:top">Notes</td><td style="padding:.45rem .6rem">${booking.notes}</td></tr>` : ''}
+          <tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Deposit</td><td style="padding:.45rem .6rem;color:#16a34a;font-weight:700">$40.00 PAID</td></tr>
+        </table>
+      </div>
+    </div>`;
+
+  await Promise.all([
+    resend.emails.send({
+      from:    `CreamyBits Luxe <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to:      booking.customer_email,
+      subject: `Consultation booked – CreamyBits Luxe ✨`,
+      html:    customerHtml,
+    }),
+    resend.emails.send({
+      from:     `CreamyBits Luxe <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to:       process.env.ADMIN_EMAIL,
+      reply_to: booking.customer_email,
+      subject:  `New Luxe booking: ${booking.customer_name} · ${booking.event_type}`,
+      html:     adminHtml,
+    }),
+  ]);
+}
+
 // ── Middleware ────────────────────────────────────────────────────────────────
 // Webhook route must get raw body — register BEFORE json middleware catches it
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -456,7 +533,27 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
   }
 
   if (event.type === 'checkout.session.completed') {
-    const s       = event.data.object;
+    const s = event.data.object;
+
+    // Luxe booking payment
+    if (s.metadata && s.metadata.type === 'luxe_booking') {
+      const bookingId = s.metadata.bookingId;
+      try {
+        const { rows } = await pool.query(
+          `UPDATE luxe_bookings SET status='paid', paid_at=NOW(), stripe_session_id=$1
+           WHERE id=$2 RETURNING *`,
+          [s.id, bookingId]
+        );
+        if (rows[0]) {
+          await sendLuxeBookingEmails(rows[0]).catch(e =>
+            console.error('Luxe booking email failed:', e.message)
+          );
+        }
+      } catch (e) { console.error('Luxe booking webhook error:', e.message); }
+      return res.sendStatus(200);
+    }
+
+    // Regular order payment
     const orderId = s.metadata && s.metadata.orderId;
     if (orderId) {
       const updated = await updateOrder(orderId, {
@@ -934,6 +1031,51 @@ app.get('/luxe-menu', (_req, res) => {
 // Luxe catering inquiry form
 app.get('/luxe-form', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe-form.html'));
+});
+
+// Luxe consultation booking
+app.get('/luxe-booking', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'luxe-booking.html'));
+});
+app.get('/luxe-booking-success', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'luxe-booking-success.html'));
+});
+
+app.post('/create-luxe-booking', express.json(), async (req, res) => {
+  const { customerName, customerEmail, customerPhone, eventType, guestCount, eventDate, notes } = req.body;
+  if (!customerName || !customerEmail || !customerPhone || !eventType)
+    return res.status(400).json({ error: 'Name, email, phone and event type are required.' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+
+  const bookingId = uuidv4();
+  await pool.query(
+    `INSERT INTO luxe_bookings (id, status, customer_name, customer_email, customer_phone, event_type, guest_count, event_date, notes)
+     VALUES ($1,'pending_payment',$2,$3,$4,$5,$6,$7,$8)`,
+    [bookingId, customerName, customerEmail, customerPhone, eventType, guestCount || null, eventDate || null, notes || null]
+  );
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [{
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: 'CreamyBits Luxe — Consultation Deposit',
+          description: 'Non-refundable $40 deposit credited toward your total if you book our services.',
+        },
+        unit_amount: 4000,
+      },
+      quantity: 1,
+    }],
+    customer_email: customerEmail,
+    metadata: { type: 'luxe_booking', bookingId },
+    success_url: `${BASE_URL}/luxe-booking-success`,
+    cancel_url:  `${BASE_URL}/luxe-booking`,
+  });
+
+  res.json({ url: session.url });
 });
 
 app.post('/luxe-inquiry', express.json(), async (req, res) => {

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Confirmed – CreamyBits Luxe</title>
+  <link rel="icon" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --gold: #c9a84c; --gold-lt: #e8c97a; --black: #050301; --cream: #fdf8ee; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black); color: var(--cream);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem 1.25rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      max-width: 480px; width: 100%; text-align: center;
+    }
+
+    /* Animated gold ring */
+    .ring {
+      width: 96px; height: 96px; border-radius: 50%;
+      border: 2px solid rgba(201,168,76,.25);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.75rem;
+      position: relative;
+      animation: ringIn .6s cubic-bezier(.34,1.46,.64,1) forwards;
+    }
+    .ring::before {
+      content: '';
+      position: absolute; inset: -8px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,.12);
+    }
+    .ring-icon { font-size: 2.4rem; line-height: 1; }
+    @keyframes ringIn {
+      from { opacity: 0; transform: scale(.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .orn {
+      display: flex; align-items: center; justify-content: center;
+      gap: .7rem; margin-bottom: 1.25rem;
+    }
+    .orn-line { flex: 1; max-width: 60px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,.35)); }
+    .orn-line.r { background: linear-gradient(90deg, rgba(201,168,76,.35), transparent); }
+    .orn-gem { font-size: .7rem; color: rgba(201,168,76,.6); letter-spacing: .15em; }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 5vw, 2.1rem);
+      font-weight: 900; line-height: 1.2;
+      margin-bottom: .6rem;
+    }
+    h1 em { color: var(--gold); font-style: italic; }
+
+    .sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem; color: rgba(245,230,184,.6);
+      line-height: 1.65; margin-bottom: 2rem;
+    }
+
+    .steps {
+      background: rgba(201,168,76,.05);
+      border: 1px solid rgba(201,168,76,.14);
+      border-radius: 16px; padding: 1.5rem;
+      text-align: left; margin-bottom: 2rem;
+    }
+    .steps-title {
+      font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: rgba(201,168,76,.6);
+      margin-bottom: 1rem;
+    }
+    .step {
+      display: flex; gap: .85rem; align-items: flex-start;
+      margin-bottom: .85rem;
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.3);
+      color: var(--gold); font-size: .72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: .05rem;
+    }
+    .step-text { font-size: .87rem; color: rgba(245,230,184,.72); line-height: 1.5; }
+    .step-text strong { color: var(--cream); }
+
+    .btn-home {
+      display: inline-block; padding: .85rem 2rem;
+      background: linear-gradient(135deg, #c9a84c, #e8c97a);
+      color: #0e0a03; border-radius: 12px;
+      font-weight: 700; font-size: .95rem;
+      text-decoration: none; letter-spacing: .02em;
+      transition: opacity .2s, transform .2s;
+    }
+    .btn-home:hover { opacity: .9; transform: translateY(-1px); }
+
+    .links {
+      margin-top: 1.25rem;
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    }
+    .links a {
+      font-size: .78rem; color: rgba(245,230,184,.35);
+      text-decoration: none; transition: color .2s;
+    }
+    .links a:hover { color: var(--gold-lt); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ring"><span class="ring-icon">✨</span></div>
+
+    <div class="orn">
+      <div class="orn-line"></div>
+      <span class="orn-gem">✦ ✦ ✦</span>
+      <div class="orn-line r"></div>
+    </div>
+
+    <h1>You're all set, <em>darling</em></h1>
+    <p class="sub">
+      Your $40 deposit is confirmed. We'll be in touch within 1–2 business days
+      to schedule your Luxe consultation.
+    </p>
+
+    <div class="steps">
+      <p class="steps-title">What happens next</p>
+      <div class="step">
+        <div class="step-num">1</div>
+        <p class="step-text"><strong>Check your inbox</strong> — a confirmation email is on its way with your booking details.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <p class="step-text"><strong>We'll reach out</strong> within 1–2 business days to schedule your consultation call.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <p class="step-text"><strong>Your $40 deposit</strong> is credited toward your total when you book our services.</p>
+      </div>
+    </div>
+
+    <a class="btn-home" href="/">Back to CreamyBits</a>
+
+    <div class="links">
+      <a href="/luxe-menu">View Luxe Menu</a>
+      <a href="mailto:creamybitsllc@gmail.com">creamybitsllc@gmail.com</a>
+    </div>
+  </div>
+</body>
+</html>

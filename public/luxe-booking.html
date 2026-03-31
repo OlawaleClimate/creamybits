@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Consultation – CreamyBits Luxe</title>
+  <meta name="description" content="Book a CreamyBits Luxe catering consultation. $40 deposit credited toward your total when you book our services." />
+  <meta property="og:title" content="Book a Consultation – CreamyBits Luxe" />
+  <meta property="og:description" content="$40 consultation deposit — credited toward your total if you move forward with CreamyBits Luxe." />
+  <meta property="og:image" content="/logo.png" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:    #c9a84c;
+      --gold-lt: #e8c97a;
+      --gold-pl: #f5e6b8;
+      --black:   #050301;
+      --cream:   #fdf8ee;
+      --ink:     #0e0a03;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black);
+      color: var(--cream);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      padding: .9rem 1.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(5,3,1,.7); backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(201,168,76,.08);
+    }
+    .nav-logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+    .nav-logo img { width: 32px; height: 32px; border-radius: 50%; }
+    .nav-logo span { font-family: 'Playfair Display', serif; font-size: .95rem; color: var(--cream); }
+    .nav-logo em { color: var(--gold); font-style: italic; }
+    .nav-back { font-size: .82rem; color: rgba(245,230,184,.5); text-decoration: none; letter-spacing: .06em; transition: color .2s; }
+    .nav-back:hover { color: var(--gold-lt); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 4rem 1.5rem 3rem;
+      border-bottom: 1px solid rgba(201,168,76,.07);
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--gold); border: 1px solid rgba(201,168,76,.3);
+      border-radius: 99px; padding: .3rem .9rem; margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      font-weight: 900; line-height: 1.15;
+      color: var(--cream); margin-bottom: .75rem;
+    }
+    .hero h1 em { color: var(--gold); font-style: italic; }
+    .hero p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      color: rgba(245,230,184,.62); max-width: 520px; margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── DEPOSIT BADGE ── */
+    .deposit-strip {
+      display: flex; align-items: center; justify-content: center;
+      gap: 2rem; flex-wrap: wrap;
+      max-width: 640px; margin: 2.5rem auto 0;
+      background: rgba(201,168,76,.06);
+      border: 1px solid rgba(201,168,76,.18);
+      border-radius: 16px; padding: 1.25rem 2rem;
+    }
+    .dep-item { text-align: center; }
+    .dep-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 900; color: var(--gold);
+      line-height: 1;
+    }
+    .dep-label { font-size: .72rem; color: rgba(245,230,184,.5); letter-spacing: .1em; text-transform: uppercase; margin-top: .2rem; }
+    .dep-divider { width: 1px; height: 44px; background: rgba(201,168,76,.18); }
+    .dep-note { font-size: .8rem; color: rgba(245,230,184,.65); max-width: 220px; line-height: 1.5; text-align: left; }
+    .dep-note strong { color: var(--gold-lt); }
+
+    /* ── FORM CARD ── */
+    .form-wrap {
+      max-width: 580px; margin: 3rem auto 4rem;
+      padding: 0 1.25rem;
+    }
+    .form-card {
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(201,168,76,.14);
+      border-radius: 20px;
+      padding: 2rem 2rem;
+    }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .field { margin-bottom: 1.1rem; }
+    .field label {
+      display: block; font-size: .72rem; font-weight: 600;
+      color: rgba(201,168,76,.7); text-transform: uppercase;
+      letter-spacing: .1em; margin-bottom: .4rem;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: .72rem 1rem;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: 10px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .93rem;
+      transition: border-color .2s, background .2s;
+      appearance: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: rgba(201,168,76,.6);
+      background: rgba(255,255,255,.07);
+    }
+    .field input::placeholder, .field textarea::placeholder { color: rgba(245,230,184,.25); }
+    .field select option { background: #1a1209; color: var(--cream); }
+    .field textarea { resize: vertical; min-height: 90px; }
+
+    .disclaimer {
+      font-size: .75rem; color: rgba(245,230,184,.38);
+      line-height: 1.55; margin-bottom: 1.5rem;
+      padding: .9rem 1rem;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(201,168,76,.1);
+      border-radius: 10px;
+    }
+    .disclaimer strong { color: rgba(245,230,184,.6); }
+
+    .error-msg {
+      color: #f87171; font-size: .84rem;
+      margin-bottom: 1rem; display: none;
+    }
+
+    .btn-pay {
+      width: 100%; padding: 1rem;
+      background: linear-gradient(135deg, #c9a84c, #e8c97a);
+      color: #0e0a03; border: none; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; letter-spacing: .03em;
+      transition: opacity .2s, transform .2s;
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+    }
+    .btn-pay:hover { opacity: .92; transform: translateY(-1px); }
+    .btn-pay:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .btn-pay .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(14,10,3,.3); border-top-color: #0e0a03;
+      border-radius: 50%; animation: spin .7s linear infinite; display: none;
+    }
+    .btn-pay.loading .spinner { display: block; }
+    .btn-pay.loading .btn-text { opacity: .7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .secure-note {
+      text-align: center; font-size: .72rem;
+      color: rgba(245,230,184,.3); margin-top: .75rem;
+      letter-spacing: .04em;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 1.5rem;
+      font-size: .7rem; color: rgba(245,230,184,.25);
+      letter-spacing: .06em;
+    }
+
+    @media(max-width: 520px) {
+      .field-row { grid-template-columns: 1fr; }
+      .form-card { padding: 1.5rem 1.25rem; }
+      .deposit-strip { gap: 1rem; padding: 1rem 1.25rem; }
+      .dep-divider { width: 60px; height: 1px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/luxe-menu">
+    <img src="/logo.png" alt="CreamyBits" />
+    <span>CreamyBits <em>Luxe</em></span>
+  </a>
+  <a class="nav-back" href="/luxe-menu">← Back to menu</a>
+</nav>
+
+<div class="hero">
+  <span class="hero-tag">Consultation Booking</span>
+  <h1>Let's plan your <em>perfect</em> event</h1>
+  <p>Book a one-on-one consultation and we'll build the ideal Luxe experience around your event.</p>
+
+  <div class="deposit-strip">
+    <div class="dep-item">
+      <div class="dep-amount">$40</div>
+      <div class="dep-label">Deposit</div>
+    </div>
+    <div class="dep-divider"></div>
+    <p class="dep-note">
+      <strong>Credited toward your total</strong> when you book our services.
+      Non-refundable if you choose not to proceed.
+    </p>
+  </div>
+</div>
+
+<div class="form-wrap">
+  <div class="form-card">
+    <p class="error-msg" id="errorMsg"></p>
+
+    <div class="field-row">
+      <div class="field">
+        <label>First Name *</label>
+        <input type="text" id="firstName" placeholder="Grace" autocomplete="given-name" />
+      </div>
+      <div class="field">
+        <label>Last Name *</label>
+        <input type="text" id="lastName" placeholder="Adeyemi" autocomplete="family-name" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Email *</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+    </div>
+
+    <div class="field">
+      <label>Phone *</label>
+      <input type="tel" id="phone" placeholder="(505) 000-0000" autocomplete="tel" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Event Type *</label>
+        <select id="eventType">
+          <option value="" disabled selected>Select…</option>
+          <option>Wedding</option>
+          <option>Birthday</option>
+          <option>Graduation</option>
+          <option>Baby Shower</option>
+          <option>Corporate Event</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Estimated Guests</label>
+        <input type="text" id="guestCount" placeholder="e.g. 50–100" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Event Date (if known)</label>
+      <input type="date" id="eventDate" />
+    </div>
+
+    <div class="field">
+      <label>Anything else we should know?</label>
+      <textarea id="notes" placeholder="Tell us about your vision, theme, dietary needs, etc."></textarea>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Deposit policy:</strong> The $40 consultation fee is <strong>non-refundable</strong> if you choose not to proceed with CreamyBits Luxe services. It will be fully credited toward your total if you do. We'll reach out within 1–2 business days to schedule your consultation.
+    </div>
+
+    <button class="btn-pay" id="payBtn" onclick="submitBooking()">
+      <div class="spinner"></div>
+      <span class="btn-text">Pay $40 Deposit → Secure checkout</span>
+    </button>
+    <p class="secure-note">🔒 Secured by Stripe · You'll be redirected to complete payment</p>
+  </div>
+</div>
+
+<footer>© 2026 CreamyBits LLC · Albuquerque, NM</footer>
+
+<script>
+  async function submitBooking() {
+    const firstName  = document.getElementById('firstName').value.trim();
+    const lastName   = document.getElementById('lastName').value.trim();
+    const email      = document.getElementById('email').value.trim();
+    const phone      = document.getElementById('phone').value.trim();
+    const eventType  = document.getElementById('eventType').value;
+    const guestCount = document.getElementById('guestCount').value.trim();
+    const eventDate  = document.getElementById('eventDate').value;
+    const notes      = document.getElementById('notes').value.trim();
+    const errEl      = document.getElementById('errorMsg');
+    const btn        = document.getElementById('payBtn');
+
+    errEl.style.display = 'none';
+
+    if (!firstName || !lastName) { showErr('Please enter your full name.'); return; }
+    if (!email) { showErr('Please enter your email address.'); return; }
+    if (!phone) { showErr('Please enter your phone number.'); return; }
+    if (!eventType) { showErr('Please select an event type.'); return; }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('/create-luxe-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: `${firstName} ${lastName}`,
+          customerEmail: email,
+          customerPhone: phone,
+          eventType, guestCount, eventDate, notes,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showErr(data.error || 'Something went wrong.'); return; }
+      window.location.href = data.url;
+    } catch (e) {
+      showErr('Connection error. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+
+    function showErr(msg) {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+</script>
+</body>
+</html>
