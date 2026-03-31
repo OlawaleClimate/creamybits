@@ -30,9 +30,30 @@
       overflow-x: hidden;
     }
 
-    /* ══════════════════════════════
-       LAYOUT — SPLIT
-    ══════════════════════════════ */
+    /* ══════════════════════════
+       PAGE ENTRANCE ANIMATION
+    ══════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes glowPulse {
+      0%,100% { opacity: .6; transform: translate(-50%,-50%) scale(1); }
+      50%     { opacity: 1;  transform: translate(-50%,-50%) scale(1.12); }
+    }
+    @keyframes ringPulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(201,168,76,.18), 0 0 28px rgba(201,168,76,.12); }
+      50%     { box-shadow: 0 0 0 6px rgba(201,168,76,.12), 0 0 48px rgba(201,168,76,.22); }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position:  200% center; }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════
+       DESKTOP SPLIT LAYOUT
+    ══════════════════════ */
     .split {
       display: grid;
       grid-template-columns: 420px 1fr;
@@ -48,30 +69,39 @@
       background: rgba(201,168,76,.022);
       overflow: hidden;
     }
-
-    /* Subtle background glow */
     .panel-left::before {
       content: '';
-      position: absolute; top: -120px; left: -120px;
-      width: 400px; height: 400px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,.07) 0%, transparent 70%);
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 480px; height: 480px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 65%);
       pointer-events: none;
+      animation: glowPulse 6s ease-in-out infinite;
+    }
+    /* bottom gold line */
+    .panel-left::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,.35), transparent);
     }
 
     .p-back {
-      font-size: .72rem; color: rgba(245,230,184,.35);
-      text-decoration: none; letter-spacing: .1em;
+      font-size: .7rem; color: rgba(245,230,184,.3);
+      text-decoration: none; letter-spacing: .12em; text-transform: uppercase;
       display: inline-flex; align-items: center; gap: .4rem;
       transition: color .2s; margin-bottom: 3rem; position: relative;
+      width: fit-content;
     }
     .p-back:hover { color: var(--gold-lt); }
 
     .p-logo {
       display: flex; align-items: center; gap: .65rem;
-      margin-bottom: 3rem; position: relative;
+      margin-bottom: 3.5rem; position: relative;
     }
-    .p-logo img { width: 38px; height: 38px; border-radius: 50%; }
+    .p-logo img {
+      width: 38px; height: 38px; border-radius: 50%;
+      animation: ringPulse 4s ease-in-out infinite;
+    }
     .p-logo-text { font-family: 'Playfair Display', serif; font-size: 1rem; }
     .p-logo-text em { color: var(--gold); font-style: italic; }
 
@@ -82,29 +112,33 @@
       position: relative; flex: 1;
       display: flex; flex-direction: column; justify-content: center;
     }
-    .p-heading em {
-      font-style: italic; color: var(--gold);
-      display: block;
-    }
+    .p-heading em { font-style: italic; color: var(--gold); display: block; }
     .p-heading .sub-line {
       font-family: 'Cormorant Garamond', serif;
       font-size: 1rem; font-style: italic; font-weight: 300;
-      color: rgba(245,230,184,.5); margin-top: .9rem; letter-spacing: .02em;
+      color: rgba(245,230,184,.45); margin-top: .9rem; letter-spacing: .02em;
     }
 
-    /* Deposit tag */
     .dep-tag {
       position: relative; margin-top: 2.5rem;
       padding: 1.5rem 1.75rem;
-      border: 1px solid rgba(201,168,76,.2);
+      border: 1px solid rgba(201,168,76,.22);
       border-radius: 16px;
       background: rgba(201,168,76,.04);
+      overflow: hidden;
     }
-    .dep-tag::before {
-      content: 'DEPOSIT';
-      position: absolute; top: -9px; left: 1.2rem;
-      font-size: .6rem; letter-spacing: .16em; color: var(--gold);
-      background: var(--black); padding: 0 .5rem;
+    /* shimmer sweep */
+    .dep-tag::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.06) 50%, transparent 60%);
+      background-size: 200% 100%;
+      animation: shimmer 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .dep-tag-label {
+      font-size: .6rem; letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(201,168,76,.6); margin-bottom: .5rem; display: block;
     }
     .dep-amount {
       font-family: 'Playfair Display', serif;
@@ -112,14 +146,14 @@
       line-height: 1;
     }
     .dep-desc {
-      font-size: .8rem; color: rgba(245,230,184,.55);
-      line-height: 1.55; margin-top: .6rem;
+      font-size: .78rem; color: rgba(245,230,184,.5);
+      line-height: 1.6; margin-top: .6rem;
     }
-    .dep-desc strong { color: rgba(245,230,184,.85); }
+    .dep-desc strong { color: rgba(245,230,184,.82); }
 
     .p-fine {
-      font-size: .65rem; color: rgba(245,230,184,.22);
-      letter-spacing: .06em; line-height: 1.6;
+      font-size: .65rem; color: rgba(245,230,184,.2);
+      letter-spacing: .06em; line-height: 1.7;
       margin-top: 1.75rem; position: relative;
     }
 
@@ -128,12 +162,11 @@
       display: flex; align-items: center; justify-content: center;
       padding: 4rem 3.5rem;
     }
-
     .form-inner { width: 100%; max-width: 420px; }
 
     .form-eyebrow {
       font-size: .65rem; letter-spacing: .2em; text-transform: uppercase;
-      color: rgba(201,168,76,.55); margin-bottom: 2.25rem;
+      color: rgba(201,168,76,.5); margin-bottom: 2.5rem;
       display: flex; align-items: center; gap: .75rem;
     }
     .form-eyebrow::after {
@@ -142,92 +175,83 @@
     }
 
     /* Floating-label field */
-    .fld {
-      position: relative; margin-bottom: 2.25rem;
-    }
+    .fld { position: relative; margin-bottom: 2.4rem; }
     .fld input, .fld textarea {
-      width: 100%; padding: .85rem 0 .6rem;
-      background: transparent;
-      border: none; border-bottom: 1px solid rgba(201,168,76,.2);
+      width: 100%; padding: .9rem 0 .65rem;
+      background: transparent; border: none;
+      border-bottom: 1px solid rgba(201,168,76,.18);
       color: var(--cream);
       font-family: 'DM Sans', sans-serif; font-size: 1rem;
-      transition: border-color .3s;
       outline: none; resize: none;
+      transition: border-color .3s;
     }
-    .fld textarea { min-height: 80px; line-height: 1.6; }
+    .fld textarea { min-height: 82px; line-height: 1.65; }
     .fld input::placeholder, .fld textarea::placeholder { color: transparent; }
-    .fld input:focus, .fld textarea:focus {
-      border-bottom-color: var(--gold);
-    }
+    .fld input:focus, .fld textarea:focus { border-bottom-color: rgba(201,168,76,.5); }
 
-    /* Gold underline grow effect */
+    /* animated gold underline */
     .fld::after {
       content: '';
       position: absolute; bottom: 0; left: 0;
       width: 0; height: 1.5px;
       background: linear-gradient(90deg, var(--gold), var(--gold-lt));
-      transition: width .35s cubic-bezier(.4,0,.2,1);
+      transition: width .4s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
     }
     .fld:focus-within::after { width: 100%; }
 
-    /* Floating label */
+    /* floating label */
     .fld label {
-      position: absolute; top: .85rem; left: 0;
-      font-size: .9rem; color: rgba(245,230,184,.35);
+      position: absolute; top: .9rem; left: 0;
+      font-size: .9rem; color: rgba(245,230,184,.32);
       pointer-events: none;
       transition: top .22s, font-size .22s, color .22s, letter-spacing .22s;
-      letter-spacing: 0;
     }
     .fld input:focus + label,
     .fld input:not(:placeholder-shown) + label,
     .fld textarea:focus + label,
     .fld textarea:not(:placeholder-shown) + label {
-      top: -.1rem;
-      font-size: .62rem; letter-spacing: .12em;
-      text-transform: uppercase; color: rgba(201,168,76,.7);
+      top: -.1rem; font-size: .6rem;
+      letter-spacing: .13em; text-transform: uppercase;
+      color: rgba(201,168,76,.65);
     }
 
-    /* Name row */
-    .fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; }
 
     .err-msg {
-      font-size: .82rem; color: #f87171;
-      margin-bottom: 1.5rem; display: none;
-      padding: .6rem .75rem;
-      background: rgba(248,113,113,.08);
-      border-left: 2px solid #f87171;
+      font-size: .82rem; color: #f87171; margin-bottom: 1.5rem;
+      padding: .65rem .9rem; display: none;
+      background: rgba(248,113,113,.07);
+      border-left: 2px solid rgba(248,113,113,.6);
       border-radius: 0 6px 6px 0;
     }
 
-    /* Disclaimer */
     .disclaimer {
-      font-size: .72rem; color: rgba(245,230,184,.3);
-      line-height: 1.6; margin-bottom: 2rem;
-      padding-left: .85rem;
-      border-left: 1px solid rgba(201,168,76,.18);
+      font-size: .7rem; color: rgba(245,230,184,.28);
+      line-height: 1.65; margin-bottom: 2rem;
+      padding-left: .9rem;
+      border-left: 1px solid rgba(201,168,76,.16);
     }
-    .disclaimer strong { color: rgba(245,230,184,.5); }
+    .disclaimer strong { color: rgba(245,230,184,.48); }
 
-    /* Pay button */
     .btn-pay {
-      width: 100%; padding: 1.05rem 1.5rem;
-      background: linear-gradient(110deg, #c9a84c 0%, #e8c97a 60%, #c9a84c 100%);
-      background-size: 200% 100%;
+      width: 100%; padding: 1.1rem 1.5rem;
+      background: linear-gradient(110deg, #b8922e 0%, #e8c97a 45%, #c9a84c 70%, #e8c97a 100%);
+      background-size: 300% 100%;
       color: #0e0a03; border: none; border-radius: 12px;
       font-family: 'DM Sans', sans-serif;
-      font-size: .95rem; font-weight: 700; letter-spacing: .04em;
+      font-size: .95rem; font-weight: 700; letter-spacing: .05em;
       cursor: pointer;
-      transition: background-position .5s ease, transform .2s, box-shadow .2s;
+      transition: background-position .6s ease, transform .2s, box-shadow .2s;
       display: flex; align-items: center; justify-content: center; gap: .65rem;
-      box-shadow: 0 4px 24px rgba(201,168,76,.18);
+      box-shadow: 0 4px 28px rgba(201,168,76,.2);
     }
     .btn-pay:hover {
       background-position: 100% 0;
       transform: translateY(-2px);
-      box-shadow: 0 8px 36px rgba(201,168,76,.3);
+      box-shadow: 0 10px 40px rgba(201,168,76,.35);
     }
-    .btn-pay:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-pay:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
     .btn-pay .spinner {
       width: 17px; height: 17px;
       border: 2px solid rgba(14,10,3,.25); border-top-color: #0e0a03;
@@ -235,98 +259,142 @@
     }
     .btn-pay.loading .spinner { display: block; }
     .btn-pay.loading .btn-label { opacity: .65; }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     .secure-note {
-      text-align: center; font-size: .68rem;
-      color: rgba(245,230,184,.22); margin-top: .75rem; letter-spacing: .05em;
+      text-align: center; font-size: .67rem;
+      color: rgba(245,230,184,.2); margin-top: .8rem; letter-spacing: .06em;
     }
 
-    /* ══════════════════════════════
+    /* ══════════════════════════
        MOBILE
-    ══════════════════════════════ */
+    ══════════════════════════ */
     @media (max-width: 860px) {
       .split { grid-template-columns: 1fr; min-height: unset; }
 
-      /* ── panel-left becomes a full hero header ── */
+      /* ── Hero panel ── */
       .panel-left {
-        position: relative; height: auto;
-        flex-direction: column; align-items: center;
+        position: relative; height: auto; min-height: 100svh;
+        flex-direction: column; align-items: center; justify-content: center;
         text-align: center;
-        padding: 0 0 2.25rem;
+        padding: 0 2rem 3rem;
         border-right: none;
-        background: rgba(201,168,76,.025);
-        border-bottom: 1px solid rgba(201,168,76,.1);
-        overflow: hidden;
+        border-bottom: none;
       }
+
+      /* full-bleed radial glow behind hero */
       .panel-left::before {
-        top: -80px; left: 50%; transform: translateX(-50%);
-        width: 300px; height: 300px;
+        width: 100vw; height: 100vw;
+        top: 40%; left: 50%;
+        background: radial-gradient(circle, rgba(201,168,76,.1) 0%, rgba(201,168,76,.03) 40%, transparent 65%);
       }
+      .panel-left::after { display: none; }
 
-      /* nav row: back left, logo right */
+      /* slim top nav row */
       .p-back {
-        width: 100%; margin-bottom: 0;
-        padding: .9rem 1.4rem;
-        display: flex; align-items: center;
-        background: rgba(0,0,0,.18);
+        position: absolute; top: 0; left: 0; right: 0;
+        margin: 0; width: 100%;
+        padding: 1rem 1.5rem;
+        background: rgba(5,3,1,.6); backdrop-filter: blur(12px);
         border-bottom: 1px solid rgba(201,168,76,.08);
-        font-size: .72rem;
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: .7rem; letter-spacing: .1em;
+        color: rgba(245,230,184,.4);
+        z-index: 10;
       }
-      .p-logo {
-        margin: 1.75rem auto .25rem;
+      .p-back::after {
+        content: 'CreamyBits Luxe';
+        font-family: 'Playfair Display', serif;
+        font-size: .82rem; color: rgba(245,230,184,.5);
+        letter-spacing: .04em; font-style: italic;
       }
 
-      /* heading — centered, 2 lines max */
-      .p-heading {
-        flex: unset; justify-content: unset;
-        font-size: 1.85rem; line-height: 1.15;
-        text-align: center;
-        padding: 0 1.75rem;
+      /* logo: bigger, centered, pulsing ring */
+      .p-logo {
+        flex-direction: column; gap: .75rem;
+        margin: 0 0 2rem; padding-top: 5rem;
         width: 100%;
       }
-      /* force the italic em onto its own line */
+      .p-logo img {
+        width: 72px; height: 72px;
+        box-shadow: 0 0 0 4px rgba(201,168,76,.15), 0 0 60px rgba(201,168,76,.2);
+      }
+      .p-logo-text { font-size: 1.05rem; letter-spacing: .04em; }
+
+      /* gold ornament above heading */
+      .p-logo::after {
+        content: '✦  ✦  ✦';
+        font-size: .5rem; letter-spacing: .4em;
+        color: rgba(201,168,76,.4); margin-top: .25rem;
+      }
+
+      /* heading — centered, 2 lines */
+      .p-heading {
+        flex: unset; justify-content: unset;
+        font-size: 2.2rem; line-height: 1.1;
+        text-align: center; width: 100%;
+        padding: 0;
+      }
       .p-heading em {
-        display: block;
+        display: block; font-size: 2.5rem;
       }
       .p-heading .sub-line {
-        display: block;
-        font-size: .88rem; margin-top: .6rem;
+        display: block; font-size: .92rem;
+        color: rgba(245,230,184,.4); margin-top: .85rem;
       }
 
-      /* gold ornament between heading and deposit */
+      /* thin gold divider */
       .p-heading::after {
-        content: '✦  ✦  ✦';
-        display: block;
-        font-size: .55rem; letter-spacing: .3em;
-        color: rgba(201,168,76,.45);
-        margin-top: 1.25rem;
+        content: '';
+        display: block; width: 40px; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        margin: 1.5rem auto 0;
       }
 
-      /* deposit tag — centered, full-width */
+      /* deposit block — centered card */
       .dep-tag {
-        margin: 1.25rem 1.5rem 0;
-        padding: 1.1rem 1.5rem;
+        margin: 1.75rem 0 0; width: 100%;
+        padding: 1.5rem 1.75rem;
         text-align: center;
-        width: calc(100% - 3rem);
+        border-radius: 18px;
       }
-      .dep-tag::before { left: 50%; transform: translateX(-50%); }
-      .dep-amount { font-size: 2.2rem; }
-      .dep-desc { font-size: .78rem; margin-top: .5rem; max-width: 260px; margin-left: auto; margin-right: auto; }
+      .dep-tag-label { justify-content: center; display: flex; align-items: center; gap: .5rem; }
+      .dep-tag-label::before, .dep-tag-label::after {
+        content: ''; flex: 1; max-width: 40px; height: 1px;
+        background: rgba(201,168,76,.3);
+      }
+      .dep-amount { font-size: 3.2rem; }
+      .dep-desc { max-width: 260px; margin: .6rem auto 0; font-size: .8rem; }
 
       .p-fine { display: none; }
 
+      /* scroll hint */
+      .panel-left .scroll-hint {
+        position: absolute; bottom: 1.75rem; left: 50%; transform: translateX(-50%);
+        display: flex; flex-direction: column; align-items: center; gap: .4rem;
+        font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+        color: rgba(201,168,76,.3); animation: scrollBounce 2s ease-in-out infinite;
+      }
+      .scroll-hint-arrow { font-size: .9rem; color: rgba(201,168,76,.3); }
+      @keyframes scrollBounce {
+        0%,100% { transform: translateX(-50%) translateY(0); }
+        50%     { transform: translateX(-50%) translateY(5px); }
+      }
+
       /* ── form panel ── */
       .panel-right {
-        padding: 2.25rem 1.5rem 4rem;
+        padding: 2.75rem 1.75rem 4.5rem;
+        background: linear-gradient(180deg, rgba(201,168,76,.025) 0%, transparent 60px);
+        border-top: 1px solid rgba(201,168,76,.1);
       }
       .form-inner { max-width: 100%; }
-      .fld-row { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+      .fld-row { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      .fld { margin-bottom: 2.5rem; }
     }
 
     @media (max-width: 480px) {
-      .p-heading { font-size: 1.65rem; }
-      .fld-row { grid-template-columns: 1fr; }
+      .p-heading { font-size: 1.95rem; }
+      .p-heading em { font-size: 2.2rem; }
+      .fld-row { grid-template-columns: 1fr; gap: 0; }
     }
   </style>
 </head>
@@ -334,7 +402,7 @@
 
 <div class="split">
 
-  <!-- ── LEFT PANEL ── -->
+  <!-- ── LEFT / HERO PANEL ── -->
   <aside class="panel-left">
     <a class="p-back" href="/luxe-menu">← Luxe Menu</a>
 
@@ -344,16 +412,17 @@
     </div>
 
     <div class="p-heading">
-      Let's plan<br>your
-      <em>perfect<br>event.</em>
+      Let's plan your
+      <em>perfect event.</em>
       <p class="sub-line">One conversation is all it takes.</p>
     </div>
 
     <div class="dep-tag">
+      <span class="dep-tag-label">Consultation Deposit</span>
       <div class="dep-amount">$40</div>
       <p class="dep-desc">
-        <strong>Credited toward your total</strong> when you move forward
-        with CreamyBits Luxe. Non-refundable if you choose not to proceed.
+        <strong>Credited toward your total</strong> when you move forward.
+        Non-refundable if you choose not to proceed.
       </p>
     </div>
 
@@ -361,9 +430,15 @@
       We'll reach out within 1–2 business days<br>
       to schedule your consultation call.
     </p>
+
+    <!-- mobile only scroll hint -->
+    <div class="scroll-hint">
+      <span>Book below</span>
+      <span class="scroll-hint-arrow">↓</span>
+    </div>
   </aside>
 
-  <!-- ── RIGHT PANEL ── -->
+  <!-- ── FORM PANEL ── -->
   <main class="panel-right">
     <div class="form-inner">
       <p class="form-eyebrow">Your details</p>
