@@ -6,17 +6,22 @@
   <title>CreamyBits Luxe – Event Menu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --gold:       #c9a84c;
-      --gold-light: #e8c97a;
-      --gold-pale:  #f5e6b8;
-      --gold-dim:   rgba(201,168,76,.35);
-      --black:      #050301;
-      --cream:      #fdf8ee;
-      --warm-white: #fffef9;
+      --gold:      #c9a84c;
+      --gold-lt:   #e8c97a;
+      --gold-pale: #f5e6b8;
+      --gold-05:   rgba(201,168,76,.05);
+      --gold-10:   rgba(201,168,76,.10);
+      --gold-20:   rgba(201,168,76,.20);
+      --gold-35:   rgba(201,168,76,.35);
+      --black:     #060402;
+      --ink:       #0e0a04;
+      --cream:     #fdf8ee;
+      --cream-60:  rgba(253,248,238,.6);
+      --cream-35:  rgba(253,248,238,.35);
     }
     html { scroll-behavior: smooth; }
     body {
@@ -24,551 +29,595 @@
       background: var(--black);
       color: var(--cream);
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ════════════════════════════════
-       INTRO SPLASH
-    ════════════════════════════════ */
+    /* ════════════════════════
+       SPLASH
+    ════════════════════════ */
     #splash {
       position: fixed; inset: 0; z-index: 9999;
-      background: #050301;
+      background: var(--black);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 0;
-      pointer-events: all;
-      transition: opacity .9s ease, visibility .9s ease;
+      transition: opacity 1s cubic-bezier(.4,0,.2,1);
     }
-    #splash.out { opacity: 0; visibility: hidden; pointer-events: none; }
+    #splash.out { opacity: 0; pointer-events: none; }
 
-    .splash-logo {
-      width: 90px; height: 90px; border-radius: 50%;
-      border: 1.5px solid var(--gold);
-      box-shadow: 0 0 0 8px rgba(201,168,76,.06), 0 0 60px rgba(201,168,76,.18);
+    .sp-logo {
+      width: 96px; height: 96px; border-radius: 50%;
       overflow: hidden; background: #fff;
-      opacity: 0; transform: scale(.88);
-      animation: splashLogoIn .9s ease .2s forwards;
+      border: 1px solid var(--gold);
+      box-shadow: 0 0 0 10px rgba(201,168,76,.05),
+                  0 0 80px rgba(201,168,76,.20);
+      opacity: 0;
+      animation: spScale .8s cubic-bezier(.34,1.56,.64,1) .3s forwards;
     }
-    .splash-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+    .sp-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
-    .splash-line {
-      width: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 1.5rem 0 1.4rem;
-      animation: splashLineGrow .8s ease .9s forwards;
+    .sp-ornament {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 1.6rem 0 1.2rem;
+      opacity: 0; animation: spFade .6s ease 1s forwards;
     }
+    .sp-orn-line {
+      height: 1px; width: 0;
+      background: linear-gradient(90deg, transparent, var(--gold));
+      animation: spLine .7s ease 1.1s forwards;
+    }
+    .sp-orn-line.r { background: linear-gradient(90deg, var(--gold), transparent); }
+    .sp-orn-dot { color: var(--gold); font-size: .5rem; letter-spacing: .35em; }
 
-    .splash-title {
+    .sp-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(2.2rem, 6vw, 3.6rem);
-      font-weight: 900;
-      color: var(--warm-white);
+      font-size: clamp(2rem, 8vw, 3.2rem);
+      font-weight: 900; color: #fffef9; line-height: 1;
       letter-spacing: .01em;
-      line-height: 1;
-      opacity: 0;
-      animation: splashFadeUp .7s ease 1s forwards;
+      opacity: 0; animation: spUp .7s ease 1s forwards;
     }
-    .splash-title em { font-style: italic; color: var(--gold-light); }
+    .sp-title em { font-style: italic; color: var(--gold-lt); }
 
-    .splash-sub {
+    .sp-tagline {
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: .9rem;
+      font-style: italic; font-size: .82rem;
       color: rgba(232,201,122,.45);
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      margin-top: .65rem;
-      opacity: 0;
-      animation: splashFadeUp .7s ease 1.3s forwards;
+      letter-spacing: .2em; text-transform: uppercase;
+      margin-top: .7rem;
+      opacity: 0; animation: spUp .6s ease 1.3s forwards;
     }
 
-    .splash-skip {
-      position: absolute; bottom: 2rem; right: 2rem;
-      background: none; border: 1px solid rgba(201,168,76,.2);
-      color: rgba(201,168,76,.45); font-family: 'DM Sans', sans-serif;
-      font-size: .7rem; letter-spacing: .12em; text-transform: uppercase;
-      padding: .45rem 1rem; border-radius: 999px; cursor: pointer;
+    .sp-skip {
+      position: absolute; bottom: 2rem; right: 1.5rem;
+      background: none; border: 1px solid rgba(201,168,76,.18);
+      color: rgba(201,168,76,.4); cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .65rem; font-weight: 500;
+      letter-spacing: .14em; text-transform: uppercase;
+      padding: .4rem .95rem; border-radius: 999px;
       transition: border-color .2s, color .2s;
-      opacity: 0; animation: splashFadeUp .5s ease 1.5s forwards;
+      opacity: 0; animation: spFade .5s ease 1.8s forwards;
     }
-    .splash-skip:hover { border-color: var(--gold-dim); color: var(--gold-light); }
+    .sp-skip:hover { border-color: var(--gold-35); color: var(--gold-lt); }
 
-    @keyframes splashLogoIn {
-      to { opacity: 1; transform: scale(1); }
+    @keyframes spScale {
+      from { opacity: 0; transform: scale(.82); }
+      to   { opacity: 1; transform: scale(1); }
     }
-    @keyframes splashLineGrow {
-      to { width: 120px; }
-    }
-    @keyframes splashFadeUp {
-      from { opacity: 0; transform: translateY(10px); }
+    @keyframes spUp {
+      from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+    @keyframes spFade {
+      to { opacity: 1; }
+    }
+    @keyframes spLine {
+      to { width: 52px; }
+    }
 
-    /* ════════════════════════════════
-       PAGE — revealed after splash
-    ════════════════════════════════ */
-    #page { opacity: 0; transition: opacity .8s ease; }
+    /* ════════════════════════
+       PAGE
+    ════════════════════════ */
+    #page { opacity: 0; transition: opacity .9s ease; }
     #page.visible { opacity: 1; }
 
     /* ── HERO ── */
     .hero {
       position: relative;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
       text-align: center;
-      padding: 3.5rem 2rem 3rem;
+      padding: 3.5rem 1.5rem 3rem;
       overflow: hidden;
     }
-    .hero::before {
-      content: '';
+    .hero-bg {
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse at 50% 0%,  rgba(201,168,76,.16) 0%, transparent 55%),
-        radial-gradient(ellipse at 50% 100%, rgba(201,168,76,.06) 0%, transparent 55%),
-        linear-gradient(180deg, #1d1508 0%, #050301 100%);
+        radial-gradient(ellipse 80% 60% at 50% 0%,  rgba(201,168,76,.18) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(201,168,76,.06) 0%, transparent 65%),
+        linear-gradient(180deg, #1e1609 0%, var(--black) 100%);
     }
-    .hero::after {
-      content: '';
+    .hero-grid {
       position: absolute; inset: 0;
       background-image:
-        repeating-linear-gradient(0deg,  transparent, transparent 49px, rgba(201,168,76,.025) 50px),
-        repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(201,168,76,.025) 50px);
+        repeating-linear-gradient(0deg,  transparent, transparent 44px, rgba(201,168,76,.025) 45px),
+        repeating-linear-gradient(90deg, transparent, transparent 44px, rgba(201,168,76,.025) 45px);
     }
-    .hero-content { position: relative; z-index: 1; }
+    .hero-inner { position: relative; z-index: 1; }
 
     .hero-logo {
-      width: 72px; height: 72px; border-radius: 50%;
-      border: 1.5px solid var(--gold);
-      box-shadow: 0 0 0 6px rgba(201,168,76,.08), 0 0 40px rgba(201,168,76,.12);
+      width: 76px; height: 76px; border-radius: 50%;
       overflow: hidden; background: #fff;
-      margin: 0 auto 1.4rem;
+      border: 1.5px solid var(--gold);
+      box-shadow: 0 0 0 6px rgba(201,168,76,.08), 0 0 50px rgba(201,168,76,.14);
+      margin: 0 auto 1.6rem; display: block;
     }
     .hero-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
     .hero-ornament {
       display: flex; align-items: center; justify-content: center;
-      gap: .9rem; margin-bottom: .9rem;
+      gap: .85rem; margin-bottom: 1rem;
     }
-    .hero-ornament-line {
-      width: 40px; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold-dim));
+    .ho-line {
+      height: 1px; width: 36px;
+      background: linear-gradient(90deg, transparent, var(--gold-35));
     }
-    .hero-ornament-line.r { background: linear-gradient(90deg, var(--gold-dim), transparent); }
-    .hero-ornament span { color: var(--gold); font-size: .55rem; letter-spacing: .3em; }
+    .ho-line.r { background: linear-gradient(90deg, var(--gold-35), transparent); }
+    .ho-dots { color: var(--gold); font-size: .48rem; letter-spacing: .3em; }
 
     .hero-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 5.5vw, 3.8rem);
-      font-weight: 900;
-      color: var(--warm-white);
-      line-height: 1.05;
-      letter-spacing: .01em;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900; color: #fffef9;
+      line-height: 1.05; letter-spacing: .01em;
     }
-    .hero-title em { font-style: italic; color: var(--gold-light); }
+    .hero-title em { font-style: italic; color: var(--gold-lt); }
 
     .hero-rule {
-      width: 60px; height: 1px;
+      width: 48px; height: 1px; margin: 1.1rem auto .95rem;
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 1.1rem auto .9rem;
     }
 
     .hero-sub {
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: .85rem;
-      color: rgba(232,201,122,.45);
-      letter-spacing: .18em;
-      text-transform: uppercase;
+      font-style: italic; font-size: .82rem;
+      color: rgba(232,201,122,.42);
+      letter-spacing: .18em; text-transform: uppercase;
     }
 
-    /* ── GOLD BAR ── */
-    .gold-bar {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,.3), transparent);
+    /* ── STICKY NAV ── */
+    .sticky-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,4,2,.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(201,168,76,.1);
+      padding: 0 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+    .sticky-nav::-webkit-scrollbar { display: none; }
+    .nav-pills {
+      display: flex; gap: 0;
+      min-width: max-content;
+      padding: .65rem 0;
+    }
+    .nav-pill {
+      background: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .67rem; font-weight: 500;
+      color: rgba(232,201,122,.4);
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: .4rem 1rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      transition: color .2s, background .2s;
+    }
+    .nav-pill:hover  { color: var(--gold-lt); }
+    .nav-pill.active { background: rgba(201,168,76,.1); color: var(--gold-lt); }
 
     /* ── MENU BODY ── */
     .menu-body {
-      max-width: 1040px;
+      max-width: 1060px;
       margin: 0 auto;
-      padding: 3.5rem 3rem 2.5rem;
+      padding: 0;
     }
 
-    /* ── TWO-COL GRID ── */
-    .menu-columns {
+    /* ── SECTION BLOCK ── */
+    .menu-block {
+      padding: 2.75rem 3rem;
+      border-bottom: 1px solid rgba(201,168,76,.07);
+    }
+    .menu-block:last-child { border-bottom: none; }
+
+    /* two-col on desktop */
+    .menu-row {
       display: grid;
-      grid-template-columns: 1fr 1px 1fr;
-      gap: 0 3.5rem;
-      margin-bottom: 0;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
     }
-    .col-sep {
-      background: linear-gradient(180deg, transparent, rgba(201,168,76,.15) 20%, rgba(201,168,76,.15) 80%, transparent);
-      width: 1px;
-    }
-    .row-sep {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,.12), transparent);
-      margin: 2.25rem 0;
-    }
+    .menu-col { padding: 2.75rem 3rem; border-bottom: 1px solid rgba(201,168,76,.07); }
+    .menu-col:nth-child(odd) { border-right: 1px solid rgba(201,168,76,.07); }
 
-    /* ── SECTION ── */
-    .menu-section { }
-    .section-head {
+    /* ── SECTION HEADER ── */
+    .sec-head {
       display: flex; align-items: center; gap: .7rem;
-      margin-bottom: 1rem;
+      margin-bottom: .95rem;
     }
-    .sh-line {
+    .sec-line {
       flex: 1; height: 1px;
-      background: linear-gradient(90deg, rgba(201,168,76,.25), transparent);
+      background: linear-gradient(90deg, rgba(201,168,76,.22), transparent);
     }
-    .sh-line.l { background: linear-gradient(90deg, transparent, rgba(201,168,76,.25)); }
-    .section-head h2 {
+    .sec-line.l { background: linear-gradient(90deg, transparent, rgba(201,168,76,.22)); }
+    .sec-head h2 {
       font-family: 'DM Sans', sans-serif;
-      font-size: .62rem;
-      font-weight: 600;
+      font-size: .6rem; font-weight: 600;
       color: var(--gold);
-      letter-spacing: .24em;
-      text-transform: uppercase;
+      letter-spacing: .24em; text-transform: uppercase;
       white-space: nowrap;
     }
-    .section-note {
-      font-size: .65rem;
-      color: rgba(201,168,76,.38);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: .65rem;
-      margin-top: -.4rem;
+    .sec-note {
+      font-size: .63rem; color: rgba(201,168,76,.35);
+      letter-spacing: .12em; text-transform: uppercase;
+      display: block; margin-bottom: .7rem; margin-top: -.3rem;
     }
 
-    /* ── ITEMS ── */
-    .menu-item {
+    /* ── MENU ITEMS ── */
+    .item {
       display: flex; align-items: baseline;
-      justify-content: space-between;
-      padding: .28rem 0;
+      padding: .26rem 0;
       border-bottom: 1px solid rgba(255,255,255,.03);
-      gap: .6rem;
+      gap: .5rem;
     }
-    .menu-item:last-child { border-bottom: none; }
-    .item-name {
+    .item:last-child { border-bottom: none; }
+    .i-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: .96rem;
-      font-weight: 400;
-      color: rgba(253,248,238,.85);
-      line-height: 1.3;
+      font-size: .97rem; font-weight: 400;
+      color: rgba(253,248,238,.82); line-height: 1.3; flex: 1;
     }
-    .item-dots {
-      flex: 1;
-      border-bottom: 1px dotted rgba(201,168,76,.15);
-      align-self: flex-end;
-      margin-bottom: 3px;
+    .i-dots {
+      flex: 1; max-width: 60px;
+      border-bottom: 1px dotted rgba(201,168,76,.12);
+      align-self: flex-end; margin-bottom: 3px;
     }
-    .item-price {
+    .i-price {
       font-family: 'DM Sans', sans-serif;
-      font-size: .73rem;
-      font-weight: 500;
-      color: var(--gold-light);
-      white-space: nowrap;
+      font-size: .72rem; font-weight: 500;
+      color: var(--gold-lt); white-space: nowrap;
       letter-spacing: .04em;
     }
-    .item-price.tbd {
-      color: rgba(232,201,122,.28);
-      font-weight: 300;
-      font-style: italic;
-      font-size: .7rem;
+    .i-price.tbd {
+      color: rgba(232,201,122,.25);
+      font-weight: 300; font-style: italic; font-size: .68rem;
     }
 
     /* ── PRICING STRIP ── */
-    .pricing-strip {
-      background: linear-gradient(135deg, #110d02 0%, #1d1508 50%, #110d02 100%);
-      border-top: 1px solid rgba(201,168,76,.15);
-      border-bottom: 1px solid rgba(201,168,76,.15);
-      padding: 3.5rem 2rem;
-      text-align: center;
+    .pricing {
+      background: linear-gradient(160deg, #130e02 0%, #1e1508 50%, #130e02 100%);
+      border-top: 1px solid rgba(201,168,76,.14);
+      border-bottom: 1px solid rgba(201,168,76,.14);
+      padding: 3.5rem 2rem; text-align: center;
       position: relative; overflow: hidden;
     }
-    .pricing-strip::before {
+    .pricing::before {
       content: '';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,.07), transparent 65%);
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,.07), transparent 65%);
     }
-    .ps-inner { position: relative; z-index: 1; }
-    .ps-eyebrow {
-      font-family: 'DM Sans', sans-serif;
-      font-size: .62rem; font-weight: 600;
-      letter-spacing: .24em; text-transform: uppercase;
-      color: rgba(201,168,76,.45);
-      margin-bottom: 2.25rem;
+    .pr-inner { position: relative; z-index: 1; }
+    .pr-eyebrow {
+      font-size: .6rem; font-weight: 600;
+      letter-spacing: .26em; text-transform: uppercase;
+      color: rgba(201,168,76,.42); margin-bottom: 2.5rem;
     }
-    .ps-items {
-      display: flex; flex-wrap: wrap;
-      justify-content: center; align-items: stretch;
+    .pr-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 0;
+      max-width: 700px; margin: 0 auto;
     }
-    .ps-item {
-      padding: 0 3rem;
-      border-right: 1px solid rgba(201,168,76,.12);
+    .pr-item {
+      padding: 0 2rem;
+      border-right: 1px solid rgba(201,168,76,.1);
     }
-    .ps-item:last-child { border-right: none; }
-    .ps-label {
-      font-size: .6rem; font-weight: 500;
-      letter-spacing: .16em; text-transform: uppercase;
-      color: rgba(245,230,184,.38);
-      margin-bottom: .5rem;
+    .pr-item:last-child { border-right: none; }
+    .pr-label {
+      font-size: .59rem; font-weight: 500;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(245,230,184,.35); margin-bottom: .55rem;
     }
-    .ps-val {
+    .pr-val {
       font-family: 'Playfair Display', serif;
-      font-size: 2.2rem; font-weight: 700;
-      color: var(--gold-light); line-height: 1;
+      font-size: 2.4rem; font-weight: 700;
+      color: var(--gold-lt); line-height: 1;
     }
-    .ps-payment {
-      margin-top: 2.25rem;
+    .pr-foot {
+      margin-top: 2.5rem;
       font-family: 'Cormorant Garamond', serif;
       font-style: italic; font-size: .92rem;
-      color: rgba(245,230,184,.3);
+      color: rgba(245,230,184,.28);
     }
-    .ps-zelle {
-      margin-top: .35rem;
-      font-size: .75rem;
-      color: rgba(245,230,184,.35);
-      letter-spacing: .04em;
+    .pr-zelle {
+      margin-top: .35rem; font-size: .74rem;
+      color: rgba(245,230,184,.32);
     }
-    .ps-zelle a {
-      color: var(--gold-light); text-decoration: none;
-      border-bottom: 1px solid rgba(201,168,76,.22);
+    .pr-zelle a {
+      color: var(--gold-lt); text-decoration: none;
+      border-bottom: 1px solid rgba(201,168,76,.2);
     }
-    .ps-zelle a:hover { color: var(--gold-pale); }
+    .pr-zelle a:hover { color: var(--gold-pale); }
 
     /* ── CTA ── */
-    .cta-band {
-      padding: 2.5rem 2rem; text-align: center;
-      background: rgba(201,168,76,.03);
-      border-bottom: 1px solid rgba(201,168,76,.08);
+    .cta {
+      padding: 2.75rem 1.5rem; text-align: center;
+      background: var(--gold-05);
+      border-bottom: 1px solid rgba(201,168,76,.07);
     }
-    .cta-band p {
+    .cta p {
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: 1.05rem;
-      color: rgba(245,230,184,.38); margin-bottom: 1rem;
+      font-style: italic; font-size: 1rem;
+      color: rgba(245,230,184,.35); margin-bottom: 1.1rem;
     }
     .btn-gold {
       display: inline-block;
       background: linear-gradient(135deg, #c9a84c, #9d7628);
       color: #fff; text-decoration: none;
-      padding: .7rem 2.25rem; border-radius: 999px;
-      font-size: .75rem; font-weight: 600;
-      letter-spacing: .12em; text-transform: uppercase;
-      box-shadow: 0 4px 24px rgba(201,168,76,.2);
+      padding: .72rem 2.25rem; border-radius: 999px;
+      font-size: .72rem; font-weight: 600;
+      letter-spacing: .13em; text-transform: uppercase;
+      box-shadow: 0 4px 28px rgba(201,168,76,.22);
       transition: opacity .2s, transform .2s;
     }
     .btn-gold:hover { opacity: .9; transform: translateY(-1px); }
 
     /* ── FOOTER ── */
-    .page-footer {
-      text-align: center; padding: 1.75rem 1.5rem 2.5rem;
+    .foot {
+      text-align: center; padding: 1.75rem 1.5rem 2.75rem;
       display: flex; align-items: center; justify-content: center;
-      gap: .5rem; flex-wrap: wrap;
+      gap: .45rem; flex-wrap: wrap;
     }
-    .page-footer a {
-      font-size: .72rem; color: rgba(245,230,184,.2);
+    .foot a {
+      font-size: .7rem; color: rgba(245,230,184,.18);
       text-decoration: none; letter-spacing: .07em;
       transition: color .2s;
     }
-    .page-footer a:hover { color: var(--gold-light); }
-    .page-footer .dot { color: rgba(201,168,76,.18); font-size: .5rem; }
+    .foot a:hover { color: var(--gold-lt); }
+    .foot .dot { color: rgba(201,168,76,.15); font-size: .45rem; }
 
-    /* ── RESPONSIVE ── */
-    @media(max-width: 700px) {
-      .menu-body { padding: 2.5rem 1.25rem 2rem; }
-      .menu-columns { grid-template-columns: 1fr; gap: 0; }
-      .col-sep { display: none; }
-      .menu-section { margin-bottom: 2rem; }
-      .ps-items { flex-direction: column; gap: 2rem; align-items: center; }
-      .ps-item { border-right: none; border-bottom: 1px solid rgba(201,168,76,.1); padding: 0 0 1.75rem; width: 100%; }
-      .ps-item:last-child { border-bottom: none; padding-bottom: 0; }
+    /* ════════════════════════
+       DESKTOP (≥ 700px)
+    ════════════════════════ */
+    @media(min-width: 700px) {
+      .menu-body { padding: 0; }
+      .menu-block { display: none; } /* replaced by .menu-col on desktop */
     }
-    @media(max-width: 420px) {
-      .hero-title { font-size: 1.85rem; }
-      .hero { padding: 2.5rem 1.5rem 2.25rem; }
+
+    /* ════════════════════════
+       MOBILE (< 700px)
+    ════════════════════════ */
+    @media(max-width: 699px) {
+      .menu-row { display: none; } /* hide desktop cols */
+      .menu-body { padding: 0; }
+      .menu-block {
+        padding: 1.75rem 1.25rem;
+        border-bottom: 1px solid rgba(201,168,76,.07);
+      }
+      .pr-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .pr-item { border-right: none; border-bottom: 1px solid rgba(201,168,76,.08); padding: 0 0 1.75rem; }
+      .pr-item:last-child { border-bottom: none; padding-bottom: 0; }
+      .pr-val { font-size: 2rem; }
+      .hero { padding: 2.75rem 1.25rem 2.5rem; }
+      .hero-title { font-size: clamp(1.9rem, 7.5vw, 2.6rem); }
     }
   </style>
 </head>
 <body>
 
-<!-- ════ SPLASH ════ -->
+<!-- ══ SPLASH ══ -->
 <div id="splash" aria-hidden="true">
-  <div class="splash-logo">
-    <img src="/logo.png" alt="" />
+  <div class="sp-logo"><img src="/logo.png" alt="" /></div>
+  <div class="sp-ornament">
+    <div class="sp-orn-line"></div>
+    <span class="sp-orn-dot">✦ ✦ ✦</span>
+    <div class="sp-orn-line r"></div>
   </div>
-  <div class="splash-line"></div>
-  <div class="splash-title">CreamyBits <em>Luxe</em></div>
-  <div class="splash-sub">Event &amp; Catering</div>
-  <button class="splash-skip" onclick="dismissSplash()" aria-label="Skip intro">Skip</button>
+  <div class="sp-title">CreamyBits <em>Luxe</em></div>
+  <div class="sp-tagline">Event &amp; Catering</div>
+  <button class="sp-skip" onclick="dismissSplash()">Skip</button>
 </div>
 
-<!-- ════ PAGE ════ -->
+<!-- ══ PAGE ══ -->
 <div id="page">
 
   <!-- HERO -->
   <header class="hero">
-    <div class="hero-content">
-      <div class="hero-logo">
-        <img src="/logo.png" alt="CreamyBits" />
-      </div>
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+      <div class="hero-logo"><img src="/logo.png" alt="CreamyBits" /></div>
       <div class="hero-ornament">
-        <div class="hero-ornament-line"></div>
-        <span>✦ ✦ ✦</span>
-        <div class="hero-ornament-line r"></div>
+        <div class="ho-line"></div>
+        <span class="ho-dots">✦ ✦ ✦</span>
+        <div class="ho-line r"></div>
       </div>
       <h1 class="hero-title">CreamyBits <em>Luxe</em></h1>
       <div class="hero-rule"></div>
       <p class="hero-sub">Event &amp; Catering Menu</p>
     </div>
   </header>
-  <div class="gold-bar"></div>
 
-  <!-- MENU BODY -->
+  <!-- STICKY NAV -->
+  <nav class="sticky-nav" aria-label="Menu categories">
+    <div class="nav-pills">
+      <button class="nav-pill active" onclick="scrollTo('small-chops')">Small Chops</button>
+      <button class="nav-pill" onclick="scrollTo('appetizers')">Appetizers</button>
+      <button class="nav-pill" onclick="scrollTo('sides')">Sides</button>
+      <button class="nav-pill" onclick="scrollTo('desserts')">Desserts</button>
+      <button class="nav-pill" onclick="scrollTo('mocktails')">Mocktails</button>
+      <button class="nav-pill" onclick="scrollTo('breakfast')">Breakfast</button>
+    </div>
+  </nav>
+
+  <!-- ══ MENU ══ -->
   <main class="menu-body">
 
-    <!-- ROW 1: Small Chops + Appetizers -->
-    <div class="menu-columns">
-      <div class="menu-section">
-        <div class="section-head">
-          <div class="sh-line l"></div>
-          <h2>Small Chops &amp; Pastries</h2>
-          <div class="sh-line"></div>
-        </div>
-        <div class="menu-item"><span class="item-name">Puff Puff</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Samosa</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Vegetable Spring Rolls</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Chicken Spring Rolls</span><span class="item-dots"></span><span class="item-price">$75</span></div>
-        <div class="menu-item"><span class="item-name">Meat Pies</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Chicken Pies</span><span class="item-dots"></span><span class="item-price">$75</span></div>
-        <div class="menu-item"><span class="item-name">Chin Chin</span><span class="item-dots"></span><span class="item-price">$75</span></div>
-        <div class="menu-item"><span class="item-name">Beef Sausage Rolls</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Fish Pies</span><span class="item-dots"></span><span class="item-price">$75</span></div>
+    <!-- DESKTOP: two-col rows -->
+    <!-- ROW 1 -->
+    <div class="menu-row">
+      <div class="menu-col" id="d-small-chops">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Small Chops &amp; Pastries</h2><div class="sec-line"></div></div>
+        <div class="item"><span class="i-name">Puff Puff</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Samosa</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Vegetable Spring Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Chicken Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+        <div class="item"><span class="i-name">Meat Pies</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Chicken Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+        <div class="item"><span class="i-name">Chin Chin</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+        <div class="item"><span class="i-name">Beef Sausage Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Fish Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
       </div>
-
-      <div class="col-sep"></div>
-
-      <div class="menu-section">
-        <div class="section-head">
-          <div class="sh-line l"></div>
-          <h2>Appetizers</h2>
-          <div class="sh-line"></div>
-        </div>
-        <div class="menu-item"><span class="item-name">Shawarma Bites</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Shrimp Spring Rolls</span><span class="item-dots"></span><span class="item-price">$75</span></div>
-        <div class="menu-item"><span class="item-name">Shrimp Tempura</span><span class="item-dots"></span><span class="item-price">$80</span></div>
-        <div class="menu-item"><span class="item-name">Mini Beef / Chicken Tacos</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Goat Meat Pepper Soup (Turkey)</span><span class="item-dots"></span><span class="item-price">$100</span></div>
+      <div class="menu-col" id="d-appetizers">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Appetizers</h2><div class="sec-line"></div></div>
+        <div class="item"><span class="i-name">Shawarma Bites</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Shrimp Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+        <div class="item"><span class="i-name">Shrimp Tempura</span><span class="i-dots"></span><span class="i-price">$80</span></div>
+        <div class="item"><span class="i-name">Mini Beef / Chicken Tacos</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Goat Meat Pepper Soup (Turkey)</span><span class="i-dots"></span><span class="i-price">$100</span></div>
       </div>
     </div>
-
-    <div class="row-sep"></div>
-
-    <!-- ROW 2: Sides + Desserts -->
-    <div class="menu-columns">
-      <div class="menu-section">
-        <div class="section-head">
-          <div class="sh-line l"></div>
-          <h2>Sides</h2>
-          <div class="sh-line"></div>
-        </div>
-        <div class="menu-item"><span class="item-name">Pasta Salad</span><span class="item-dots"></span><span class="item-price">$70</span></div>
-        <div class="menu-item"><span class="item-name">Nigerian Salad</span><span class="item-dots"></span><span class="item-price">$60</span></div>
+    <!-- ROW 2 -->
+    <div class="menu-row">
+      <div class="menu-col" id="d-sides">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Sides</h2><div class="sec-line"></div></div>
+        <div class="item"><span class="i-name">Pasta Salad</span><span class="i-dots"></span><span class="i-price">$70</span></div>
+        <div class="item"><span class="i-name">Nigerian Salad</span><span class="i-dots"></span><span class="i-price">$60</span></div>
       </div>
-
-      <div class="col-sep"></div>
-
-      <div class="menu-section">
-        <div class="section-head">
-          <div class="sh-line l"></div>
-          <h2>Desserts</h2>
-          <div class="sh-line"></div>
-        </div>
-        <span class="section-note">Per dozen</span>
-        <div class="menu-item"><span class="item-name">Red Velvet</span><span class="item-dots"></span><span class="item-price">$55</span></div>
-        <div class="menu-item"><span class="item-name">Chocolate</span><span class="item-dots"></span><span class="item-price">$55</span></div>
-        <div class="menu-item"><span class="item-name">Oreo Cheesecake Shooter</span><span class="item-dots"></span><span class="item-price">$55</span></div>
-        <div class="menu-item"><span class="item-name">Vanilla &amp; Cream</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Lotus Biscoff Shooter</span><span class="item-dots"></span><span class="item-price">$60</span></div>
+      <div class="menu-col" id="d-desserts">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Desserts</h2><div class="sec-line"></div></div>
+        <span class="sec-note">Per dozen</span>
+        <div class="item"><span class="i-name">Red Velvet</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+        <div class="item"><span class="i-name">Chocolate</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+        <div class="item"><span class="i-name">Oreo Cheesecake Shooter</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+        <div class="item"><span class="i-name">Vanilla &amp; Cream</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Lotus Biscoff Shooter</span><span class="i-dots"></span><span class="i-price">$60</span></div>
       </div>
     </div>
-
-    <div class="row-sep"></div>
-
-    <!-- ROW 3: Mocktails + Breakfast -->
-    <div class="menu-columns">
-      <div class="menu-section">
-        <div class="section-head">
-          <div class="sh-line l"></div>
-          <h2>Mocktails</h2>
-          <div class="sh-line"></div>
-        </div>
-        <span class="section-note">Per dozen</span>
-        <div class="menu-item"><span class="item-name">Hurricane</span><span class="item-dots"></span><span class="item-price">$45</span></div>
-        <div class="menu-item"><span class="item-name">Piña Colada</span><span class="item-dots"></span><span class="item-price">$55</span></div>
-        <div class="menu-item"><span class="item-name">Virgin Mojito</span><span class="item-dots"></span><span class="item-price">$50</span></div>
-        <div class="menu-item"><span class="item-name">Strawberry Drink</span><span class="item-dots"></span><span class="item-price">$60</span></div>
-        <div class="menu-item"><span class="item-name">Chapman</span><span class="item-dots"></span><span class="item-price">$55</span></div>
+    <!-- ROW 3 -->
+    <div class="menu-row">
+      <div class="menu-col" id="d-mocktails">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Mocktails</h2><div class="sec-line"></div></div>
+        <span class="sec-note">Per dozen</span>
+        <div class="item"><span class="i-name">Hurricane</span><span class="i-dots"></span><span class="i-price">$45</span></div>
+        <div class="item"><span class="i-name">Piña Colada</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+        <div class="item"><span class="i-name">Virgin Mojito</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+        <div class="item"><span class="i-name">Strawberry Drink</span><span class="i-dots"></span><span class="i-price">$60</span></div>
+        <div class="item"><span class="i-name">Chapman</span><span class="i-dots"></span><span class="i-price">$55</span></div>
       </div>
-
-      <div class="col-sep"></div>
-
-      <div class="menu-section">
-        <div class="section-head">
-          <div class="sh-line l"></div>
-          <h2>Breakfast</h2>
-          <div class="sh-line"></div>
-        </div>
-        <div class="menu-item"><span class="item-name">Baked Potatoes &amp; Fish Sauce</span><span class="item-dots"></span><span class="item-price tbd">On request</span></div>
-        <div class="menu-item"><span class="item-name">Bread Rolls &amp; Fried Eggs</span><span class="item-dots"></span><span class="item-price tbd">On request</span></div>
-        <div class="menu-item"><span class="item-name">Bread Rolls &amp; Bean Balls (Akara)</span><span class="item-dots"></span><span class="item-price tbd">On request</span></div>
-
+      <div class="menu-col" id="d-breakfast">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast</h2><div class="sec-line"></div></div>
+        <div class="item"><span class="i-name">Baked Potatoes &amp; Fish Sauce</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+        <div class="item"><span class="i-name">Bread Rolls &amp; Fried Eggs</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+        <div class="item"><span class="i-name">Bread Rolls &amp; Bean Balls (Akara)</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
         <div style="margin-top:1.5rem">
-          <div class="section-head">
-            <div class="sh-line l"></div>
-            <h2>Breakfast Drinks</h2>
-            <div class="sh-line"></div>
-          </div>
-          <div class="menu-item"><span class="item-name">Hot Chocolate with Cream</span><span class="item-dots"></span><span class="item-price tbd">On request</span></div>
-          <div class="menu-item"><span class="item-name">Hot Coffee with Cream</span><span class="item-dots"></span><span class="item-price tbd">On request</span></div>
+          <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast Drinks</h2><div class="sec-line"></div></div>
+          <div class="item"><span class="i-name">Hot Chocolate with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+          <div class="item"><span class="i-name">Hot Coffee with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
         </div>
+      </div>
+    </div>
+
+    <!-- MOBILE: single-col blocks -->
+    <div class="menu-block" id="small-chops">
+      <div class="sec-head"><div class="sec-line l"></div><h2>Small Chops &amp; Pastries</h2><div class="sec-line"></div></div>
+      <div class="item"><span class="i-name">Puff Puff</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Samosa</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Vegetable Spring Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Chicken Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+      <div class="item"><span class="i-name">Meat Pies</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Chicken Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+      <div class="item"><span class="i-name">Chin Chin</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+      <div class="item"><span class="i-name">Beef Sausage Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Fish Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+    </div>
+
+    <div class="menu-block" id="appetizers">
+      <div class="sec-head"><div class="sec-line l"></div><h2>Appetizers</h2><div class="sec-line"></div></div>
+      <div class="item"><span class="i-name">Shawarma Bites</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Shrimp Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
+      <div class="item"><span class="i-name">Shrimp Tempura</span><span class="i-dots"></span><span class="i-price">$80</span></div>
+      <div class="item"><span class="i-name">Mini Beef / Chicken Tacos</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Goat Meat Pepper Soup (Turkey)</span><span class="i-dots"></span><span class="i-price">$100</span></div>
+    </div>
+
+    <div class="menu-block" id="sides">
+      <div class="sec-head"><div class="sec-line l"></div><h2>Sides</h2><div class="sec-line"></div></div>
+      <div class="item"><span class="i-name">Pasta Salad</span><span class="i-dots"></span><span class="i-price">$70</span></div>
+      <div class="item"><span class="i-name">Nigerian Salad</span><span class="i-dots"></span><span class="i-price">$60</span></div>
+    </div>
+
+    <div class="menu-block" id="desserts">
+      <div class="sec-head"><div class="sec-line l"></div><h2>Desserts</h2><div class="sec-line"></div></div>
+      <span class="sec-note">Per dozen</span>
+      <div class="item"><span class="i-name">Red Velvet</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+      <div class="item"><span class="i-name">Chocolate</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+      <div class="item"><span class="i-name">Oreo Cheesecake Shooter</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+      <div class="item"><span class="i-name">Vanilla &amp; Cream</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Lotus Biscoff Shooter</span><span class="i-dots"></span><span class="i-price">$60</span></div>
+    </div>
+
+    <div class="menu-block" id="mocktails">
+      <div class="sec-head"><div class="sec-line l"></div><h2>Mocktails</h2><div class="sec-line"></div></div>
+      <span class="sec-note">Per dozen</span>
+      <div class="item"><span class="i-name">Hurricane</span><span class="i-dots"></span><span class="i-price">$45</span></div>
+      <div class="item"><span class="i-name">Piña Colada</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+      <div class="item"><span class="i-name">Virgin Mojito</span><span class="i-dots"></span><span class="i-price">$50</span></div>
+      <div class="item"><span class="i-name">Strawberry Drink</span><span class="i-dots"></span><span class="i-price">$60</span></div>
+      <div class="item"><span class="i-name">Chapman</span><span class="i-dots"></span><span class="i-price">$55</span></div>
+    </div>
+
+    <div class="menu-block" id="breakfast">
+      <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast</h2><div class="sec-line"></div></div>
+      <div class="item"><span class="i-name">Baked Potatoes &amp; Fish Sauce</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+      <div class="item"><span class="i-name">Bread Rolls &amp; Fried Eggs</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+      <div class="item"><span class="i-name">Bread Rolls &amp; Bean Balls (Akara)</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+      <div style="margin-top:1.5rem">
+        <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast Drinks</h2><div class="sec-line"></div></div>
+        <div class="item"><span class="i-name">Hot Chocolate with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+        <div class="item"><span class="i-name">Hot Coffee with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
       </div>
     </div>
 
   </main>
 
-  <!-- PRICING STRIP -->
-  <div class="pricing-strip">
-    <div class="ps-inner">
-      <p class="ps-eyebrow">Event Setup Pricing</p>
-      <div class="ps-items">
-        <div class="ps-item">
-          <div class="ps-label">Minimum Food Order</div>
-          <div class="ps-val">$800</div>
+  <!-- PRICING -->
+  <div class="pricing">
+    <div class="pr-inner">
+      <p class="pr-eyebrow">Event Setup Pricing</p>
+      <div class="pr-grid">
+        <div class="pr-item">
+          <div class="pr-label">Minimum Food Order</div>
+          <div class="pr-val">$800</div>
         </div>
-        <div class="ps-item">
-          <div class="ps-label">Floral Arrangement &amp; Setup</div>
-          <div class="ps-val">$250</div>
+        <div class="pr-item">
+          <div class="pr-label">Floral Arrangement &amp; Setup</div>
+          <div class="pr-val">$250</div>
         </div>
-        <div class="ps-item">
-          <div class="ps-label">Transportation · up to 20 mi</div>
-          <div class="ps-val">$100</div>
+        <div class="pr-item">
+          <div class="pr-label">Transportation · up to 20 mi</div>
+          <div class="pr-val">$100</div>
         </div>
       </div>
-      <p class="ps-payment">Payment validates your order</p>
-      <p class="ps-zelle">Zelle &nbsp;·&nbsp; <a href="mailto:creamybitsllc@gmail.com">creamybitsllc@gmail.com</a></p>
+      <p class="pr-foot">Payment validates your order</p>
+      <p class="pr-zelle">Zelle &nbsp;·&nbsp; <a href="mailto:creamybitsllc@gmail.com">creamybitsllc@gmail.com</a></p>
     </div>
   </div>
 
   <!-- CTA -->
-  <div class="cta-band">
+  <div class="cta">
     <p>Ready to bring the Luxe experience to your event?</p>
     <a href="/luxe-form" class="btn-gold">Submit a Catering Inquiry</a>
   </div>
 
   <!-- FOOTER -->
-  <footer class="page-footer">
+  <footer class="foot">
     <a href="/">← Home</a>
     <span class="dot">✦</span>
     <a href="/luxe-form">Catering Inquiry</a>
@@ -579,12 +628,44 @@
 </div><!-- /page -->
 
 <script>
+  // Splash
   function dismissSplash() {
     document.getElementById('splash').classList.add('out');
     document.getElementById('page').classList.add('visible');
   }
-  // Auto-dismiss after 3s
-  setTimeout(dismissSplash, 3000);
+  setTimeout(dismissSplash, 3200);
+
+  // Nav scroll
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const nav = document.querySelector('.sticky-nav');
+    const offset = nav ? nav.offsetHeight + 12 : 12;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+
+  // Active nav pill on scroll
+  const sections = ['small-chops','appetizers','sides','desserts','mocktails','breakfast'];
+  const pills = document.querySelectorAll('.nav-pill');
+
+  function updateActivePill() {
+    const nav = document.querySelector('.sticky-nav');
+    const offset = nav ? nav.offsetHeight + 40 : 40;
+    let current = sections[0];
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top - offset <= 0) current = id;
+    });
+    pills.forEach((p, i) => p.classList.toggle('active', sections[i] === current));
+
+    // Scroll active pill into view in the nav
+    const activeIdx = sections.indexOf(current);
+    if (pills[activeIdx]) {
+      pills[activeIdx].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    }
+  }
+  window.addEventListener('scroll', updateActivePill, { passive: true });
 </script>
 </body>
 </html>
