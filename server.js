@@ -807,6 +807,11 @@ app.get('/menu', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'menu.html'));
 });
 
+// Luxe menu
+app.get('/luxe-menu', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'luxe-menu.html'));
+});
+
 // Luxe catering inquiry form
 app.get('/luxe-form', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe-form.html'));
