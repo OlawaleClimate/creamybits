@@ -248,56 +248,84 @@
     @media (max-width: 860px) {
       .split { grid-template-columns: 1fr; min-height: unset; }
 
-      /* ── top nav bar ── */
+      /* ── panel-left becomes a full hero header ── */
       .panel-left {
         position: relative; height: auto;
-        flex-direction: column; align-items: flex-start;
-        padding: 0; border-right: none;
-        background: transparent;
+        flex-direction: column; align-items: center;
+        text-align: center;
+        padding: 0 0 2.25rem;
+        border-right: none;
+        background: rgba(201,168,76,.025);
+        border-bottom: 1px solid rgba(201,168,76,.1);
+        overflow: hidden;
       }
-      .panel-left::before { display: none; }
+      .panel-left::before {
+        top: -80px; left: 50%; transform: translateX(-50%);
+        width: 300px; height: 300px;
+      }
 
-      /* back link becomes a slim top bar */
+      /* nav row: back left, logo right */
       .p-back {
         width: 100%; margin-bottom: 0;
-        padding: .85rem 1.5rem;
-        background: rgba(201,168,76,.04);
-        border-bottom: 1px solid rgba(201,168,76,.1);
+        padding: .9rem 1.4rem;
+        display: flex; align-items: center;
+        background: rgba(0,0,0,.18);
+        border-bottom: 1px solid rgba(201,168,76,.08);
         font-size: .72rem;
       }
-
-      /* logo row */
       .p-logo {
-        width: 100%; margin-bottom: 0;
-        padding: 1.4rem 1.5rem 0;
+        margin: 1.75rem auto .25rem;
       }
 
-      /* heading — compact centered hero */
+      /* heading — centered, 2 lines max */
       .p-heading {
-        width: 100%;
-        padding: 1rem 1.5rem 0;
-        font-size: 1.75rem; text-align: left;
         flex: unset; justify-content: unset;
+        font-size: 1.85rem; line-height: 1.15;
+        text-align: center;
+        padding: 0 1.75rem;
+        width: 100%;
       }
-      .p-heading em { display: inline; }
-      .p-heading .sub-line { display: none; }
+      /* force the italic em onto its own line */
+      .p-heading em {
+        display: block;
+      }
+      .p-heading .sub-line {
+        display: block;
+        font-size: .88rem; margin-top: .6rem;
+      }
 
-      /* deposit tag — horizontal pill row */
-      .dep-tag {
-        margin: 1.25rem 1.5rem 1.5rem;
-        padding: 1rem 1.25rem;
-        display: flex; align-items: center; gap: 1.25rem;
+      /* gold ornament between heading and deposit */
+      .p-heading::after {
+        content: '✦  ✦  ✦';
+        display: block;
+        font-size: .55rem; letter-spacing: .3em;
+        color: rgba(201,168,76,.45);
+        margin-top: 1.25rem;
       }
-      .dep-tag::before { display: none; }
-      .dep-amount { font-size: 2rem; flex-shrink: 0; }
-      .dep-desc { font-size: .76rem; margin-top: 0; }
+
+      /* deposit tag — centered, full-width */
+      .dep-tag {
+        margin: 1.25rem 1.5rem 0;
+        padding: 1.1rem 1.5rem;
+        text-align: center;
+        width: calc(100% - 3rem);
+      }
+      .dep-tag::before { left: 50%; transform: translateX(-50%); }
+      .dep-amount { font-size: 2.2rem; }
+      .dep-desc { font-size: .78rem; margin-top: .5rem; max-width: 260px; margin-left: auto; margin-right: auto; }
+
       .p-fine { display: none; }
 
-      .panel-right { padding: 2rem 1.5rem 3.5rem; }
+      /* ── form panel ── */
+      .panel-right {
+        padding: 2.25rem 1.5rem 4rem;
+      }
+      .form-inner { max-width: 100%; }
       .fld-row { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
     }
 
     @media (max-width: 480px) {
+      .p-heading { font-size: 1.65rem; }
       .fld-row { grid-template-columns: 1fr; }
     }
   </style>
