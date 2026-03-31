@@ -460,6 +460,7 @@ async function sendLuxeBookingEmails(booking) {
   const customerHtml = `
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
       <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:2rem;border-radius:12px 12px 0 0;text-align:center">
+        <img src="${BASE_URL}/logo.png" alt="CreamyBits" width="64" height="64" style="border-radius:50%;border:2px solid rgba(201,168,76,.4);margin-bottom:.9rem;display:block;margin-left:auto;margin-right:auto" />
         <h1 style="color:#f0d080;font-size:1.3rem;margin:0">✨ CreamyBits Luxe</h1>
         <p style="color:rgba(240,208,128,.7);font-size:.82rem;margin:.4rem 0 0">Consultation Booking Confirmed</p>
       </div>
