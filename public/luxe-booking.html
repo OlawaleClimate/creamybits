@@ -246,31 +246,59 @@
        MOBILE
     ══════════════════════════════ */
     @media (max-width: 860px) {
-      .split { grid-template-columns: 1fr; }
+      .split { grid-template-columns: 1fr; min-height: unset; }
 
+      /* ── top nav bar ── */
       .panel-left {
         position: relative; height: auto;
-        padding: 2rem 1.5rem;
-        border-right: none;
-        border-bottom: 1px solid rgba(201,168,76,.1);
-        flex-direction: row; flex-wrap: wrap; gap: 1.5rem; align-items: center;
+        flex-direction: column; align-items: flex-start;
+        padding: 0; border-right: none;
+        background: transparent;
       }
       .panel-left::before { display: none; }
-      .p-back { margin-bottom: 0; order: -1; flex-basis: 100%; }
-      .p-logo { margin-bottom: 0; }
-      .p-heading { flex: unset; justify-content: unset; font-size: 1.5rem; }
+
+      /* back link becomes a slim top bar */
+      .p-back {
+        width: 100%; margin-bottom: 0;
+        padding: .85rem 1.5rem;
+        background: rgba(201,168,76,.04);
+        border-bottom: 1px solid rgba(201,168,76,.1);
+        font-size: .72rem;
+      }
+
+      /* logo row */
+      .p-logo {
+        width: 100%; margin-bottom: 0;
+        padding: 1.4rem 1.5rem 0;
+      }
+
+      /* heading — compact centered hero */
+      .p-heading {
+        width: 100%;
+        padding: 1rem 1.5rem 0;
+        font-size: 1.75rem; text-align: left;
+        flex: unset; justify-content: unset;
+      }
+      .p-heading em { display: inline; }
       .p-heading .sub-line { display: none; }
-      .dep-tag { margin-top: 0; padding: 1rem 1.25rem; }
-      .dep-amount { font-size: 2rem; }
+
+      /* deposit tag — horizontal pill row */
+      .dep-tag {
+        margin: 1.25rem 1.5rem 1.5rem;
+        padding: 1rem 1.25rem;
+        display: flex; align-items: center; gap: 1.25rem;
+      }
+      .dep-tag::before { display: none; }
+      .dep-amount { font-size: 2rem; flex-shrink: 0; }
+      .dep-desc { font-size: .76rem; margin-top: 0; }
       .p-fine { display: none; }
 
-      .panel-right { padding: 2.5rem 1.5rem 3.5rem; }
-      .fld-row { grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .panel-right { padding: 2rem 1.5rem 3.5rem; }
+      .fld-row { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
     }
 
     @media (max-width: 480px) {
-      .fld-row { grid-template-columns: 1fr; gap: 0; }
-      .panel-left { flex-direction: column; align-items: flex-start; }
+      .fld-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
