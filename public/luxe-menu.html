@@ -6,22 +6,20 @@
   <title>CreamyBits Luxe – Event Menu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --gold:      #c9a84c;
-      --gold-lt:   #e8c97a;
-      --gold-pale: #f5e6b8;
-      --gold-05:   rgba(201,168,76,.05);
-      --gold-10:   rgba(201,168,76,.10);
-      --gold-20:   rgba(201,168,76,.20);
-      --gold-35:   rgba(201,168,76,.35);
-      --black:     #060402;
-      --ink:       #0e0a04;
-      --cream:     #fdf8ee;
-      --cream-60:  rgba(253,248,238,.6);
-      --cream-35:  rgba(253,248,238,.35);
+      --gold:    #c9a84c;
+      --gold-lt: #e8c97a;
+      --gold-pl: #f5e6b8;
+      --g05: rgba(201,168,76,.05);
+      --g10: rgba(201,168,76,.10);
+      --g18: rgba(201,168,76,.18);
+      --g35: rgba(201,168,76,.35);
+      --black: #050301;
+      --ink:   #0e0a03;
+      --cream: #fdf8ee;
     }
     html { scroll-behavior: smooth; }
     body {
@@ -32,341 +30,362 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ════════════════════════
+    /* ═══════════════════════════
        SPLASH
-    ════════════════════════ */
+    ═══════════════════════════ */
     #splash {
       position: fixed; inset: 0; z-index: 9999;
       background: var(--black);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      transition: opacity 1s cubic-bezier(.4,0,.2,1);
+      transition: opacity 1.1s cubic-bezier(.4,0,.2,1), visibility 1.1s;
     }
-    #splash.out { opacity: 0; pointer-events: none; }
+    #splash.out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .sp-glow {
+      position: absolute; width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,.12) 0%, transparent 70%);
+      animation: spGlowPulse 3s ease-in-out infinite;
+    }
+    @keyframes spGlowPulse {
+      0%,100% { transform: scale(1); opacity: .7; }
+      50%      { transform: scale(1.15); opacity: 1; }
+    }
 
     .sp-logo {
-      width: 96px; height: 96px; border-radius: 50%;
+      position: relative; z-index: 1;
+      width: 100px; height: 100px; border-radius: 50%;
       overflow: hidden; background: #fff;
-      border: 1px solid var(--gold);
-      box-shadow: 0 0 0 10px rgba(201,168,76,.05),
-                  0 0 80px rgba(201,168,76,.20);
-      opacity: 0;
-      animation: spScale .8s cubic-bezier(.34,1.56,.64,1) .3s forwards;
+      border: 1px solid rgba(201,168,76,.6);
+      box-shadow: 0 0 0 12px rgba(201,168,76,.06), 0 0 80px rgba(201,168,76,.22);
+      opacity: 0; transform: scale(.8) translateY(8px);
+      animation: spLogoIn .9s cubic-bezier(.34,1.46,.64,1) .4s forwards;
     }
     .sp-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+    @keyframes spLogoIn {
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
 
-    .sp-ornament {
-      display: flex; align-items: center; gap: 1rem;
-      margin: 1.6rem 0 1.2rem;
-      opacity: 0; animation: spFade .6s ease 1s forwards;
+    .sp-divider {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: .9rem;
+      margin: 1.8rem 0 1.4rem;
+      opacity: 0; animation: spFade .5s ease 1.1s forwards;
     }
-    .sp-orn-line {
+    .sp-line {
       height: 1px; width: 0;
-      background: linear-gradient(90deg, transparent, var(--gold));
-      animation: spLine .7s ease 1.1s forwards;
+      animation: spLineW .7s ease 1.2s forwards;
     }
-    .sp-orn-line.r { background: linear-gradient(90deg, var(--gold), transparent); }
-    .sp-orn-dot { color: var(--gold); font-size: .5rem; letter-spacing: .35em; }
+    .sp-line.a { background: linear-gradient(90deg, transparent, var(--gold)); }
+    .sp-line.b { background: linear-gradient(90deg, var(--gold), transparent); }
+    @keyframes spLineW { to { width: 56px; } }
+    .sp-gem { color: var(--gold); font-size: .5rem; letter-spacing: .4em; }
 
     .sp-title {
+      position: relative; z-index: 1;
       font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 8vw, 3.2rem);
+      font-size: clamp(2.2rem, 8vw, 3.4rem);
       font-weight: 900; color: #fffef9; line-height: 1;
-      letter-spacing: .01em;
-      opacity: 0; animation: spUp .7s ease 1s forwards;
+      opacity: 0; transform: translateY(16px);
+      animation: spUp .7s ease 1.1s forwards;
     }
     .sp-title em { font-style: italic; color: var(--gold-lt); }
 
-    .sp-tagline {
+    .sp-sub {
+      position: relative; z-index: 1;
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: .82rem;
-      color: rgba(232,201,122,.45);
-      letter-spacing: .2em; text-transform: uppercase;
-      margin-top: .7rem;
-      opacity: 0; animation: spUp .6s ease 1.3s forwards;
+      font-style: italic; font-size: .84rem;
+      color: rgba(232,201,122,.42);
+      letter-spacing: .22em; text-transform: uppercase;
+      margin-top: .65rem;
+      opacity: 0; animation: spUp .6s ease 1.4s forwards;
     }
 
     .sp-skip {
-      position: absolute; bottom: 2rem; right: 1.5rem;
-      background: none; border: 1px solid rgba(201,168,76,.18);
-      color: rgba(201,168,76,.4); cursor: pointer;
+      position: absolute; bottom: 1.75rem; right: 1.5rem;
+      z-index: 1;
+      background: none; border: 1px solid rgba(201,168,76,.16);
+      color: rgba(201,168,76,.38); cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      font-size: .65rem; font-weight: 500;
-      letter-spacing: .14em; text-transform: uppercase;
-      padding: .4rem .95rem; border-radius: 999px;
+      font-size: .63rem; font-weight: 500;
+      letter-spacing: .15em; text-transform: uppercase;
+      padding: .38rem .9rem; border-radius: 999px;
       transition: border-color .2s, color .2s;
-      opacity: 0; animation: spFade .5s ease 1.8s forwards;
+      opacity: 0; animation: spFade .5s ease 1.9s forwards;
     }
-    .sp-skip:hover { border-color: var(--gold-35); color: var(--gold-lt); }
+    .sp-skip:hover { border-color: var(--g35); color: var(--gold-lt); }
 
-    @keyframes spScale {
-      from { opacity: 0; transform: scale(.82); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    @keyframes spUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes spFade {
-      to { opacity: 1; }
-    }
-    @keyframes spLine {
-      to { width: 52px; }
-    }
+    @keyframes spUp   { to { opacity: 1; transform: translateY(0); } }
+    @keyframes spFade { to { opacity: 1; } }
 
-    /* ════════════════════════
+    /* ═══════════════════════════
        PAGE
-    ════════════════════════ */
+    ═══════════════════════════ */
     #page { opacity: 0; transition: opacity .9s ease; }
     #page.visible { opacity: 1; }
 
     /* ── HERO ── */
     .hero {
-      position: relative;
-      text-align: center;
-      padding: 3.5rem 1.5rem 3rem;
+      position: relative; text-align: center;
+      padding: 3.75rem 1.5rem 3.25rem;
       overflow: hidden;
     }
     .hero-bg {
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 50% 0%,  rgba(201,168,76,.18) 0%, transparent 65%),
-        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(201,168,76,.06) 0%, transparent 65%),
-        linear-gradient(180deg, #1e1609 0%, var(--black) 100%);
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(201,168,76,.2) 0%, transparent 60%),
+        linear-gradient(180deg, #1e1508 0%, var(--black) 100%);
     }
     .hero-grid {
       position: absolute; inset: 0;
       background-image:
-        repeating-linear-gradient(0deg,  transparent, transparent 44px, rgba(201,168,76,.025) 45px),
-        repeating-linear-gradient(90deg, transparent, transparent 44px, rgba(201,168,76,.025) 45px);
+        repeating-linear-gradient(0deg,  transparent, transparent 44px, rgba(201,168,76,.022) 45px),
+        repeating-linear-gradient(90deg, transparent, transparent 44px, rgba(201,168,76,.022) 45px);
     }
-    .hero-inner { position: relative; z-index: 1; }
+    .hero-in { position: relative; z-index: 1; }
 
-    .hero-logo {
-      width: 76px; height: 76px; border-radius: 50%;
+    .h-logo {
+      width: 74px; height: 74px; border-radius: 50%;
       overflow: hidden; background: #fff;
-      border: 1.5px solid var(--gold);
-      box-shadow: 0 0 0 6px rgba(201,168,76,.08), 0 0 50px rgba(201,168,76,.14);
-      margin: 0 auto 1.6rem; display: block;
+      border: 1.5px solid rgba(201,168,76,.7);
+      box-shadow: 0 0 0 7px rgba(201,168,76,.07), 0 0 50px rgba(201,168,76,.16);
+      margin: 0 auto 1.5rem; display: block;
     }
-    .hero-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+    .h-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
-    .hero-ornament {
+    .h-orn {
       display: flex; align-items: center; justify-content: center;
-      gap: .85rem; margin-bottom: 1rem;
+      gap: .8rem; margin-bottom: 1rem;
     }
-    .ho-line {
-      height: 1px; width: 36px;
-      background: linear-gradient(90deg, transparent, var(--gold-35));
+    .h-orn-line {
+      height: 1px; width: 34px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,.3));
     }
-    .ho-line.r { background: linear-gradient(90deg, var(--gold-35), transparent); }
-    .ho-dots { color: var(--gold); font-size: .48rem; letter-spacing: .3em; }
+    .h-orn-line.r { background: linear-gradient(90deg, rgba(201,168,76,.3), transparent); }
+    .h-gem { color: rgba(201,168,76,.5); font-size: .45rem; letter-spacing: .35em; }
 
-    .hero-title {
+    .h-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-size: clamp(2.1rem, 6vw, 3.8rem);
       font-weight: 900; color: #fffef9;
       line-height: 1.05; letter-spacing: .01em;
     }
-    .hero-title em { font-style: italic; color: var(--gold-lt); }
+    .h-title em { font-style: italic; color: var(--gold-lt); }
 
-    .hero-rule {
-      width: 48px; height: 1px; margin: 1.1rem auto .95rem;
+    .h-rule {
+      width: 42px; height: 1px; margin: 1.1rem auto .95rem;
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
     }
 
-    .hero-sub {
+    .h-sub {
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: .82rem;
-      color: rgba(232,201,122,.42);
-      letter-spacing: .18em; text-transform: uppercase;
+      font-style: italic; font-size: .8rem;
+      color: rgba(232,201,122,.4);
+      letter-spacing: .2em; text-transform: uppercase;
     }
 
     /* ── STICKY NAV ── */
-    .sticky-nav {
+    .snav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(6,4,2,.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(201,168,76,.1);
-      padding: 0 1rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      background: rgba(5,3,1,.9);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(201,168,76,.09);
     }
-    .sticky-nav::-webkit-scrollbar { display: none; }
-    .nav-pills {
-      display: flex; gap: 0;
-      min-width: max-content;
-      padding: .65rem 0;
+    .snav-track {
+      display: flex; overflow-x: auto;
+      scrollbar-width: none; -ms-overflow-style: none;
+      padding: 0 .75rem;
+      position: relative;
     }
-    .nav-pill {
+    .snav-track::-webkit-scrollbar { display: none; }
+
+    .snav-pill {
+      position: relative;
+      flex-shrink: 0;
       background: none; border: none; cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      font-size: .67rem; font-weight: 500;
-      color: rgba(232,201,122,.4);
-      letter-spacing: .12em; text-transform: uppercase;
-      padding: .4rem 1rem;
-      border-radius: 999px;
+      font-size: .64rem; font-weight: 500;
+      color: rgba(232,201,122,.35);
+      letter-spacing: .13em; text-transform: uppercase;
+      padding: .85rem .95rem;
+      transition: color .25s;
       white-space: nowrap;
-      transition: color .2s, background .2s;
     }
-    .nav-pill:hover  { color: var(--gold-lt); }
-    .nav-pill.active { background: rgba(201,168,76,.1); color: var(--gold-lt); }
+    .snav-pill::after {
+      content: '';
+      position: absolute; bottom: 0; left: .95rem; right: .95rem;
+      height: 1.5px; background: var(--gold);
+      transform: scaleX(0); transition: transform .25s ease;
+    }
+    .snav-pill:hover { color: rgba(232,201,122,.65); }
+    .snav-pill.active { color: var(--gold-lt); }
+    .snav-pill.active::after { transform: scaleX(1); }
 
-    /* ── MENU BODY ── */
-    .menu-body {
-      max-width: 1060px;
-      margin: 0 auto;
-      padding: 0;
+    /* ── MENU GRID ── */
+    .menu-wrap {
+      max-width: 1060px; margin: 0 auto;
     }
 
-    /* ── SECTION BLOCK ── */
-    .menu-block {
-      padding: 2.75rem 3rem;
-      border-bottom: 1px solid rgba(201,168,76,.07);
-    }
-    .menu-block:last-child { border-bottom: none; }
-
-    /* two-col on desktop */
-    .menu-row {
+    /* desktop 2-col */
+    .menu-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0;
     }
-    .menu-col { padding: 2.75rem 3rem; border-bottom: 1px solid rgba(201,168,76,.07); }
-    .menu-col:nth-child(odd) { border-right: 1px solid rgba(201,168,76,.07); }
+
+    .menu-sec {
+      padding: 2.5rem 3rem;
+      border-bottom: 1px solid rgba(201,168,76,.06);
+      border-right: 1px solid rgba(201,168,76,.06);
+    }
+    .menu-sec:nth-child(even) { border-right: none; }
+    /* last row: remove bottom borders */
+    .menu-sec:nth-last-child(-n+2) { border-bottom: none; }
 
     /* ── SECTION HEADER ── */
-    .sec-head {
-      display: flex; align-items: center; gap: .7rem;
-      margin-bottom: .95rem;
+    .sec-num {
+      font-family: 'Playfair Display', serif;
+      font-size: .6rem; font-style: italic;
+      color: rgba(201,168,76,.28);
+      letter-spacing: .1em;
+      display: block; margin-bottom: .3rem;
     }
-    .sec-line {
-      flex: 1; height: 1px;
-      background: linear-gradient(90deg, rgba(201,168,76,.22), transparent);
-    }
-    .sec-line.l { background: linear-gradient(90deg, transparent, rgba(201,168,76,.22)); }
-    .sec-head h2 {
+    .sec-title {
       font-family: 'DM Sans', sans-serif;
-      font-size: .6rem; font-weight: 600;
+      font-size: .61rem; font-weight: 600;
       color: var(--gold);
       letter-spacing: .24em; text-transform: uppercase;
-      white-space: nowrap;
+      padding-bottom: .8rem;
+      border-bottom: 1px solid rgba(201,168,76,.12);
+      margin-bottom: 1.1rem;
     }
     .sec-note {
-      font-size: .63rem; color: rgba(201,168,76,.35);
-      letter-spacing: .12em; text-transform: uppercase;
-      display: block; margin-bottom: .7rem; margin-top: -.3rem;
+      font-size: .62rem; color: rgba(201,168,76,.32);
+      letter-spacing: .11em; text-transform: uppercase;
+      display: block; margin-bottom: .65rem; margin-top: -.5rem;
     }
 
-    /* ── MENU ITEMS ── */
+    /* ── ITEMS ── */
     .item {
       display: flex; align-items: baseline;
-      padding: .26rem 0;
-      border-bottom: 1px solid rgba(255,255,255,.03);
-      gap: .5rem;
+      justify-content: space-between;
+      gap: .75rem; padding: .3rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.032);
+      transition: background .15s;
     }
     .item:last-child { border-bottom: none; }
-    .i-name {
+    .item:hover .i-n { color: rgba(253,248,238,.98); }
+    .item:hover { background: rgba(201,168,76,.025); margin: 0 -.35rem; padding: .3rem .35rem; border-radius: 5px; border-bottom-color: transparent; }
+
+    .i-n {
       font-family: 'Cormorant Garamond', serif;
       font-size: .97rem; font-weight: 400;
-      color: rgba(253,248,238,.82); line-height: 1.3; flex: 1;
+      color: rgba(253,248,238,.78);
+      line-height: 1.3; flex: 1;
+      transition: color .15s;
     }
-    .i-dots {
-      flex: 1; max-width: 60px;
-      border-bottom: 1px dotted rgba(201,168,76,.12);
-      align-self: flex-end; margin-bottom: 3px;
-    }
-    .i-price {
+    .i-p {
       font-family: 'DM Sans', sans-serif;
-      font-size: .72rem; font-weight: 500;
+      font-size: .71rem; font-weight: 500;
       color: var(--gold-lt); white-space: nowrap;
-      letter-spacing: .04em;
+      letter-spacing: .05em;
     }
-    .i-price.tbd {
-      color: rgba(232,201,122,.25);
-      font-weight: 300; font-style: italic; font-size: .68rem;
+    .i-p.req {
+      color: rgba(232,201,122,.24);
+      font-weight: 300; font-style: italic; font-size: .67rem;
     }
 
-    /* ── PRICING STRIP ── */
+    /* nested section (breakfast drinks) */
+    .sub-sec { margin-top: 1.75rem; }
+
+    /* ── PRICING ── */
     .pricing {
-      background: linear-gradient(160deg, #130e02 0%, #1e1508 50%, #130e02 100%);
-      border-top: 1px solid rgba(201,168,76,.14);
-      border-bottom: 1px solid rgba(201,168,76,.14);
-      padding: 3.5rem 2rem; text-align: center;
+      background: linear-gradient(160deg, #120d02, #1d1507 50%, #120d02);
+      border-top: 1px solid rgba(201,168,76,.12);
+      border-bottom: 1px solid rgba(201,168,76,.12);
+      padding: 4rem 2rem; text-align: center;
       position: relative; overflow: hidden;
     }
     .pricing::before {
       content: '';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,.07), transparent 65%);
+      background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(201,168,76,.07), transparent 65%);
     }
-    .pr-inner { position: relative; z-index: 1; }
-    .pr-eyebrow {
-      font-size: .6rem; font-weight: 600;
+    .pr-in { position: relative; z-index: 1; }
+
+    .pr-tag {
+      display: inline-block;
+      font-size: .58rem; font-weight: 600;
       letter-spacing: .26em; text-transform: uppercase;
-      color: rgba(201,168,76,.42); margin-bottom: 2.5rem;
+      color: rgba(201,168,76,.38);
+      border: 1px solid rgba(201,168,76,.14);
+      padding: .35rem .9rem; border-radius: 999px;
+      margin-bottom: 2.5rem;
     }
-    .pr-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      max-width: 700px; margin: 0 auto;
+
+    .pr-row {
+      display: flex; justify-content: center;
+      align-items: stretch; flex-wrap: wrap;
+      max-width: 680px; margin: 0 auto;
     }
     .pr-item {
-      padding: 0 2rem;
+      flex: 1; min-width: 140px;
+      padding: 0 2.5rem;
       border-right: 1px solid rgba(201,168,76,.1);
     }
     .pr-item:last-child { border-right: none; }
-    .pr-label {
-      font-size: .59rem; font-weight: 500;
+    .pr-lbl {
+      font-size: .58rem; font-weight: 500;
       letter-spacing: .14em; text-transform: uppercase;
-      color: rgba(245,230,184,.35); margin-bottom: .55rem;
+      color: rgba(245,230,184,.3);
+      margin-bottom: .55rem;
     }
-    .pr-val {
+    .pr-amt {
       font-family: 'Playfair Display', serif;
-      font-size: 2.4rem; font-weight: 700;
+      font-size: 2.5rem; font-weight: 700;
       color: var(--gold-lt); line-height: 1;
     }
-    .pr-foot {
+
+    .pr-note {
       margin-top: 2.5rem;
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: .92rem;
-      color: rgba(245,230,184,.28);
+      font-style: italic; font-size: .9rem;
+      color: rgba(245,230,184,.25);
     }
     .pr-zelle {
-      margin-top: .35rem; font-size: .74rem;
-      color: rgba(245,230,184,.32);
+      margin-top: .4rem; font-size: .72rem;
+      color: rgba(245,230,184,.28);
     }
     .pr-zelle a {
       color: var(--gold-lt); text-decoration: none;
       border-bottom: 1px solid rgba(201,168,76,.2);
+      transition: color .2s;
     }
-    .pr-zelle a:hover { color: var(--gold-pale); }
+    .pr-zelle a:hover { color: var(--gold-pl); }
 
     /* ── CTA ── */
     .cta {
-      padding: 2.75rem 1.5rem; text-align: center;
-      background: var(--gold-05);
+      padding: 3rem 1.5rem; text-align: center;
+      background: var(--g05);
       border-bottom: 1px solid rgba(201,168,76,.07);
     }
     .cta p {
       font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: 1rem;
-      color: rgba(245,230,184,.35); margin-bottom: 1.1rem;
+      font-style: italic; font-size: 1.05rem;
+      color: rgba(245,230,184,.32); margin-bottom: 1.25rem;
     }
     .btn-gold {
-      display: inline-block;
+      display: inline-flex; align-items: center; gap: .5rem;
       background: linear-gradient(135deg, #c9a84c, #9d7628);
       color: #fff; text-decoration: none;
-      padding: .72rem 2.25rem; border-radius: 999px;
+      padding: .75rem 2.25rem; border-radius: 999px;
       font-size: .72rem; font-weight: 600;
       letter-spacing: .13em; text-transform: uppercase;
       box-shadow: 0 4px 28px rgba(201,168,76,.22);
       transition: opacity .2s, transform .2s;
     }
-    .btn-gold:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-gold:hover { opacity: .9; transform: translateY(-2px); box-shadow: 0 8px 36px rgba(201,168,76,.3); }
+    .btn-arrow { font-size: .8rem; transition: transform .2s; }
+    .btn-gold:hover .btn-arrow { transform: translateX(3px); }
 
     /* ── FOOTER ── */
     .foot {
@@ -375,237 +394,189 @@
       gap: .45rem; flex-wrap: wrap;
     }
     .foot a {
-      font-size: .7rem; color: rgba(245,230,184,.18);
+      font-size: .68rem; color: rgba(245,230,184,.18);
       text-decoration: none; letter-spacing: .07em;
       transition: color .2s;
     }
     .foot a:hover { color: var(--gold-lt); }
-    .foot .dot { color: rgba(201,168,76,.15); font-size: .45rem; }
+    .foot .dot { color: rgba(201,168,76,.14); font-size: .42rem; }
 
-    /* ════════════════════════
-       DESKTOP (≥ 700px)
-    ════════════════════════ */
-    @media(min-width: 700px) {
-      .menu-body { padding: 0; }
-      .menu-block { display: none; } /* replaced by .menu-col on desktop */
+    /* ═══════════════════════════
+       MOBILE
+    ═══════════════════════════ */
+    @media(max-width: 699px) {
+      .hero { padding: 2.75rem 1.25rem 2.4rem; }
+      .h-logo { width: 66px; height: 66px; }
+
+      .menu-grid { grid-template-columns: 1fr; }
+      .menu-sec {
+        padding: 1.75rem 1.25rem;
+        border-right: none !important;
+      }
+      .menu-sec:nth-last-child(-n+2) { border-bottom: 1px solid rgba(201,168,76,.06); }
+      .menu-sec:last-child { border-bottom: none; }
+
+      .item:hover { background: none; margin: 0; padding: .3rem 0; border-radius: 0; border-bottom: 1px solid rgba(255,255,255,.032); }
+      .item:last-child:hover { border-bottom: none; }
+
+      .pr-row { flex-direction: column; gap: 2rem; align-items: center; }
+      .pr-item { border-right: none; border-bottom: 1px solid rgba(201,168,76,.08); padding: 0 0 2rem; width: 100%; min-width: unset; }
+      .pr-item:last-child { border-bottom: none; padding-bottom: 0; }
+      .pr-amt { font-size: 2.2rem; }
     }
 
-    /* ════════════════════════
-       MOBILE (< 700px)
-    ════════════════════════ */
-    @media(max-width: 699px) {
-      .menu-row { display: none; } /* hide desktop cols */
-      .menu-body { padding: 0; }
-      .menu-block {
-        padding: 1.75rem 1.25rem;
-        border-bottom: 1px solid rgba(201,168,76,.07);
-      }
-      .pr-grid { grid-template-columns: 1fr; gap: 2rem; }
-      .pr-item { border-right: none; border-bottom: 1px solid rgba(201,168,76,.08); padding: 0 0 1.75rem; }
-      .pr-item:last-child { border-bottom: none; padding-bottom: 0; }
-      .pr-val { font-size: 2rem; }
-      .hero { padding: 2.75rem 1.25rem 2.5rem; }
-      .hero-title { font-size: clamp(1.9rem, 7.5vw, 2.6rem); }
+    /* hide snav on large screens — not needed */
+    @media(min-width: 700px) {
+      .snav { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══ SPLASH ══ -->
+<!-- SPLASH -->
 <div id="splash" aria-hidden="true">
+  <div class="sp-glow"></div>
   <div class="sp-logo"><img src="/logo.png" alt="" /></div>
-  <div class="sp-ornament">
-    <div class="sp-orn-line"></div>
-    <span class="sp-orn-dot">✦ ✦ ✦</span>
-    <div class="sp-orn-line r"></div>
+  <div class="sp-divider">
+    <div class="sp-line a"></div>
+    <span class="sp-gem">✦ ✦ ✦</span>
+    <div class="sp-line b"></div>
   </div>
   <div class="sp-title">CreamyBits <em>Luxe</em></div>
-  <div class="sp-tagline">Event &amp; Catering</div>
-  <button class="sp-skip" onclick="dismissSplash()">Skip</button>
+  <div class="sp-sub">Event &amp; Catering</div>
+  <button class="sp-skip" onclick="dismiss()">Skip</button>
 </div>
 
-<!-- ══ PAGE ══ -->
+<!-- PAGE -->
 <div id="page">
 
   <!-- HERO -->
   <header class="hero">
     <div class="hero-bg"></div>
     <div class="hero-grid"></div>
-    <div class="hero-inner">
-      <div class="hero-logo"><img src="/logo.png" alt="CreamyBits" /></div>
-      <div class="hero-ornament">
-        <div class="ho-line"></div>
-        <span class="ho-dots">✦ ✦ ✦</span>
-        <div class="ho-line r"></div>
+    <div class="hero-in">
+      <div class="h-logo"><img src="/logo.png" alt="CreamyBits" /></div>
+      <div class="h-orn">
+        <div class="h-orn-line"></div>
+        <span class="h-gem">✦ ✦ ✦</span>
+        <div class="h-orn-line r"></div>
       </div>
-      <h1 class="hero-title">CreamyBits <em>Luxe</em></h1>
-      <div class="hero-rule"></div>
-      <p class="hero-sub">Event &amp; Catering Menu</p>
+      <h1 class="h-title">CreamyBits <em>Luxe</em></h1>
+      <div class="h-rule"></div>
+      <p class="h-sub">Event &amp; Catering Menu</p>
     </div>
   </header>
 
-  <!-- STICKY NAV -->
-  <nav class="sticky-nav" aria-label="Menu categories">
-    <div class="nav-pills">
-      <button class="nav-pill active" onclick="scrollTo('small-chops')">Small Chops</button>
-      <button class="nav-pill" onclick="scrollTo('appetizers')">Appetizers</button>
-      <button class="nav-pill" onclick="scrollTo('sides')">Sides</button>
-      <button class="nav-pill" onclick="scrollTo('desserts')">Desserts</button>
-      <button class="nav-pill" onclick="scrollTo('mocktails')">Mocktails</button>
-      <button class="nav-pill" onclick="scrollTo('breakfast')">Breakfast</button>
+  <!-- STICKY NAV (mobile only) -->
+  <nav class="snav" aria-label="Jump to section">
+    <div class="snav-track">
+      <button class="snav-pill" data-target="s1">Small Chops</button>
+      <button class="snav-pill" data-target="s2">Appetizers</button>
+      <button class="snav-pill" data-target="s3">Sides</button>
+      <button class="snav-pill" data-target="s4">Desserts</button>
+      <button class="snav-pill" data-target="s5">Mocktails</button>
+      <button class="snav-pill" data-target="s6">Breakfast</button>
     </div>
   </nav>
 
-  <!-- ══ MENU ══ -->
-  <main class="menu-body">
+  <!-- MENU -->
+  <main class="menu-wrap">
+    <div class="menu-grid">
 
-    <!-- DESKTOP: two-col rows -->
-    <!-- ROW 1 -->
-    <div class="menu-row">
-      <div class="menu-col" id="d-small-chops">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Small Chops &amp; Pastries</h2><div class="sec-line"></div></div>
-        <div class="item"><span class="i-name">Puff Puff</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Samosa</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Vegetable Spring Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Chicken Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-        <div class="item"><span class="i-name">Meat Pies</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Chicken Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-        <div class="item"><span class="i-name">Chin Chin</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-        <div class="item"><span class="i-name">Beef Sausage Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Fish Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-      </div>
-      <div class="menu-col" id="d-appetizers">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Appetizers</h2><div class="sec-line"></div></div>
-        <div class="item"><span class="i-name">Shawarma Bites</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Shrimp Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-        <div class="item"><span class="i-name">Shrimp Tempura</span><span class="i-dots"></span><span class="i-price">$80</span></div>
-        <div class="item"><span class="i-name">Mini Beef / Chicken Tacos</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Goat Meat Pepper Soup (Turkey)</span><span class="i-dots"></span><span class="i-price">$100</span></div>
-      </div>
-    </div>
-    <!-- ROW 2 -->
-    <div class="menu-row">
-      <div class="menu-col" id="d-sides">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Sides</h2><div class="sec-line"></div></div>
-        <div class="item"><span class="i-name">Pasta Salad</span><span class="i-dots"></span><span class="i-price">$70</span></div>
-        <div class="item"><span class="i-name">Nigerian Salad</span><span class="i-dots"></span><span class="i-price">$60</span></div>
-      </div>
-      <div class="menu-col" id="d-desserts">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Desserts</h2><div class="sec-line"></div></div>
+      <!-- 01 Small Chops -->
+      <section class="menu-sec" id="s1">
+        <span class="sec-num">01</span>
+        <div class="sec-title">Small Chops &amp; Pastries</div>
+        <div class="item"><span class="i-n">Puff Puff</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Samosa</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Vegetable Spring Rolls</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Chicken Spring Rolls</span><span class="i-p">$75</span></div>
+        <div class="item"><span class="i-n">Meat Pies</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Chicken Pies</span><span class="i-p">$75</span></div>
+        <div class="item"><span class="i-n">Chin Chin</span><span class="i-p">$75</span></div>
+        <div class="item"><span class="i-n">Beef Sausage Rolls</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Fish Pies</span><span class="i-p">$75</span></div>
+      </section>
+
+      <!-- 02 Appetizers -->
+      <section class="menu-sec" id="s2">
+        <span class="sec-num">02</span>
+        <div class="sec-title">Appetizers</div>
+        <div class="item"><span class="i-n">Shawarma Bites</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Shrimp Spring Rolls</span><span class="i-p">$75</span></div>
+        <div class="item"><span class="i-n">Shrimp Tempura</span><span class="i-p">$80</span></div>
+        <div class="item"><span class="i-n">Mini Beef / Chicken Tacos</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Goat Meat Pepper Soup (Turkey)</span><span class="i-p">$100</span></div>
+      </section>
+
+      <!-- 03 Sides -->
+      <section class="menu-sec" id="s3">
+        <span class="sec-num">03</span>
+        <div class="sec-title">Sides</div>
+        <div class="item"><span class="i-n">Pasta Salad</span><span class="i-p">$70</span></div>
+        <div class="item"><span class="i-n">Nigerian Salad</span><span class="i-p">$60</span></div>
+      </section>
+
+      <!-- 04 Desserts -->
+      <section class="menu-sec" id="s4">
+        <span class="sec-num">04</span>
+        <div class="sec-title">Desserts</div>
         <span class="sec-note">Per dozen</span>
-        <div class="item"><span class="i-name">Red Velvet</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-        <div class="item"><span class="i-name">Chocolate</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-        <div class="item"><span class="i-name">Oreo Cheesecake Shooter</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-        <div class="item"><span class="i-name">Vanilla &amp; Cream</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Lotus Biscoff Shooter</span><span class="i-dots"></span><span class="i-price">$60</span></div>
-      </div>
-    </div>
-    <!-- ROW 3 -->
-    <div class="menu-row">
-      <div class="menu-col" id="d-mocktails">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Mocktails</h2><div class="sec-line"></div></div>
+        <div class="item"><span class="i-n">Red Velvet</span><span class="i-p">$55</span></div>
+        <div class="item"><span class="i-n">Chocolate</span><span class="i-p">$55</span></div>
+        <div class="item"><span class="i-n">Oreo Cheesecake Shooter</span><span class="i-p">$55</span></div>
+        <div class="item"><span class="i-n">Vanilla &amp; Cream</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Lotus Biscoff Shooter</span><span class="i-p">$60</span></div>
+      </section>
+
+      <!-- 05 Mocktails -->
+      <section class="menu-sec" id="s5">
+        <span class="sec-num">05</span>
+        <div class="sec-title">Mocktails</div>
         <span class="sec-note">Per dozen</span>
-        <div class="item"><span class="i-name">Hurricane</span><span class="i-dots"></span><span class="i-price">$45</span></div>
-        <div class="item"><span class="i-name">Piña Colada</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-        <div class="item"><span class="i-name">Virgin Mojito</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-        <div class="item"><span class="i-name">Strawberry Drink</span><span class="i-dots"></span><span class="i-price">$60</span></div>
-        <div class="item"><span class="i-name">Chapman</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-      </div>
-      <div class="menu-col" id="d-breakfast">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast</h2><div class="sec-line"></div></div>
-        <div class="item"><span class="i-name">Baked Potatoes &amp; Fish Sauce</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-        <div class="item"><span class="i-name">Bread Rolls &amp; Fried Eggs</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-        <div class="item"><span class="i-name">Bread Rolls &amp; Bean Balls (Akara)</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-        <div style="margin-top:1.5rem">
-          <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast Drinks</h2><div class="sec-line"></div></div>
-          <div class="item"><span class="i-name">Hot Chocolate with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-          <div class="item"><span class="i-name">Hot Coffee with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
+        <div class="item"><span class="i-n">Hurricane</span><span class="i-p">$45</span></div>
+        <div class="item"><span class="i-n">Piña Colada</span><span class="i-p">$55</span></div>
+        <div class="item"><span class="i-n">Virgin Mojito</span><span class="i-p">$50</span></div>
+        <div class="item"><span class="i-n">Strawberry Drink</span><span class="i-p">$60</span></div>
+        <div class="item"><span class="i-n">Chapman</span><span class="i-p">$55</span></div>
+      </section>
+
+      <!-- 06 Breakfast -->
+      <section class="menu-sec" id="s6">
+        <span class="sec-num">06</span>
+        <div class="sec-title">Breakfast</div>
+        <div class="item"><span class="i-n">Baked Potatoes &amp; Fish Sauce</span><span class="i-p req">On request</span></div>
+        <div class="item"><span class="i-n">Bread Rolls &amp; Fried Eggs</span><span class="i-p req">On request</span></div>
+        <div class="item"><span class="i-n">Bread Rolls &amp; Bean Balls (Akara)</span><span class="i-p req">On request</span></div>
+        <div class="sub-sec">
+          <div class="sec-title">Breakfast Drinks</div>
+          <div class="item"><span class="i-n">Hot Chocolate with Cream</span><span class="i-p req">On request</span></div>
+          <div class="item"><span class="i-n">Hot Coffee with Cream</span><span class="i-p req">On request</span></div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- MOBILE: single-col blocks -->
-    <div class="menu-block" id="small-chops">
-      <div class="sec-head"><div class="sec-line l"></div><h2>Small Chops &amp; Pastries</h2><div class="sec-line"></div></div>
-      <div class="item"><span class="i-name">Puff Puff</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Samosa</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Vegetable Spring Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Chicken Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-      <div class="item"><span class="i-name">Meat Pies</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Chicken Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-      <div class="item"><span class="i-name">Chin Chin</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-      <div class="item"><span class="i-name">Beef Sausage Rolls</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Fish Pies</span><span class="i-dots"></span><span class="i-price">$75</span></div>
     </div>
-
-    <div class="menu-block" id="appetizers">
-      <div class="sec-head"><div class="sec-line l"></div><h2>Appetizers</h2><div class="sec-line"></div></div>
-      <div class="item"><span class="i-name">Shawarma Bites</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Shrimp Spring Rolls</span><span class="i-dots"></span><span class="i-price">$75</span></div>
-      <div class="item"><span class="i-name">Shrimp Tempura</span><span class="i-dots"></span><span class="i-price">$80</span></div>
-      <div class="item"><span class="i-name">Mini Beef / Chicken Tacos</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Goat Meat Pepper Soup (Turkey)</span><span class="i-dots"></span><span class="i-price">$100</span></div>
-    </div>
-
-    <div class="menu-block" id="sides">
-      <div class="sec-head"><div class="sec-line l"></div><h2>Sides</h2><div class="sec-line"></div></div>
-      <div class="item"><span class="i-name">Pasta Salad</span><span class="i-dots"></span><span class="i-price">$70</span></div>
-      <div class="item"><span class="i-name">Nigerian Salad</span><span class="i-dots"></span><span class="i-price">$60</span></div>
-    </div>
-
-    <div class="menu-block" id="desserts">
-      <div class="sec-head"><div class="sec-line l"></div><h2>Desserts</h2><div class="sec-line"></div></div>
-      <span class="sec-note">Per dozen</span>
-      <div class="item"><span class="i-name">Red Velvet</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-      <div class="item"><span class="i-name">Chocolate</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-      <div class="item"><span class="i-name">Oreo Cheesecake Shooter</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-      <div class="item"><span class="i-name">Vanilla &amp; Cream</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Lotus Biscoff Shooter</span><span class="i-dots"></span><span class="i-price">$60</span></div>
-    </div>
-
-    <div class="menu-block" id="mocktails">
-      <div class="sec-head"><div class="sec-line l"></div><h2>Mocktails</h2><div class="sec-line"></div></div>
-      <span class="sec-note">Per dozen</span>
-      <div class="item"><span class="i-name">Hurricane</span><span class="i-dots"></span><span class="i-price">$45</span></div>
-      <div class="item"><span class="i-name">Piña Colada</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-      <div class="item"><span class="i-name">Virgin Mojito</span><span class="i-dots"></span><span class="i-price">$50</span></div>
-      <div class="item"><span class="i-name">Strawberry Drink</span><span class="i-dots"></span><span class="i-price">$60</span></div>
-      <div class="item"><span class="i-name">Chapman</span><span class="i-dots"></span><span class="i-price">$55</span></div>
-    </div>
-
-    <div class="menu-block" id="breakfast">
-      <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast</h2><div class="sec-line"></div></div>
-      <div class="item"><span class="i-name">Baked Potatoes &amp; Fish Sauce</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-      <div class="item"><span class="i-name">Bread Rolls &amp; Fried Eggs</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-      <div class="item"><span class="i-name">Bread Rolls &amp; Bean Balls (Akara)</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-      <div style="margin-top:1.5rem">
-        <div class="sec-head"><div class="sec-line l"></div><h2>Breakfast Drinks</h2><div class="sec-line"></div></div>
-        <div class="item"><span class="i-name">Hot Chocolate with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-        <div class="item"><span class="i-name">Hot Coffee with Cream</span><span class="i-dots"></span><span class="i-price tbd">On request</span></div>
-      </div>
-    </div>
-
   </main>
 
   <!-- PRICING -->
   <div class="pricing">
-    <div class="pr-inner">
-      <p class="pr-eyebrow">Event Setup Pricing</p>
-      <div class="pr-grid">
+    <div class="pr-in">
+      <span class="pr-tag">Event Setup Pricing</span>
+      <div class="pr-row">
         <div class="pr-item">
-          <div class="pr-label">Minimum Food Order</div>
-          <div class="pr-val">$800</div>
+          <div class="pr-lbl">Minimum Food Order</div>
+          <div class="pr-amt">$800</div>
         </div>
         <div class="pr-item">
-          <div class="pr-label">Floral Arrangement &amp; Setup</div>
-          <div class="pr-val">$250</div>
+          <div class="pr-lbl">Floral Arrangement &amp; Setup</div>
+          <div class="pr-amt">$250</div>
         </div>
         <div class="pr-item">
-          <div class="pr-label">Transportation · up to 20 mi</div>
-          <div class="pr-val">$100</div>
+          <div class="pr-lbl">Transportation · up to 20 mi</div>
+          <div class="pr-amt">$100</div>
         </div>
       </div>
-      <p class="pr-foot">Payment validates your order</p>
+      <p class="pr-note">Payment validates your order</p>
       <p class="pr-zelle">Zelle &nbsp;·&nbsp; <a href="mailto:creamybitsllc@gmail.com">creamybitsllc@gmail.com</a></p>
     </div>
   </div>
@@ -613,7 +584,10 @@
   <!-- CTA -->
   <div class="cta">
     <p>Ready to bring the Luxe experience to your event?</p>
-    <a href="/luxe-form" class="btn-gold">Submit a Catering Inquiry</a>
+    <a href="/luxe-form" class="btn-gold">
+      Submit a Catering Inquiry
+      <span class="btn-arrow">→</span>
+    </a>
   </div>
 
   <!-- FOOTER -->
@@ -625,47 +599,46 @@
     <a href="mailto:creamybitsllc@gmail.com">creamybitsllc@gmail.com</a>
   </footer>
 
-</div><!-- /page -->
+</div>
 
 <script>
-  // Splash
-  function dismissSplash() {
+  // ── Splash ──────────────────────────────────────
+  function dismiss() {
     document.getElementById('splash').classList.add('out');
     document.getElementById('page').classList.add('visible');
   }
-  setTimeout(dismissSplash, 3200);
+  setTimeout(dismiss, 3400);
 
-  // Nav scroll
-  function scrollTo(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const nav = document.querySelector('.sticky-nav');
-    const offset = nav ? nav.offsetHeight + 12 : 12;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top, behavior: 'smooth' });
-  }
-
-  // Active nav pill on scroll
-  const sections = ['small-chops','appetizers','sides','desserts','mocktails','breakfast'];
-  const pills = document.querySelectorAll('.nav-pill');
-
-  function updateActivePill() {
-    const nav = document.querySelector('.sticky-nav');
-    const offset = nav ? nav.offsetHeight + 40 : 40;
-    let current = sections[0];
-    sections.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.getBoundingClientRect().top - offset <= 0) current = id;
+  // ── Nav: click → smooth scroll ──────────────────
+  document.querySelectorAll('.snav-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const target = document.getElementById(pill.dataset.target);
+      if (!target) return;
+      const navH = document.querySelector('.snav').offsetHeight;
+      const top = target.getBoundingClientRect().top + window.scrollY - navH - 8;
+      window.scrollTo({ top, behavior: 'smooth' });
     });
-    pills.forEach((p, i) => p.classList.toggle('active', sections[i] === current));
+  });
 
-    // Scroll active pill into view in the nav
-    const activeIdx = sections.indexOf(current);
-    if (pills[activeIdx]) {
-      pills[activeIdx].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    }
+  // ── Nav: active pill on scroll ───────────────────
+  const sectionIds = ['s1','s2','s3','s4','s5','s6'];
+  const pills = document.querySelectorAll('.snav-pill');
+
+  function syncNav() {
+    const navH = document.querySelector('.snav').offsetHeight;
+    let active = sectionIds[0];
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top - navH - 20 <= 0) active = id;
+    });
+    pills.forEach(p => {
+      const on = p.dataset.target === active;
+      p.classList.toggle('active', on);
+      if (on) p.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    });
   }
-  window.addEventListener('scroll', updateActivePill, { passive: true });
+  window.addEventListener('scroll', syncNav, { passive: true });
+  syncNav();
 </script>
 </body>
 </html>
