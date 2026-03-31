@@ -495,82 +495,10 @@
     </div>
   </nav>
 
-  <!-- MENU -->
+  <!-- MENU (populated by JS) -->
   <main class="menu-wrap">
-    <div class="menu-grid">
-
-      <!-- 01 Small Chops -->
-      <section class="menu-sec" id="s1">
-        <span class="sec-num">01</span>
-        <div class="sec-title">Small Chops &amp; Pastries</div>
-        <div class="item"><span class="i-n">Puff Puff</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Samosa</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Vegetable Spring Rolls</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Chicken Spring Rolls</span><span class="i-p">$75</span></div>
-        <div class="item"><span class="i-n">Meat Pies</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Chicken Pies</span><span class="i-p">$75</span></div>
-        <div class="item"><span class="i-n">Chin Chin</span><span class="i-p">$75</span></div>
-        <div class="item"><span class="i-n">Beef Sausage Rolls</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Fish Pies</span><span class="i-p">$75</span></div>
-      </section>
-
-      <!-- 02 Appetizers -->
-      <section class="menu-sec" id="s2">
-        <span class="sec-num">02</span>
-        <div class="sec-title">Appetizers</div>
-        <div class="item"><span class="i-n">Shawarma Bites</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Shrimp Spring Rolls</span><span class="i-p">$75</span></div>
-        <div class="item"><span class="i-n">Shrimp Tempura</span><span class="i-p">$80</span></div>
-        <div class="item"><span class="i-n">Mini Beef / Chicken Tacos</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Goat Meat Pepper Soup (Turkey)</span><span class="i-p">$100</span></div>
-      </section>
-
-      <!-- 03 Sides -->
-      <section class="menu-sec" id="s3">
-        <span class="sec-num">03</span>
-        <div class="sec-title">Sides</div>
-        <div class="item"><span class="i-n">Pasta Salad</span><span class="i-p">$70</span></div>
-        <div class="item"><span class="i-n">Nigerian Salad</span><span class="i-p">$60</span></div>
-      </section>
-
-      <!-- 04 Desserts -->
-      <section class="menu-sec" id="s4">
-        <span class="sec-num">04</span>
-        <div class="sec-title">Desserts</div>
-        <span class="sec-note">Per dozen</span>
-        <div class="item"><span class="i-n">Red Velvet</span><span class="i-p">$55</span></div>
-        <div class="item"><span class="i-n">Chocolate</span><span class="i-p">$55</span></div>
-        <div class="item"><span class="i-n">Oreo Cheesecake Shooter</span><span class="i-p">$55</span></div>
-        <div class="item"><span class="i-n">Vanilla &amp; Cream</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Lotus Biscoff Shooter</span><span class="i-p">$60</span></div>
-      </section>
-
-      <!-- 05 Mocktails -->
-      <section class="menu-sec" id="s5">
-        <span class="sec-num">05</span>
-        <div class="sec-title">Mocktails</div>
-        <span class="sec-note">Per dozen</span>
-        <div class="item"><span class="i-n">Hurricane</span><span class="i-p">$45</span></div>
-        <div class="item"><span class="i-n">Piña Colada</span><span class="i-p">$55</span></div>
-        <div class="item"><span class="i-n">Virgin Mojito</span><span class="i-p">$50</span></div>
-        <div class="item"><span class="i-n">Strawberry Drink</span><span class="i-p">$60</span></div>
-        <div class="item"><span class="i-n">Chapman</span><span class="i-p">$55</span></div>
-      </section>
-
-      <!-- 06 Breakfast -->
-      <section class="menu-sec" id="s6">
-        <span class="sec-num">06</span>
-        <div class="sec-title">Breakfast</div>
-        <div class="item"><span class="i-n">Baked Potatoes &amp; Fish Sauce</span><span class="i-p req">On request</span></div>
-        <div class="item"><span class="i-n">Bread Rolls &amp; Fried Eggs</span><span class="i-p req">On request</span></div>
-        <div class="item"><span class="i-n">Bread Rolls &amp; Bean Balls (Akara)</span><span class="i-p req">On request</span></div>
-        <div class="sub-sec">
-          <div class="sec-title">Breakfast Drinks</div>
-          <div class="item"><span class="i-n">Hot Chocolate with Cream</span><span class="i-p req">On request</span></div>
-          <div class="item"><span class="i-n">Hot Coffee with Cream</span><span class="i-p req">On request</span></div>
-        </div>
-      </section>
-
+    <div class="menu-grid" id="menuGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem 0;opacity:.4;font-size:.9rem;letter-spacing:.1em">Loading menu…</div>
     </div>
   </main>
 
@@ -624,6 +552,57 @@
     document.getElementById('page').classList.add('visible');
   }
   setTimeout(dismiss, 3400);
+
+  // ── Section metadata ─────────────────────────────
+  const SECTIONS = [
+    { id:'s1',  num:'01', title:'Small Chops &amp; Pastries' },
+    { id:'s2',  num:'02', title:'Appetizers' },
+    { id:'s3',  num:'03', title:'Sides' },
+    { id:'s4',  num:'04', title:'Desserts',  note:'Per dozen' },
+    { id:'s5',  num:'05', title:'Mocktails', note:'Per dozen' },
+    { id:'s6',  num:'06', title:'Breakfast', subSection:{ id:'s6b', title:'Breakfast Drinks' } },
+  ];
+
+  function itemHtml(item) {
+    const price = item.on_request
+      ? `<span class="i-p req">On request</span>`
+      : `<span class="i-p">${item.price || ''}</span>`;
+    return `<div class="item"><span class="i-n">${item.name}</span>${price}</div>`;
+  }
+
+  async function loadMenu() {
+    try {
+      const items = await fetch('/luxe-items').then(r => r.json());
+      const bySection = {};
+      items.forEach(it => {
+        (bySection[it.section] = bySection[it.section] || []).push(it);
+      });
+
+      const grid = document.getElementById('menuGrid');
+      grid.innerHTML = SECTIONS.map(sec => {
+        const secItems = (bySection[sec.id] || []).map(itemHtml).join('');
+        let subHtml = '';
+        if (sec.subSection) {
+          const subItems = (bySection[sec.subSection.id] || []).map(itemHtml).join('');
+          if (subItems) {
+            subHtml = `<div class="sub-sec"><div class="sec-title">${sec.subSection.title}</div>${subItems}</div>`;
+          }
+        }
+        return `
+          <section class="menu-sec" id="${sec.id}">
+            <span class="sec-num">${sec.num}</span>
+            <div class="sec-title">${sec.title}</div>
+            ${sec.note ? `<span class="sec-note">${sec.note}</span>` : ''}
+            ${secItems}
+            ${subHtml}
+          </section>`;
+      }).join('');
+    } catch (e) {
+      document.getElementById('menuGrid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;padding:3rem 0;opacity:.5">Could not load menu. Please refresh.</div>`;
+    }
+  }
+  loadMenu();
 
   // ── Nav: click → smooth scroll ──────────────────
   document.querySelectorAll('.snav-pill').forEach(pill => {

@@ -83,11 +83,25 @@ async function initDB() {
       expire TIMESTAMP(6) NOT NULL
     );
     CREATE INDEX IF NOT EXISTS IDX_session_expire ON session (expire);
+
+    CREATE TABLE IF NOT EXISTS luxe_items (
+      id          TEXT PRIMARY KEY,
+      section     TEXT NOT NULL,
+      name        TEXT NOT NULL,
+      price       TEXT,
+      on_request  BOOLEAN DEFAULT false,
+      sort_order  INTEGER DEFAULT 0,
+      active      BOOLEAN DEFAULT true
+    );
   `);
 
   // Seed products if table is empty
   const { rowCount } = await pool.query('SELECT 1 FROM products LIMIT 1');
   if (rowCount === 0) await seedProducts();
+
+  // Seed luxe_items if table is empty
+  const { rowCount: luxeCount } = await pool.query('SELECT 1 FROM luxe_items LIMIT 1');
+  if (luxeCount === 0) await seedLuxeItems();
 
   // Migration: add size variants to Chapman Drink
   await pool.query(`
@@ -136,6 +150,58 @@ async function seedProducts() {
     await saveProduct(p);
   }
   console.log(`✅ Seeded ${SEED_PRODUCTS.length} products`);
+}
+
+const SEED_LUXE_ITEMS = [
+  // s1 – Small Chops & Pastries
+  { section:'s1', name:'Puff Puff',               price:'$50',  onRequest:false, sortOrder:0 },
+  { section:'s1', name:'Samosa',                  price:'$50',  onRequest:false, sortOrder:1 },
+  { section:'s1', name:'Vegetable Spring Rolls',  price:'$50',  onRequest:false, sortOrder:2 },
+  { section:'s1', name:'Chicken Spring Rolls',    price:'$75',  onRequest:false, sortOrder:3 },
+  { section:'s1', name:'Meat Pies',               price:'$50',  onRequest:false, sortOrder:4 },
+  { section:'s1', name:'Chicken Pies',            price:'$75',  onRequest:false, sortOrder:5 },
+  { section:'s1', name:'Chin Chin',               price:'$75',  onRequest:false, sortOrder:6 },
+  { section:'s1', name:'Beef Sausage Rolls',      price:'$50',  onRequest:false, sortOrder:7 },
+  { section:'s1', name:'Fish Pies',               price:'$75',  onRequest:false, sortOrder:8 },
+  // s2 – Appetizers
+  { section:'s2', name:'Shawarma Bites',                   price:'$50',  onRequest:false, sortOrder:0 },
+  { section:'s2', name:'Shrimp Spring Rolls',              price:'$75',  onRequest:false, sortOrder:1 },
+  { section:'s2', name:'Shrimp Tempura',                   price:'$80',  onRequest:false, sortOrder:2 },
+  { section:'s2', name:'Mini Beef / Chicken Tacos',        price:'$50',  onRequest:false, sortOrder:3 },
+  { section:'s2', name:'Goat Meat Pepper Soup (Turkey)',   price:'$100', onRequest:false, sortOrder:4 },
+  // s3 – Sides
+  { section:'s3', name:'Pasta Salad',    price:'$70', onRequest:false, sortOrder:0 },
+  { section:'s3', name:'Nigerian Salad', price:'$60', onRequest:false, sortOrder:1 },
+  // s4 – Desserts (per dozen)
+  { section:'s4', name:'Red Velvet',             price:'$55', onRequest:false, sortOrder:0 },
+  { section:'s4', name:'Chocolate',              price:'$55', onRequest:false, sortOrder:1 },
+  { section:'s4', name:'Oreo Cheesecake Shooter',price:'$55', onRequest:false, sortOrder:2 },
+  { section:'s4', name:'Vanilla & Cream',        price:'$50', onRequest:false, sortOrder:3 },
+  { section:'s4', name:'Lotus Biscoff Shooter',  price:'$60', onRequest:false, sortOrder:4 },
+  // s5 – Mocktails (per dozen)
+  { section:'s5', name:'Hurricane',       price:'$45', onRequest:false, sortOrder:0 },
+  { section:'s5', name:'Piña Colada',     price:'$55', onRequest:false, sortOrder:1 },
+  { section:'s5', name:'Virgin Mojito',   price:'$50', onRequest:false, sortOrder:2 },
+  { section:'s5', name:'Strawberry Drink',price:'$60', onRequest:false, sortOrder:3 },
+  { section:'s5', name:'Chapman',         price:'$55', onRequest:false, sortOrder:4 },
+  // s6 – Breakfast
+  { section:'s6', name:'Baked Potatoes & Fish Sauce',        price:null, onRequest:true, sortOrder:0 },
+  { section:'s6', name:'Bread Rolls & Fried Eggs',           price:null, onRequest:true, sortOrder:1 },
+  { section:'s6', name:'Bread Rolls & Bean Balls (Akara)',   price:null, onRequest:true, sortOrder:2 },
+  // s6b – Breakfast Drinks
+  { section:'s6b', name:'Hot Chocolate with Cream', price:null, onRequest:true, sortOrder:0 },
+  { section:'s6b', name:'Hot Coffee with Cream',    price:null, onRequest:true, sortOrder:1 },
+];
+
+async function seedLuxeItems() {
+  for (const item of SEED_LUXE_ITEMS) {
+    await pool.query(
+      `INSERT INTO luxe_items (id, section, name, price, on_request, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [uuidv4(), item.section, item.name, item.price || null, !!item.onRequest, item.sortOrder]
+    );
+  }
+  console.log(`✅ Seeded ${SEED_LUXE_ITEMS.length} luxe items`);
 }
 
 function rowToProduct(r) {
@@ -794,6 +860,59 @@ app.delete('/admin/orders/:id', requireAdmin, async (req, res) => {
   if (rows[0].status !== 'pending_payment')
     return res.status(400).json({ error: 'Only pending payment orders can be deleted.' });
   await pool.query('DELETE FROM orders WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Luxe menu items (public) ──────────────────────────────────────────────────
+app.get('/luxe-items', async (_req, res) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM luxe_items WHERE active=true ORDER BY section, sort_order, name'
+  );
+  res.json(rows);
+});
+
+// ── Luxe menu items (admin CRUD) ──────────────────────────────────────────────
+app.get('/admin/luxe-items', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM luxe_items ORDER BY section, sort_order, name');
+  res.json(rows);
+});
+
+app.post('/admin/luxe-items', requireAdmin, async (req, res) => {
+  const { section, name, price, onRequest, sortOrder } = req.body;
+  if (!section || !name) return res.status(400).json({ error: 'section and name are required.' });
+  const id = uuidv4();
+  const { rows } = await pool.query(
+    `INSERT INTO luxe_items (id, section, name, price, on_request, sort_order)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+    [id, section, name.trim(), price || null, !!onRequest, parseInt(sortOrder) || 0]
+  );
+  res.status(201).json(rows[0]);
+});
+
+app.patch('/admin/luxe-items/:id', requireAdmin, async (req, res) => {
+  const colMap = { name:'name', price:'price', onRequest:'on_request', sortOrder:'sort_order', active:'active' };
+  const sets = [], vals = [];
+  let i = 1;
+  for (const [key, col] of Object.entries(colMap)) {
+    if (req.body[key] !== undefined) {
+      sets.push(`${col}=$${i++}`);
+      if (key === 'onRequest' || key === 'active') vals.push(!!req.body[key]);
+      else if (key === 'price') vals.push(req.body[key] || null);
+      else if (key === 'sortOrder') vals.push(parseInt(req.body[key]) || 0);
+      else vals.push(req.body[key]);
+    }
+  }
+  if (!sets.length) return res.status(400).json({ error: 'Nothing to update.' });
+  vals.push(req.params.id);
+  const { rows } = await pool.query(
+    `UPDATE luxe_items SET ${sets.join(',')} WHERE id=$${i} RETURNING *`, vals
+  );
+  if (!rows.length) return res.status(404).json({ error: 'Not found.' });
+  res.json(rows[0]);
+});
+
+app.delete('/admin/luxe-items/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM luxe_items WHERE id=$1', [req.params.id]);
   res.json({ ok: true });
 });
 

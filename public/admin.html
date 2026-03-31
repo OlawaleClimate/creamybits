@@ -270,6 +270,7 @@
   <button class="admin-tab active" id="tabOrders" onclick="switchTab('orders')">📋 Orders</button>
   <button class="admin-tab" id="tabProducts" onclick="switchTab('products')">🛍️ Products</button>
   <button class="admin-tab" id="tabBlocked" onclick="switchTab('blocked')">🚫 Blocked Dates</button>
+  <button class="admin-tab" id="tabLuxe" onclick="switchTab('luxe')">✨ Luxe Menu</button>
 </div>
 
 <!-- ── ORDERS SECTION ─────────────────────────────────────── -->
@@ -394,6 +395,75 @@
     </div>
     <p style="font-size:.82rem;color:#6b7280;margin-bottom:1rem">Currently blocked dates:</p>
     <div class="blocked-list" id="blockedList"><span style="color:#9ca3af;font-size:.85rem">No blocked dates.</span></div>
+  </div>
+</div>
+
+<!-- ── LUXE MENU SECTION ──────────────────────────────────────── -->
+<div class="products-section" id="luxeSection">
+  <div class="section-toolbar">
+    <div style="font-size:1rem;font-weight:700;color:var(--black)">✨ Luxe Menu Items</div>
+    <button class="add-product-btn" onclick="openLuxeModal()">+ Add Item</button>
+  </div>
+
+  <!-- Add / Edit form (hidden by default) -->
+  <div id="luxeForm" style="display:none;margin:0 2rem 1.5rem;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:1.25rem 1.5rem">
+    <p style="font-weight:700;font-size:.95rem;margin-bottom:1rem" id="luxeFormTitle">Add Luxe Item</p>
+    <p style="color:#dc2626;font-size:.83rem;margin-bottom:.5rem;display:none" id="luxeFormError"></p>
+    <input type="hidden" id="luxeItemId" />
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.75rem;align-items:end;flex-wrap:wrap">
+      <div>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Section</label>
+        <select id="luxeItemSection" style="width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:.9rem">
+          <option value="s1">01 – Small Chops &amp; Pastries</option>
+          <option value="s2">02 – Appetizers</option>
+          <option value="s3">03 – Sides</option>
+          <option value="s4">04 – Desserts</option>
+          <option value="s5">05 – Mocktails</option>
+          <option value="s6">06 – Breakfast</option>
+          <option value="s6b">06b – Breakfast Drinks</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Name</label>
+        <input type="text" id="luxeItemName" placeholder="e.g. Puff Puff" style="width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:.9rem" />
+      </div>
+      <div>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Price (e.g. $50)</label>
+        <input type="text" id="luxeItemPrice" placeholder="$50 or leave blank" style="width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:.9rem" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.35rem">
+        <label style="display:flex;align-items:center;gap:.45rem;font-size:.85rem;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="luxeItemOnRequest" />
+          On request
+        </label>
+        <label style="display:flex;align-items:center;gap:.45rem;font-size:.85rem;cursor:pointer">
+          <input type="checkbox" id="luxeItemActive" checked />
+          Active
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:.6rem;margin-top:1rem">
+      <button class="add-product-btn" onclick="saveLuxeItem()" style="padding:.5rem 1.25rem">Save</button>
+      <button onclick="closeLuxeModal()" style="padding:.5rem 1.1rem;border:1px solid #d1d5db;border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:.88rem">Cancel</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>On Request</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="luxeBody">
+        <tr><td colspan="6" class="state-msg">Loading…</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -929,11 +999,14 @@
     document.getElementById('ordersSection').classList.toggle('hidden', tab !== 'orders');
     document.getElementById('productsSection').classList.toggle('active', tab === 'products');
     document.getElementById('blockedSection').classList.toggle('active', tab === 'blocked');
+    document.getElementById('luxeSection').classList.toggle('active', tab === 'luxe');
     document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
     document.getElementById('tabBlocked').classList.toggle('active', tab === 'blocked');
+    document.getElementById('tabLuxe').classList.toggle('active', tab === 'luxe');
     if (tab === 'products') loadAllProducts();
     if (tab === 'blocked') loadBlockedDates();
+    if (tab === 'luxe') loadLuxeItems();
   }
 
   // ── Products management ─────────────────────────────────────────────────
@@ -1237,6 +1310,111 @@
     try {
       await fetch(`/admin/blocked-dates/${id}`, { method: 'DELETE' });
       await loadBlockedDates();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  // ── Luxe menu management ─────────────────────────────────────────────────
+  let allLuxeItems = [];
+
+  const LUXE_SEC_LABELS = {
+    s1:'01 – Small Chops & Pastries', s2:'02 – Appetizers', s3:'03 – Sides',
+    s4:'04 – Desserts', s5:'05 – Mocktails', s6:'06 – Breakfast', s6b:'06b – Breakfast Drinks',
+  };
+
+  async function loadLuxeItems() {
+    try {
+      const res = await fetch('/admin/luxe-items');
+      if (res.redirected || res.status === 302) { location.href = '/admin-login.html'; return; }
+      allLuxeItems = await res.json();
+      renderLuxeTable();
+    } catch(e) {
+      document.getElementById('luxeBody').innerHTML = `<tr><td colspan="6" class="state-msg">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderLuxeTable() {
+    const tbody = document.getElementById('luxeBody');
+    if (!allLuxeItems.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="state-msg">No items yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = allLuxeItems.map(item => `
+      <tr>
+        <td style="font-size:.8rem;color:#6b7280">${LUXE_SEC_LABELS[item.section] || item.section}</td>
+        <td><strong>${item.name}</strong></td>
+        <td>${item.price || '—'}</td>
+        <td>${item.on_request ? '<span style="color:#c9a84c;font-weight:700">Yes</span>' : 'No'}</td>
+        <td><span class="active-dot ${item.active ? 'dot-on' : 'dot-off'}"></span>${item.active ? 'Active' : 'Hidden'}</td>
+        <td class="td-actions" style="display:flex;gap:.4rem">
+          <button class="edit-btn" onclick='editLuxeItem(${JSON.stringify(item)})'>Edit</button>
+          <button class="del-btn" onclick="deleteLuxeItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Delete</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function openLuxeModal() {
+    document.getElementById('luxeItemId').value = '';
+    document.getElementById('luxeItemSection').value = 's1';
+    document.getElementById('luxeItemName').value = '';
+    document.getElementById('luxeItemPrice').value = '';
+    document.getElementById('luxeItemOnRequest').checked = false;
+    document.getElementById('luxeItemActive').checked = true;
+    document.getElementById('luxeFormTitle').textContent = 'Add Luxe Item';
+    document.getElementById('luxeFormError').style.display = 'none';
+    document.getElementById('luxeForm').style.display = '';
+    document.getElementById('luxeItemName').focus();
+  }
+
+  function editLuxeItem(item) {
+    document.getElementById('luxeItemId').value = item.id;
+    document.getElementById('luxeItemSection').value = item.section;
+    document.getElementById('luxeItemName').value = item.name;
+    document.getElementById('luxeItemPrice').value = item.price || '';
+    document.getElementById('luxeItemOnRequest').checked = !!item.on_request;
+    document.getElementById('luxeItemActive').checked = !!item.active;
+    document.getElementById('luxeFormTitle').textContent = 'Edit Luxe Item';
+    document.getElementById('luxeFormError').style.display = 'none';
+    document.getElementById('luxeForm').style.display = '';
+    document.getElementById('luxeItemName').focus();
+    document.getElementById('luxeForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function closeLuxeModal() {
+    document.getElementById('luxeForm').style.display = 'none';
+  }
+
+  async function saveLuxeItem() {
+    const id        = document.getElementById('luxeItemId').value;
+    const section   = document.getElementById('luxeItemSection').value;
+    const name      = document.getElementById('luxeItemName').value.trim();
+    const price     = document.getElementById('luxeItemPrice').value.trim();
+    const onRequest = document.getElementById('luxeItemOnRequest').checked;
+    const active    = document.getElementById('luxeItemActive').checked;
+    const errEl     = document.getElementById('luxeFormError');
+
+    if (!name) { errEl.textContent = 'Name is required.'; errEl.style.display = ''; return; }
+
+    const body = { section, name, price, onRequest, active };
+    const url    = id ? `/admin/luxe-items/${id}` : '/admin/luxe-items';
+    const method = id ? 'PATCH' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) { const d = await res.json(); errEl.textContent = d.error || 'Failed'; errEl.style.display = ''; return; }
+      closeLuxeModal();
+      await loadLuxeItems();
+    } catch(e) { errEl.textContent = 'Error: ' + e.message; errEl.style.display = ''; }
+  }
+
+  async function deleteLuxeItem(id, name) {
+    if (!confirm(`Delete "${name}"?`)) return;
+    try {
+      await fetch(`/admin/luxe-items/${id}`, { method: 'DELETE' });
+      await loadLuxeItems();
     } catch(e) { alert('Error: ' + e.message); }
   }
 </script>
