@@ -339,44 +339,41 @@
     }
 
     .pr-row {
-      display: flex; justify-content: center;
-      align-items: stretch; flex-wrap: wrap;
-      max-width: 680px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: .85rem;
+      max-width: 520px; margin: 0 auto;
     }
     .pr-item {
-      flex: 1; min-width: 140px;
-      padding: 0 2.5rem;
-      border-right: 1px solid rgba(201,168,76,.1);
+      display: flex; align-items: center; gap: 1.25rem;
+      padding: 1.2rem 1.5rem;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(201,168,76,.12);
+      border-radius: 16px; text-align: left;
+      transition: background .25s, border-color .25s;
     }
-    .pr-item:last-child { border-right: none; }
+    .pr-item:hover { background: rgba(201,168,76,.055); border-color: rgba(201,168,76,.24); }
+    .pr-icon {
+      font-size: 1.6rem; flex-shrink: 0;
+      width: 50px; height: 50px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(201,168,76,.08);
+      border: 1px solid rgba(201,168,76,.12);
+      border-radius: 14px;
+    }
+    .pr-details { flex: 1; }
     .pr-lbl {
-      font-size: .58rem; font-weight: 500;
-      letter-spacing: .14em; text-transform: uppercase;
-      color: rgba(245,230,184,.3);
-      margin-bottom: .55rem;
+      font-size: .88rem; font-weight: 600;
+      color: var(--cream); letter-spacing: .01em;
+      margin-bottom: .2rem;
+    }
+    .pr-desc {
+      font-size: .7rem; color: rgba(245,230,184,.38);
+      letter-spacing: .05em;
     }
     .pr-amt {
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem; font-weight: 700;
-      color: var(--gold-lt); line-height: 1;
+      font-size: 1.7rem; font-weight: 700;
+      color: var(--gold-lt); line-height: 1; flex-shrink: 0;
     }
-
-    .pr-note {
-      margin-top: 2.5rem;
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: .9rem;
-      color: rgba(245,230,184,.25);
-    }
-    .pr-zelle {
-      margin-top: .4rem; font-size: .72rem;
-      color: rgba(245,230,184,.28);
-    }
-    .pr-zelle a {
-      color: var(--gold-lt); text-decoration: none;
-      border-bottom: 1px solid rgba(201,168,76,.2);
-      transition: color .2s;
-    }
-    .pr-zelle a:hover { color: var(--gold-pl); }
 
     /* ── CTA ── */
     .cta {
@@ -436,10 +433,9 @@
       .item:hover { background: none; margin: 0; padding: .3rem 0; border-radius: 0; border-bottom: 1px solid rgba(255,255,255,.032); }
       .item:last-child:hover { border-bottom: none; }
 
-      .pr-row { flex-direction: column; gap: 2rem; align-items: center; }
-      .pr-item { border-right: none; border-bottom: 1px solid rgba(201,168,76,.08); padding: 0 0 2rem; width: 100%; min-width: unset; }
-      .pr-item:last-child { border-bottom: none; padding-bottom: 0; }
-      .pr-amt { font-size: 2.2rem; }
+      .pr-row { max-width: 100%; }
+      .pr-item { padding: 1rem 1.1rem; }
+      .pr-amt { font-size: 1.5rem; }
     }
 
     /* hide snav on large screens — not needed */
@@ -509,16 +505,22 @@
       <span class="pr-tag">Event Setup Pricing</span>
       <div class="pr-row">
         <div class="pr-item">
-          <div class="pr-lbl">Floral Arrangement &amp; Setup</div>
+          <div class="pr-icon">🌸</div>
+          <div class="pr-details">
+            <div class="pr-lbl">Floral Arrangement &amp; Setup</div>
+            <div class="pr-desc">Full décor &amp; floral styling for your event</div>
+          </div>
           <div class="pr-amt">$250</div>
         </div>
         <div class="pr-item">
-          <div class="pr-lbl">Transportation · up to 20 mi</div>
+          <div class="pr-icon">🚘</div>
+          <div class="pr-details">
+            <div class="pr-lbl">Transportation</div>
+            <div class="pr-desc">Delivery &amp; setup · up to 20 miles</div>
+          </div>
           <div class="pr-amt">$100</div>
         </div>
       </div>
-      <p class="pr-note">Payment validates your order</p>
-      <p class="pr-zelle">Zelle &nbsp;·&nbsp; <a href="mailto:creamybitsllc@gmail.com">creamybitsllc@gmail.com</a></p>
     </div>
   </div>
 
