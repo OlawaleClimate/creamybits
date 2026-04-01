@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev        # Start server with --watch (auto-restarts on file changes)
 npm start          # Start server (production)
 npm test           # Run Jest test suite
+npx jest -t "test name"   # Run a single test by name
+npx jest tests/server.test.js  # Run a specific test file
 ```
 
 Tests use Jest + Supertest against a fully mocked environment (no real DB/Stripe/Resend needed). The mock setup is in `tests/setup.js`.

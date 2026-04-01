@@ -467,17 +467,17 @@ async function sendLuxeBookingEmails(booking) {
       <div style="background:#fff;border:1px solid #e5dcc8;border-top:none;border-radius:0 0 12px 12px;padding:2rem">
         <h2 style="margin:0 0 .5rem;font-size:1.1rem">Hi ${booking.customer_name} 👋</h2>
         <p style="color:#4b4b4b;line-height:1.65;margin:0 0 1.25rem">
-          Your $1 consultation deposit has been received. We'll reach out within 1–2 business days
+          Your $40 consultation deposit has been received. We'll reach out within 1–2 business days
           to schedule your consultation. Your deposit will be credited toward your total if you move forward with CreamyBits Luxe.
         </p>
         <table style="width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:1.25rem">
           <tr><td style="padding:.4rem .6rem;color:#6b7280;width:130px;font-weight:600">Event type</td><td style="padding:.4rem .6rem">${booking.event_type}</td></tr>
           ${booking.event_date ? `<tr style="background:#fdfaf3"><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Event date</td><td style="padding:.4rem .6rem">${booking.event_date}</td></tr>` : ''}
           ${booking.guest_count ? `<tr><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Est. guests</td><td style="padding:.4rem .6rem">${booking.guest_count}</td></tr>` : ''}
-          <tr style="background:#fdfaf3"><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Deposit paid</td><td style="padding:.4rem .6rem;color:#16a34a;font-weight:700">$1.00 ✓</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.4rem .6rem;color:#6b7280;font-weight:600">Deposit paid</td><td style="padding:.4rem .6rem;color:#16a34a;font-weight:700">$40.00 ✓</td></tr>
         </table>
         <p style="font-size:.8rem;color:#9ca3af;margin:0">
-          Note: The $1 consultation fee is non-refundable if you choose not to proceed with our services.
+          Note: The $40 consultation fee is non-refundable if you choose not to proceed with our services.
         </p>
       </div>
       <p style="text-align:center;color:#9ca3af;font-size:.75rem;margin-top:1rem">CreamyBits LLC · Albuquerque, NM · creamybitsllc@gmail.com</p>
@@ -497,7 +497,7 @@ async function sendLuxeBookingEmails(booking) {
           ${booking.event_date ? `<tr><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Event date</td><td style="padding:.45rem .6rem">${booking.event_date}</td></tr>` : ''}
           ${booking.guest_count ? `<tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Est. guests</td><td style="padding:.45rem .6rem">${booking.guest_count}</td></tr>` : ''}
           ${booking.notes ? `<tr><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280;vertical-align:top">Notes</td><td style="padding:.45rem .6rem">${booking.notes}</td></tr>` : ''}
-          <tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Deposit</td><td style="padding:.45rem .6rem;color:#16a34a;font-weight:700">$1.00 PAID</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.45rem .6rem;font-weight:700;color:#6b7280">Deposit</td><td style="padding:.45rem .6rem;color:#16a34a;font-weight:700">$40.00 PAID</td></tr>
         </table>
       </div>
     </div>`;
@@ -1064,9 +1064,9 @@ app.post('/create-luxe-booking', express.json(), async (req, res) => {
         currency: 'usd',
         product_data: {
           name: 'CreamyBits Luxe — Consultation Deposit',
-          description: 'Non-refundable $1 deposit credited toward your total if you book our services.',
+          description: 'Non-refundable $40 deposit credited toward your total if you book our services.',
         },
-        unit_amount: 100,
+        unit_amount: 4000,
       },
       quantity: 1,
     }],
