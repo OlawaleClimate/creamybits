@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CreamyBits Luxe – Premium Event Catering · Albuquerque, NM</title>
+  <meta name="description" content="CreamyBits Luxe — elevated African catering for weddings, birthdays, corporate events and more in Albuquerque, NM." />
+  <meta property="og:title" content="CreamyBits Luxe – Premium Event Catering" />
+  <meta property="og:description" content="Elevated African catering. Small chops, full meals, desserts, mocktails — beautifully presented for your event." />
+  <meta property="og:image" content="/luxe-images/DSC_4236.jpg" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:    #c9a84c;
+      --gold-lt: #e8c97a;
+      --gold-dk: #9a7a2e;
+      --black:   #050301;
+      --black2:  #0d0b07;
+      --cream:   #fdf8ee;
+      --muted:   rgba(245,230,184,.55);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black);
+      color: var(--cream);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 2rem;
+      background: rgba(5,3,1,.55);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      border-bottom: 1px solid rgba(201,168,76,.08);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: .6rem;
+      text-decoration: none;
+    }
+    .nav-logo img { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(201,168,76,.3); }
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700;
+      color: var(--cream); letter-spacing: .02em;
+    }
+    .nav-brand span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 1rem; }
+    .nav-links a {
+      font-size: .82rem; font-weight: 500;
+      color: rgba(245,230,184,.65);
+      text-decoration: none; letter-spacing: .03em;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--gold-lt); }
+    .nav-book {
+      padding: .5rem 1.1rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: #0e0a03 !important;
+      border-radius: 8px; font-weight: 600 !important;
+      transition: opacity .2s, transform .2s !important;
+    }
+    .nav-book:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex; align-items: flex-end;
+      padding: 0 0 5rem;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('/luxe-images/DSC_4236.jpg');
+      background-size: cover;
+      background-position: center 30%;
+      background-repeat: no-repeat;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(5,3,1,.15) 0%,
+        rgba(5,3,1,.35) 40%,
+        rgba(5,3,1,.82) 75%,
+        rgba(5,3,1,.97) 100%
+      );
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 720px;
+      padding: 0 2.5rem;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-size: .7rem; font-weight: 600; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 1.1rem;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: '';
+      display: inline-block; width: 28px; height: 1px;
+      background: var(--gold); opacity: .5;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      font-weight: 900; line-height: 1.1;
+      color: var(--cream);
+      margin-bottom: 1.1rem;
+    }
+    .hero h1 em { color: var(--gold); font-style: italic; }
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: var(--muted); line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 2.2rem;
+    }
+    .hero-btns {
+      display: flex; flex-wrap: wrap; gap: .85rem; align-items: center;
+    }
+    .btn-gold {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .85rem 1.8rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: #0e0a03; border-radius: 10px;
+      font-weight: 700; font-size: .92rem; letter-spacing: .02em;
+      text-decoration: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .btn-gold:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .82rem 1.75rem;
+      border: 1.5px solid rgba(201,168,76,.5);
+      color: var(--cream); border-radius: 10px;
+      font-weight: 500; font-size: .92rem; letter-spacing: .02em;
+      text-decoration: none;
+      transition: border-color .2s, color .2s, transform .2s;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold-lt); transform: translateY(-2px); }
+
+    /* ── SCROLL INDICATOR ── */
+    .scroll-down {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: .35rem;
+      z-index: 2;
+    }
+    .scroll-down span {
+      font-size: .62rem; letter-spacing: .15em; text-transform: uppercase;
+      color: rgba(201,168,76,.4);
+    }
+    .scroll-line {
+      width: 1px; height: 36px;
+      background: linear-gradient(to bottom, rgba(201,168,76,.5), transparent);
+      animation: scrollDrop 1.6s ease-in-out infinite;
+    }
+    @keyframes scrollDrop {
+      0%, 100% { transform: scaleY(1); opacity: 1; }
+      50%       { transform: scaleY(.5); opacity: .4; }
+    }
+
+    /* ── SECTION SHELL ── */
+    section { padding: 6rem 2rem; }
+    .section-label {
+      font-size: .65rem; font-weight: 700; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: .75rem;
+    }
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 900; line-height: 1.15;
+      margin-bottom: .6rem;
+    }
+    .section-heading em { color: var(--gold); font-style: italic; }
+    .section-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem; color: var(--muted);
+      line-height: 1.7; max-width: 500px;
+    }
+
+    /* ── GALLERY ── */
+    .gallery {
+      background: var(--black2);
+      padding: 5rem 2rem;
+    }
+    .gallery-header {
+      max-width: 1200px; margin: 0 auto 2.5rem;
+    }
+    .gallery-grid {
+      max-width: 1200px; margin: 0 auto;
+      columns: 3; gap: 10px;
+    }
+    .gallery-grid img {
+      width: 100%;
+      display: block;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      break-inside: avoid;
+      object-fit: cover;
+      transition: transform .4s ease, filter .3s ease;
+      filter: brightness(.92) saturate(1.05);
+    }
+    .gallery-grid img:hover {
+      transform: scale(1.02);
+      filter: brightness(1) saturate(1.15);
+      z-index: 1; position: relative;
+    }
+    @media (max-width: 860px) { .gallery-grid { columns: 2; } }
+    @media (max-width: 540px) { .gallery-grid { columns: 1; } }
+
+    /* ── OFFERS ── */
+    .offers {
+      max-width: 1100px; margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+    .offers-header { margin-bottom: 3rem; }
+    .offer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .offer-card {
+      background: rgba(201,168,76,.04);
+      border: 1px solid rgba(201,168,76,.12);
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem;
+      transition: border-color .25s, background .25s;
+    }
+    .offer-card:hover {
+      border-color: rgba(201,168,76,.35);
+      background: rgba(201,168,76,.08);
+    }
+    .offer-icon { font-size: 1.8rem; margin-bottom: .75rem; }
+    .offer-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700;
+      margin-bottom: .35rem;
+    }
+    .offer-desc {
+      font-size: .8rem; color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ── STRIP ── */
+    .strip {
+      border-top: 1px solid rgba(201,168,76,.1);
+      border-bottom: 1px solid rgba(201,168,76,.1);
+      background: rgba(201,168,76,.04);
+      padding: 2rem;
+      overflow: hidden;
+    }
+    .strip-track {
+      display: flex; gap: 3rem; align-items: center;
+      white-space: nowrap;
+      animation: marquee 22s linear infinite;
+    }
+    .strip-track span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-style: italic;
+      color: rgba(201,168,76,.55);
+      letter-spacing: .06em;
+      flex-shrink: 0;
+    }
+    .strip-dot { color: var(--gold) !important; font-style: normal !important; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── FINAL CTA ── */
+    .final-cta {
+      text-align: center;
+      padding: 7rem 2rem;
+      background: radial-gradient(ellipse at center, rgba(201,168,76,.07) 0%, transparent 70%);
+    }
+    .final-cta .section-label { justify-content: center; display: flex; }
+    .final-cta .section-heading { margin: 0 auto .8rem; }
+    .final-cta .section-sub { margin: 0 auto 2.5rem; text-align: center; }
+    .final-cta-btns {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      justify-content: center;
+    }
+    .final-cta .btn-text {
+      font-size: .82rem; color: rgba(201,168,76,.45);
+      text-decoration: none; letter-spacing: .05em;
+      transition: color .2s;
+    }
+    .final-cta .btn-text:hover { color: var(--gold-lt); }
+    .final-cta-links {
+      margin-top: 1.5rem;
+      display: flex; flex-wrap: wrap; gap: 1.5rem;
+      justify-content: center; align-items: center;
+    }
+
+    /* ── FOOTER ── */
+    .foot {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      border-top: 1px solid rgba(201,168,76,.08);
+      display: flex; gap: 1.5rem; justify-content: center;
+      flex-wrap: wrap;
+    }
+    .foot a {
+      font-size: .78rem; color: rgba(245,230,184,.3);
+      text-decoration: none; transition: color .2s;
+    }
+    .foot a:hover { color: var(--gold-lt); }
+    .foot-dot { color: rgba(201,168,76,.25); font-size: .6rem; }
+
+    /* ── MOBILE NAV ── */
+    @media (max-width: 600px) {
+      .nav { padding: .75rem 1.25rem; }
+      .nav-links .nav-menu-link { display: none; }
+      .hero-content { padding: 0 1.25rem; }
+      .hero { padding: 0 0 4rem; }
+      section { padding: 4rem 1.25rem; }
+      .offers { padding: 4rem 1.25rem; }
+      .final-cta { padding: 5rem 1.25rem; }
+      .gallery { padding: 4rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <img src="/logo.png" alt="CreamyBits" />
+      <span class="nav-brand">CreamyBits <span>Luxe</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="/luxe-menu" class="nav-menu-link">View Menu</a>
+      <a href="/luxe-booking" class="nav-book">Book a Consultation</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">CreamyBits Luxe</p>
+      <h1>Elevated Catering for<br><em>Unforgettable Events.</em></h1>
+      <p class="hero-sub">
+        Premium African cuisine, beautifully presented — small chops, full meals,
+        mocktails, and desserts crafted for weddings, birthdays, corporate events
+        and more. Albuquerque, NM.
+      </p>
+      <div class="hero-btns">
+        <a href="/luxe-menu" class="btn-gold">View the Menu →</a>
+        <a href="/luxe-booking" class="btn-outline">Book a Consultation · $40</a>
+      </div>
+    </div>
+
+    <div class="scroll-down">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── MARQUEE STRIP ── -->
+  <div class="strip">
+    <div class="strip-track">
+      <span>Small Chops</span><span class="strip-dot">✦</span>
+      <span>Puff Puff</span><span class="strip-dot">✦</span>
+      <span>Spring Rolls</span><span class="strip-dot">✦</span>
+      <span>Mocktails</span><span class="strip-dot">✦</span>
+      <span>Panna Cotta</span><span class="strip-dot">✦</span>
+      <span>Jollof Rice</span><span class="strip-dot">✦</span>
+      <span>Pastries</span><span class="strip-dot">✦</span>
+      <span>Dessert Cups</span><span class="strip-dot">✦</span>
+      <span>Full Event Setup</span><span class="strip-dot">✦</span>
+      <!-- duplicate for seamless loop -->
+      <span>Small Chops</span><span class="strip-dot">✦</span>
+      <span>Puff Puff</span><span class="strip-dot">✦</span>
+      <span>Spring Rolls</span><span class="strip-dot">✦</span>
+      <span>Mocktails</span><span class="strip-dot">✦</span>
+      <span>Panna Cotta</span><span class="strip-dot">✦</span>
+      <span>Jollof Rice</span><span class="strip-dot">✦</span>
+      <span>Pastries</span><span class="strip-dot">✦</span>
+      <span>Dessert Cups</span><span class="strip-dot">✦</span>
+      <span>Full Event Setup</span><span class="strip-dot">✦</span>
+    </div>
+  </div>
+
+  <!-- ── GALLERY ── -->
+  <section class="gallery">
+    <div class="gallery-header">
+      <p class="section-label">Our Work</p>
+      <h2 class="section-heading">Crafted with care.<br><em>Every single dish.</em></h2>
+    </div>
+    <div class="gallery-grid">
+      <img src="/luxe-images/DSC_4284.jpg" alt="Panna cotta with raspberries" loading="lazy" />
+      <img src="/luxe-images/DSC_4305.jpg" alt="Nigerian main course spread" loading="lazy" />
+      <img src="/luxe-images/DSC_4266.jpg" alt="Pastries on display" loading="lazy" />
+      <img src="/luxe-images/DSC_4239.jpg" alt="Puff puff platter" loading="lazy" />
+      <img src="/luxe-images/DSC_4252.jpg" alt="Signature mocktails" loading="lazy" />
+      <img src="/luxe-images/DSC_4241.jpg" alt="Pepper soup appetizer bowls" loading="lazy" />
+      <img src="/luxe-images/DSC_4318.jpg" alt="Dessert cups" loading="lazy" />
+      <img src="/luxe-images/DSC_4269.jpg" alt="Spring rolls in cups" loading="lazy" />
+      <img src="/luxe-images/DSC_4321.jpg" alt="Spring rolls spread" loading="lazy" />
+      <img src="/luxe-images/DSC_4294.jpg" alt="Slow cooker station" loading="lazy" />
+      <img src="/luxe-images/DSC_4307.jpg" alt="Event food display" loading="lazy" />
+      <img src="/luxe-images/DSC_4275.jpg" alt="Catering display" loading="lazy" />
+    </div>
+  </section>
+
+  <!-- ── WHAT WE OFFER ── -->
+  <section class="offers">
+    <div class="offers-header">
+      <p class="section-label">What We Offer</p>
+      <h2 class="section-heading">A complete<br><em>Luxe experience.</em></h2>
+      <p class="section-sub" style="margin-top:.6rem">
+        From intimate gatherings to grand celebrations — every element handled with intention.
+      </p>
+    </div>
+    <div class="offer-grid">
+      <div class="offer-card">
+        <div class="offer-icon">🥟</div>
+        <p class="offer-name">Small Chops</p>
+        <p class="offer-desc">Spring rolls, puff puff, samosas, chicken skewers — beautifully arranged full trays.</p>
+      </div>
+      <div class="offer-card">
+        <div class="offer-icon">🍽️</div>
+        <p class="offer-name">Main Courses</p>
+        <p class="offer-desc">Jollof rice, peppered meats, stews, soups — authentic Nigerian flavors, elevated.</p>
+      </div>
+      <div class="offer-card">
+        <div class="offer-icon">🥂</div>
+        <p class="offer-name">Mocktails & Drinks</p>
+        <p class="offer-desc">Bespoke non-alcoholic cocktails, fruit punches, and signature pours for your guests.</p>
+      </div>
+      <div class="offer-card">
+        <div class="offer-icon">🍮</div>
+        <p class="offer-name">Desserts & Pastries</p>
+        <p class="offer-desc">Panna cotta, dessert cups, cream puffs, chin chin — the perfect sweet finish.</p>
+      </div>
+      <div class="offer-card">
+        <div class="offer-icon">✨</div>
+        <p class="offer-name">Full Event Setup</p>
+        <p class="offer-desc">Styled stations, floral accents, chafing dishes — we bring the whole experience.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FINAL CTA ── -->
+  <section class="final-cta">
+    <p class="section-label">Get Started</p>
+    <h2 class="section-heading">Ready to plan your<br><em>perfect event?</em></h2>
+    <p class="section-sub">
+      Start with a $40 consultation deposit — credited toward your total when you book.
+    </p>
+    <div class="final-cta-btns">
+      <a href="/luxe-booking" class="btn-gold">Book a Consultation · $40</a>
+      <a href="/luxe-menu" class="btn-outline">View Full Menu</a>
+    </div>
+    <div class="final-cta-links">
+      <a href="/" class="btn-text">← Back to CreamyBits</a>
+      <span class="foot-dot">✦</span>
+      <a href="mailto:creamybitsllc@gmail.com" class="btn-text">creamybitsllc@gmail.com</a>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="foot">
+    <a href="/">Home</a>
+    <span class="foot-dot">✦</span>
+    <a href="/luxe-menu">Luxe Menu</a>
+    <span class="foot-dot">✦</span>
+    <a href="/luxe-booking">Book a Consultation</a>
+    <span class="foot-dot">✦</span>
+    <a href="mailto:creamybitsllc@gmail.com">Contact</a>
+  </footer>
+
+</body>
+</html>

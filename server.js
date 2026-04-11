@@ -1025,6 +1025,9 @@ app.get('/menu', (_req, res) => {
 });
 
 // Luxe menu
+app.get('/luxe', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'luxe.html'));
+});
 app.get('/luxe-menu', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe-menu.html'));
 });
