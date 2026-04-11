@@ -73,10 +73,13 @@
     .slide-luxe-badge a:hover { color: #c9a84c; }
 
     /* ── MOBILE LUXE PROMO MODAL ── */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap');
     .luxe-promo-backdrop {
       display: none;
       position: fixed; inset: 0; z-index: 340;
-      background: rgba(0,0,0,.65);
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
     .luxe-promo {
       display: none;
@@ -86,45 +89,96 @@
       width: calc(100% - 2.5rem);
       max-width: 360px;
       z-index: 350;
-      background: linear-gradient(160deg,#0d0b07 0%,#1e1408 60%,#0d0b07 100%);
-      border: 1px solid rgba(201,168,76,.3);
-      border-radius: 22px;
-      box-shadow: 0 16px 60px rgba(0,0,0,.7);
+      background: #070501;
+      border-radius: 26px;
+      box-shadow: 0 0 0 1px rgba(201,168,76,.2), 0 0 60px rgba(201,168,76,.12), 0 24px 64px rgba(0,0,0,.8);
       flex-direction: column;
       overflow: hidden;
-      animation: promoPopIn .35s cubic-bezier(.34,1.4,.64,1) both;
+      animation: promoPopIn .4s cubic-bezier(.34,1.3,.64,1) both;
     }
     @keyframes promoPopIn {
-      from { opacity: 0; transform: translate(-50%, -50%) scale(.88); }
+      from { opacity: 0; transform: translate(-50%, -50%) scale(.82); }
       to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     }
-    .luxe-promo-img { width: 100%; height: 180px; flex-shrink: 0; }
-    .luxe-promo-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .luxe-promo-body {
-      padding: 1.25rem 1.4rem 1rem;
-      display: flex; flex-direction: column; gap: .4rem;
+    /* hero image with gold gradient overlay */
+    .luxe-promo-img {
+      width: 100%; height: 200px; flex-shrink: 0;
+      position: relative;
     }
-    .luxe-promo-tag { font-size: .58rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #c9a84c; }
-    .luxe-promo-body h3 { font-size: 1.2rem; font-weight: 700; color: #fdf8ee; line-height: 1.2; }
-    .luxe-promo-body p { font-size: .82rem; color: rgba(245,230,184,.6); line-height: 1.5; }
-    .luxe-promo-btn {
-      display: block; text-align: center;
-      margin-top: .6rem;
-      font-size: .9rem; font-weight: 700;
-      color: #0e0a03;
+    .luxe-promo-img img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .luxe-promo-img::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(7,5,1,0) 30%, rgba(7,5,1,.92) 100%);
+    }
+    /* floating "NEW" pill on image */
+    .luxe-promo-pill {
+      position: absolute; top: 1rem; left: 1rem; z-index: 2;
       background: linear-gradient(135deg,#c9a84c,#e8c97a);
-      padding: .75rem; border-radius: 11px;
+      color: #0a0700; font-size: .58rem; font-weight: 800;
+      letter-spacing: .18em; text-transform: uppercase;
+      padding: .28rem .75rem; border-radius: 999px;
+    }
+    /* gold ornament line */
+    .luxe-promo-orn {
+      display: flex; align-items: center; gap: .5rem;
+      padding: 1rem 1.4rem 0;
+    }
+    .luxe-promo-orn-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,.4));
+    }
+    .luxe-promo-orn-line.r {
+      background: linear-gradient(90deg, rgba(201,168,76,.4), transparent);
+    }
+    .luxe-promo-orn-gem {
+      font-size: .55rem; color: rgba(201,168,76,.6); letter-spacing: .1em;
+    }
+    /* body */
+    .luxe-promo-body {
+      padding: .6rem 1.4rem 1.25rem;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: .35rem;
+    }
+    .luxe-promo-body h3 {
+      font-family: 'Playfair Display', 'Georgia', serif;
+      font-size: 1.45rem; font-weight: 900;
+      color: #fdf8ee; line-height: 1.15;
+      letter-spacing: -.01em;
+    }
+    .luxe-promo-body h3 em { color: #c9a84c; font-style: italic; }
+    .luxe-promo-body p {
+      font-size: .8rem; color: rgba(245,230,184,.52);
+      line-height: 1.55; max-width: 240px;
+    }
+    /* gold shimmer CTA button */
+    .luxe-promo-btn {
+      display: block; text-align: center; width: 100%;
+      margin-top: .75rem;
+      font-size: .92rem; font-weight: 700; letter-spacing: .02em;
+      color: #0a0700;
+      background: linear-gradient(100deg, #c9a84c 0%, #e8c97a 40%, #c9a84c 60%, #b8942e 100%);
+      background-size: 200% auto;
+      padding: .85rem; border-radius: 13px;
       text-decoration: none;
+      transition: background-position .4s ease;
+      box-shadow: 0 4px 20px rgba(201,168,76,.3);
     }
+    .luxe-promo-btn:hover { background-position: right center; }
+    /* dismiss */
     .luxe-promo-dismiss {
-      width: 100%; padding: .8rem;
+      width: 100%; padding: .85rem;
       background: none;
-      border: none; border-top: 1px solid rgba(201,168,76,.12);
-      color: rgba(245,230,184,.4);
+      border: none; border-top: 1px solid rgba(201,168,76,.08);
+      color: rgba(245,230,184,.28);
       font-family: 'DM Sans', sans-serif;
-      font-size: .85rem; font-weight: 500;
-      cursor: pointer;
+      font-size: .8rem; font-weight: 500;
+      cursor: pointer; letter-spacing: .02em;
+      transition: color .2s;
     }
+    .luxe-promo-dismiss:hover { color: rgba(245,230,184,.5); }
     @media(min-width:681px) {
       .luxe-promo, .luxe-promo-backdrop { display: none !important; }
     }
@@ -430,15 +484,20 @@
 <div class="luxe-promo-backdrop" id="luxePromoBackdrop" onclick="closeLuxePromo()"></div>
 <div class="luxe-promo" id="luxePromo">
   <div class="luxe-promo-img">
+    <span class="luxe-promo-pill">✦ Now Available</span>
     <img src="/luxe-images/DSC_4284.jpg" alt="CreamyBits Luxe" />
   </div>
+  <div class="luxe-promo-orn">
+    <div class="luxe-promo-orn-line"></div>
+    <span class="luxe-promo-orn-gem">✦ ✦ ✦</span>
+    <div class="luxe-promo-orn-line r"></div>
+  </div>
   <div class="luxe-promo-body">
-    <p class="luxe-promo-tag">✨ Event Catering</p>
-    <h3>CreamyBits Luxe</h3>
-    <p>Premium catering for weddings, birthdays &amp; more in Albuquerque, NM.</p>
+    <h3>CreamyBits <em>Luxe</em></h3>
+    <p>Elevated event catering for weddings, birthdays &amp; corporate events in Albuquerque, NM.</p>
     <a href="/luxe" class="luxe-promo-btn">Explore Luxe →</a>
   </div>
-  <button class="luxe-promo-dismiss" onclick="closeLuxePromo()">Not right now</button>
+  <button class="luxe-promo-dismiss" onclick="closeLuxePromo()">Maybe later</button>
 </div>
 
 <!-- FEATURES -->
