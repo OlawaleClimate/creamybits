@@ -107,6 +107,7 @@
     }
     .luxe-promo-img img {
       width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: opacity .4s ease;
     }
     .luxe-promo-img::after {
       content: '';
@@ -485,7 +486,7 @@
 <div class="luxe-promo" id="luxePromo">
   <div class="luxe-promo-img">
     <span class="luxe-promo-pill">✦ Now Available</span>
-    <img src="/luxe-images/DSC_4284.jpg" alt="CreamyBits Luxe" />
+    <img id="luxePromoImg" src="/luxe-images/DSC_4284.jpg" alt="CreamyBits Luxe" />
   </div>
   <div class="luxe-promo-orn">
     <div class="luxe-promo-orn-line"></div>
@@ -678,7 +679,15 @@
   let cart = JSON.parse(localStorage.getItem('cb_cart') || '[]');
   let productsData = [];  // populated by loadProducts()
   let blockedDatesSet = new Set(); // ISO date strings YYYY-MM-DD
-  // ── Luxe promo bottom sheet ─────────────────────────────────────────────
+  // ── Luxe promo popup ────────────────────────────────────────────────────
+  const PROMO_IMAGES = [
+    '/luxe-images/DSC_4284.jpg',
+    '/luxe-images/DSC_4236.jpg',
+    '/luxe-images/DSC_4305.jpg',
+    '/luxe-images/DSC_4239.jpg',
+    '/luxe-images/DSC_4252.jpg',
+    '/luxe-images/DSC_4266.jpg',
+  ];
   function closeLuxePromo() {
     document.getElementById('luxePromo').style.display = 'none';
     document.getElementById('luxePromoBackdrop').style.display = 'none';
@@ -690,6 +699,17 @@
     setTimeout(function() {
       document.getElementById('luxePromo').style.display = 'flex';
       document.getElementById('luxePromoBackdrop').style.display = 'block';
+      // rotate images
+      const img = document.getElementById('luxePromoImg');
+      let idx = 0;
+      setInterval(function() {
+        img.style.opacity = '0';
+        setTimeout(function() {
+          idx = (idx + 1) % PROMO_IMAGES.length;
+          img.src = PROMO_IMAGES[idx];
+          img.style.opacity = '1';
+        }, 400);
+      }, 3000);
     }, 1200);
   })();
 

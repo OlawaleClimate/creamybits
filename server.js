@@ -96,8 +96,10 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS luxe_sections (
       id         TEXT PRIMARY KEY,
       title      TEXT NOT NULL,
-      sort_order INTEGER DEFAULT 0
+      sort_order INTEGER DEFAULT 0,
+      archived   BOOLEAN DEFAULT false
     );
+    ALTER TABLE luxe_sections ADD COLUMN IF NOT EXISTS archived BOOLEAN DEFAULT false;
 
     CREATE TABLE IF NOT EXISTS luxe_bookings (
       id                TEXT PRIMARY KEY,
@@ -996,25 +998,42 @@ app.get('/luxe-items', async (_req, res) => {
 
 // ── Luxe sections (admin) ────────────────────────────────────────────────────
 app.get('/admin/luxe-sections', requireAdmin, async (_req, res) => {
-  const { rows } = await pool.query('SELECT * FROM luxe_sections ORDER BY sort_order, id');
+  const { rows } = await pool.query('SELECT * FROM luxe_sections WHERE archived=false ORDER BY sort_order, id');
+  res.json(rows);
+});
+
+app.get('/admin/luxe-sections/archived', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM luxe_sections WHERE archived=true ORDER BY sort_order, id');
   res.json(rows);
 });
 
 app.post('/admin/luxe-sections', requireAdmin, async (req, res) => {
   const { title } = req.body;
   if (!title?.trim()) return res.status(400).json({ error: 'Title required' });
-  // Generate an ID from title
   const base = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 20);
   const id = `${base}_${Date.now().toString(36)}`;
   const { rows: existing } = await pool.query('SELECT COALESCE(MAX(sort_order),0) AS max FROM luxe_sections');
   const sortOrder = (existing[0]?.max || 0) + 1;
   const { rows } = await pool.query(
-    'INSERT INTO luxe_sections (id,title,sort_order) VALUES ($1,$2,$3) RETURNING *',
+    'INSERT INTO luxe_sections (id,title,sort_order,archived) VALUES ($1,$2,$3,false) RETURNING *',
     [id, title.trim(), sortOrder]
   );
   res.json(rows[0]);
 });
 
+// Move to trash (soft delete)
+app.patch('/admin/luxe-sections/:id/archive', requireAdmin, async (req, res) => {
+  await pool.query('UPDATE luxe_sections SET archived=true WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// Restore from trash
+app.patch('/admin/luxe-sections/:id/restore', requireAdmin, async (req, res) => {
+  await pool.query('UPDATE luxe_sections SET archived=false WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// Permanent delete (only from trash)
 app.delete('/admin/luxe-sections/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM luxe_sections WHERE id=$1', [req.params.id]);
   res.json({ ok: true });

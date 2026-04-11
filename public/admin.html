@@ -446,6 +446,15 @@
   <div class="luxe-cards" id="luxeCards">
     <div style="text-align:center;padding:3rem 0;color:var(--gray)">Loading…</div>
   </div>
+
+  <!-- Trash / Archived Sections -->
+  <div style="margin-top:2rem;border-top:1px solid #f0f0f0;padding-top:1.25rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <span style="font-size:.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">🗑 Trash — Archived Sections</span>
+      <button class="edit-btn" onclick="loadTrash()">Refresh</button>
+    </div>
+    <div id="luxeTrash"><p style="color:#9ca3af;font-size:.85rem">Loading…</p></div>
+  </div>
 </div>
 
 <!-- ── ADD SECTION MODAL ── -->
@@ -1043,7 +1052,7 @@
     document.getElementById('tabLuxe').classList.toggle('active', tab === 'luxe');
     if (tab === 'products') loadAllProducts();
     if (tab === 'blocked') loadBlockedDates();
-    if (tab === 'luxe') loadLuxeItems();
+    if (tab === 'luxe') { loadLuxeItems(); loadTrash(); }
   }
 
   // ── Products management ─────────────────────────────────────────────────
@@ -1405,17 +1414,56 @@
     }
   }
 
+  let archivedSections = [];
+
   async function deleteLuxeSection(id, label) {
-    const itemCount = allLuxeItems.filter(i => i.section === id).length;
-    const warn = itemCount > 0 ? ` This section has ${itemCount} item${itemCount>1?'s':''} — they will become unsectioned.` : '';
-    if (!confirm(`Delete section "${label}"?${warn}`)) return;
+    // First confirm
+    if (!confirm(`Move "${label}" to Trash?\n\nThe section will be hidden from the menu but can be restored.`)) return;
+    // Second confirm
+    if (!confirm(`Are you sure you want to move "${label}" to Trash?\n\nPress OK to continue.`)) return;
     try {
-      const res = await fetch(`/admin/luxe-sections/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete');
+      const res = await fetch(`/admin/luxe-sections/${id}/archive`, { method: 'PATCH' });
+      if (!res.ok) throw new Error('Failed to archive');
       await loadLuxeItems();
     } catch(e) {
       alert('Error: ' + e.message);
     }
+  }
+
+  async function loadTrash() {
+    const res = await fetch('/admin/luxe-sections/archived');
+    archivedSections = await res.json();
+    renderTrash();
+  }
+
+  function renderTrash() {
+    const el = document.getElementById('luxeTrash');
+    if (!archivedSections.length) {
+      el.innerHTML = '<p style="color:#9ca3af;font-size:.85rem;padding:.5rem 0">Trash is empty.</p>';
+      return;
+    }
+    el.innerHTML = archivedSections.map(s => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-bottom:.5rem">
+        <span style="font-size:.88rem;font-weight:600;color:#991b1b">🗑 ${s.title}</span>
+        <div style="display:flex;gap:.5rem">
+          <button class="edit-btn" onclick="restoreSection('${s.id}','${s.title.replace(/'/g,"\\'")}')">Restore</button>
+          <button class="del-btn" onclick="permanentDeleteSection('${s.id}','${s.title.replace(/'/g,"\\'")}')">Delete Forever</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function restoreSection(id, label) {
+    if (!confirm(`Restore "${label}" back to the active menu?`)) return;
+    await fetch(`/admin/luxe-sections/${id}/restore`, { method: 'PATCH' });
+    await loadLuxeItems();
+    await loadTrash();
+  }
+
+  async function permanentDeleteSection(id, label) {
+    if (!confirm(`Permanently delete "${label}"?\n\nThis CANNOT be undone.`)) return;
+    if (!confirm(`Final confirmation — delete "${label}" forever?`)) return;
+    await fetch(`/admin/luxe-sections/${id}`, { method: 'DELETE' });
+    await loadTrash();
   }
 
   function renderLuxeItems() {
