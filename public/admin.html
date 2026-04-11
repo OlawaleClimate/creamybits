@@ -1405,6 +1405,19 @@
     }
   }
 
+  async function deleteLuxeSection(id, label) {
+    const itemCount = allLuxeItems.filter(i => i.section === id).length;
+    const warn = itemCount > 0 ? ` This section has ${itemCount} item${itemCount>1?'s':''} — they will become unsectioned.` : '';
+    if (!confirm(`Delete section "${label}"?${warn}`)) return;
+    try {
+      const res = await fetch(`/admin/luxe-sections/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      await loadLuxeItems();
+    } catch(e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
   function renderLuxeItems() {
     const container = document.getElementById('luxeCards');
     container.innerHTML = LUXE_SECTIONS.map(sec => {
@@ -1429,7 +1442,10 @@
       return `<div class="luxe-sec-card">
         <div class="luxe-sec-head">
           <span class="luxe-sec-label">${sec.label}</span>
-          <button class="luxe-add-sec-btn" onclick="openAddLuxeModal('${sec.id}')">+ Add</button>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <button class="luxe-add-sec-btn" onclick="openAddLuxeModal('${sec.id}')">+ Add</button>
+            <button class="del-btn" title="Delete section" onclick="deleteLuxeSection('${sec.id}','${sec.label.replace(/'/g,"\\'")}')">✕</button>
+          </div>
         </div>
         ${itemsHtml}
       </div>`;
