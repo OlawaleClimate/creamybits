@@ -438,10 +438,33 @@
 <div class="products-section" id="luxeSection">
   <div class="section-toolbar">
     <div style="font-size:1rem;font-weight:700;color:var(--black)">✨ Luxe Menu Items</div>
-    <button class="add-product-btn" onclick="openAddLuxeModal('')">+ Add Item</button>
+    <div style="display:flex;gap:.5rem">
+      <button class="add-product-btn" style="background:#f3f4f6;color:#374151;border:1px solid #e5e7eb" onclick="openAddSectionModal()">+ Add Section</button>
+      <button class="add-product-btn" onclick="openAddLuxeModal('')">+ Add Item</button>
+    </div>
   </div>
   <div class="luxe-cards" id="luxeCards">
     <div style="text-align:center;padding:3rem 0;color:var(--gray)">Loading…</div>
+  </div>
+</div>
+
+<!-- ── ADD SECTION MODAL ── -->
+<div class="modal-overlay" id="addSecOverlay" style="display:none;align-items:center;justify-content:center" onclick="if(event.target===this)closeAddSectionModal()">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <h3>Add Section</h3>
+      <button class="modal-close" onclick="closeAddSectionModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="addSecError" style="color:#dc2626;font-size:.82rem;margin-bottom:.5rem;display:none"></p>
+      <div class="form-group">
+        <label>Section Name *</label>
+        <input type="text" id="addSecName" class="form-input" placeholder="e.g. Soups" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-checkout" onclick="submitAddSection()">Create Section</button>
+    </div>
   </div>
 </div>
 
@@ -458,13 +481,7 @@
       <div class="prod-field">
         <label>Section *</label>
         <select id="luxeItemSection">
-          <option value="s1">01 – Small Chops &amp; Pastries</option>
-          <option value="s2">02 – Appetizers</option>
-          <option value="s3">03 – Salads</option>
-          <option value="s4">04 – Desserts</option>
-          <option value="s5">05 – Mocktails</option>
-          <option value="s6">06 – Breakfast</option>
-          <option value="s6b">06b – Breakfast Drinks</option>
+          <!-- populated dynamically from /admin/luxe-sections -->
         </select>
       </div>
       <div class="prod-field">
@@ -1335,25 +1352,56 @@
 
   // ── Luxe menu management ─────────────────────────────────────────────────
   let allLuxeItems = [];
-
-  const LUXE_SECTIONS = [
-    { id:'s1',  label:'Small Chops & Pastries' },
-    { id:'s2',  label:'Appetizers' },
-    { id:'s3',  label:'Salads' },
-    { id:'s4',  label:'Desserts' },
-    { id:'s5',  label:'Mocktails' },
-    { id:'s6',  label:'Breakfast' },
-    { id:'s6b', label:'Breakfast Drinks' },
-  ];
+  let LUXE_SECTIONS = [];
 
   async function loadLuxeItems() {
     try {
-      const res = await fetch('/admin/luxe-items');
-      if (res.redirected || res.status === 302) { location.href = '/admin-login.html'; return; }
-      allLuxeItems = await res.json();
+      const [secRes, itemRes] = await Promise.all([
+        fetch('/admin/luxe-sections'),
+        fetch('/admin/luxe-items'),
+      ]);
+      if (secRes.redirected || secRes.status === 302) { location.href = '/admin-login.html'; return; }
+      const rawSecs = await secRes.json();
+      LUXE_SECTIONS = rawSecs.map(s => ({ id: s.id, label: s.title }));
+      allLuxeItems = await itemRes.json();
       renderLuxeItems();
+      syncSectionDropdown();
     } catch(e) {
       document.getElementById('luxeCards').innerHTML = `<p style="padding:2rem;color:#dc2626">Error: ${e.message}</p>`;
+    }
+  }
+
+  function syncSectionDropdown() {
+    const sel = document.getElementById('luxeItemSection');
+    if (!sel) return;
+    sel.innerHTML = LUXE_SECTIONS.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+  }
+
+  function openAddSectionModal() {
+    document.getElementById('addSecName').value = '';
+    document.getElementById('addSecError').style.display = 'none';
+    document.getElementById('addSecOverlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('addSecName').focus(), 80);
+  }
+  function closeAddSectionModal() {
+    document.getElementById('addSecOverlay').style.display = 'none';
+  }
+  async function submitAddSection() {
+    const title = document.getElementById('addSecName').value.trim();
+    const errEl = document.getElementById('addSecError');
+    if (!title) { errEl.textContent = 'Section name is required.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    try {
+      const res = await fetch('/admin/luxe-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) { const d = await res.json(); errEl.textContent = d.error || 'Error'; errEl.style.display = 'block'; return; }
+      closeAddSectionModal();
+      await loadLuxeItems();
+    } catch(e) {
+      errEl.textContent = e.message; errEl.style.display = 'block';
     }
   }
 

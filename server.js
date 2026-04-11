@@ -93,6 +93,11 @@ async function initDB() {
       sort_order  INTEGER DEFAULT 0,
       active      BOOLEAN DEFAULT true
     );
+    CREATE TABLE IF NOT EXISTS luxe_sections (
+      id         TEXT PRIMARY KEY,
+      title      TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 0
+    );
 
     CREATE TABLE IF NOT EXISTS luxe_bookings (
       id                TEXT PRIMARY KEY,
@@ -117,6 +122,26 @@ async function initDB() {
   // Seed luxe_items if table is empty
   const { rowCount: luxeCount } = await pool.query('SELECT 1 FROM luxe_items LIMIT 1');
   if (luxeCount === 0) await seedLuxeItems();
+
+  // Seed luxe_sections if empty
+  const { rowCount: secCount } = await pool.query('SELECT 1 FROM luxe_sections LIMIT 1');
+  if (secCount === 0) {
+    const secs = [
+      { id: 's1',  title: 'Small Chops & Pastries', sort_order: 1 },
+      { id: 's2',  title: 'Appetizers',              sort_order: 2 },
+      { id: 's3',  title: 'Salads',                  sort_order: 3 },
+      { id: 's4',  title: 'Desserts',                sort_order: 4 },
+      { id: 's5',  title: 'Mocktails',               sort_order: 5 },
+      { id: 's6',  title: 'Breakfast',               sort_order: 6 },
+      { id: 's6b', title: 'Breakfast Drinks',        sort_order: 7 },
+    ];
+    for (const s of secs) {
+      await pool.query(
+        'INSERT INTO luxe_sections (id,title,sort_order) VALUES ($1,$2,$3) ON CONFLICT (id) DO NOTHING',
+        [s.id, s.title, s.sort_order]
+      );
+    }
+  }
 
   // Migration: add size variants to Chapman Drink
   await pool.query(`
@@ -967,6 +992,32 @@ app.get('/luxe-items', async (_req, res) => {
     'SELECT * FROM luxe_items WHERE active=true ORDER BY section, sort_order, name'
   );
   res.json(rows);
+});
+
+// ── Luxe sections (admin) ────────────────────────────────────────────────────
+app.get('/admin/luxe-sections', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM luxe_sections ORDER BY sort_order, id');
+  res.json(rows);
+});
+
+app.post('/admin/luxe-sections', requireAdmin, async (req, res) => {
+  const { title } = req.body;
+  if (!title?.trim()) return res.status(400).json({ error: 'Title required' });
+  // Generate an ID from title
+  const base = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 20);
+  const id = `${base}_${Date.now().toString(36)}`;
+  const { rows: existing } = await pool.query('SELECT COALESCE(MAX(sort_order),0) AS max FROM luxe_sections');
+  const sortOrder = (existing[0]?.max || 0) + 1;
+  const { rows } = await pool.query(
+    'INSERT INTO luxe_sections (id,title,sort_order) VALUES ($1,$2,$3) RETURNING *',
+    [id, title.trim(), sortOrder]
+  );
+  res.json(rows[0]);
+});
+
+app.delete('/admin/luxe-sections/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM luxe_sections WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
 });
 
 // ── Luxe menu items (admin CRUD) ──────────────────────────────────────────────

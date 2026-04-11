@@ -63,8 +63,39 @@
     .btn-outline { background: transparent; color: var(--black); border: 2px solid var(--black); padding: .85rem 2rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .2s, color .2s; }
     .btn-outline:hover { background: var(--black); color: #fff; }
     .hero-right { position: relative; z-index: 2; display: flex; justify-content: flex-end; }
-    .hero-img-box { width: 100%; max-width: 500px; background: linear-gradient(145deg,#1f1f1f,#3d2c1e,#1a1a1a); border-radius: 24px; aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; font-size: 8rem; position: relative; overflow: hidden; }
-    .hero-img-box::before { content: ''; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 30% 30%, rgba(139,90,43,.3) 0, transparent 60px); }
+    .hero-slideshow { width: 100%; max-width: 500px; aspect-ratio: 4/5; border-radius: 24px; overflow: hidden; position: relative; }
+    .hero-slideshow img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .9s ease; }
+    .hero-slideshow img.active { opacity: 1; }
+    .slide-luxe-badge { position: absolute; bottom: 1.25rem; left: 1.25rem; background: rgba(5,3,1,.72); backdrop-filter: blur(10px); border: 1px solid rgba(201,168,76,.35); color: #fdf8ee; border-radius: 12px; padding: .65rem 1rem; display: flex; flex-direction: column; gap: .2rem; z-index: 2; }
+    .slide-luxe-badge .slb-tag { font-size: .6rem; letter-spacing: .18em; text-transform: uppercase; color: #c9a84c; font-weight: 700; }
+    .slide-luxe-badge .slb-name { font-size: .88rem; font-weight: 600; }
+    .slide-luxe-badge a { font-size: .72rem; color: rgba(201,168,76,.7); text-decoration: none; margin-top: .1rem; }
+    .slide-luxe-badge a:hover { color: #c9a84c; }
+
+    /* ── MOBILE LUXE PROMO CARD ── */
+    .luxe-promo { display: none; }
+    @media(max-width:1000px) {
+      .luxe-promo {
+        display: block;
+        margin: 0 1.5rem 2rem;
+        background: linear-gradient(135deg,#0d0b07,#1a130a);
+        border: 1px solid rgba(201,168,76,.2);
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+      }
+      .luxe-promo-inner { display: flex; gap: 0; height: 130px; }
+      .luxe-promo-img { width: 120px; flex-shrink: 0; }
+      .luxe-promo-img img { width: 100%; height: 100%; object-fit: cover; }
+      .luxe-promo-body { padding: 1rem 1.1rem; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: .3rem; }
+      .luxe-promo-tag { font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #c9a84c; }
+      .luxe-promo-body h3 { font-size: .95rem; font-weight: 700; color: #fdf8ee; }
+      .luxe-promo-body p { font-size: .75rem; color: rgba(245,230,184,.55); line-height: 1.4; }
+      .luxe-promo-btn { display: inline-block; margin-top: .4rem; font-size: .75rem; font-weight: 700; color: #0e0a03; background: linear-gradient(135deg,#c9a84c,#e8c97a); padding: .32rem .85rem; border-radius: 7px; text-decoration: none; align-self: flex-start; }
+      .luxe-promo-close { position: absolute; top: .6rem; right: .7rem; background: none; border: none; color: rgba(201,168,76,.4); font-size: 1rem; cursor: pointer; line-height: 1; }
+    }
+
+    .hero-img-box { display: none; } /* legacy, replaced by slideshow */
     .review-card { position: absolute; bottom: -20px; left: -40px; background: #111; color: #fff; border-radius: 16px; padding: 1rem 1.25rem; max-width: 210px; box-shadow: 0 8px 32px rgba(0,0,0,.3); animation: float 4s ease-in-out infinite; }
     .stars { color: #facc15; margin-bottom: .4rem; }
     .review-card p { font-size: .8rem; color: #e5e7eb; line-height: 1.5; }
@@ -310,6 +341,7 @@
   <ul class="nav-links" id="navLinks" role="menubar">
     <li role="none"><a href="#home"  onclick="closeMenu()" role="menuitem">Home</a></li>
     <li role="none"><a href="#menu"  onclick="closeMenu()" role="menuitem">Menu &amp; Order</a></li>
+    <li role="none"><a href="/luxe"  role="menuitem" style="color:#c9a84c;font-weight:600;opacity:1">✨ Luxe</a></li>
     <li role="none"><a href="#story" onclick="closeMenu()" role="menuitem">Our Story</a></li>
   </ul>
 
@@ -344,27 +376,49 @@
     </div>
   </div>
   <div class="hero-right">
-    <div class="hero-img-box">
-      <span style="font-size:8rem;z-index:1;filter:drop-shadow(0 8px 32px rgba(0,0,0,.5))" aria-hidden="true">🥧</span>
-      <div class="review-card" aria-label="Customer review">
-        <div class="stars" aria-hidden="true">★★★★★</div>
-        <p>"The best African pastries in New Mexico. Those puff puffs are unreal!"</p>
+    <div class="hero-slideshow" id="heroSlideshow">
+      <img src="/luxe-images/DSC_4236.jpg" alt="CreamyBits Luxe event spread" class="active" />
+      <img src="/luxe-images/DSC_4284.jpg" alt="Panna cotta with raspberries" />
+      <img src="/luxe-images/DSC_4305.jpg" alt="Nigerian main course spread" />
+      <img src="/luxe-images/DSC_4239.jpg" alt="Puff puff platter" />
+      <img src="/luxe-images/DSC_4252.jpg" alt="Signature mocktails" />
+      <img src="/luxe-images/DSC_4266.jpg" alt="Pastries on display" />
+      <div class="slide-luxe-badge">
+        <span class="slb-tag">✨ Now available</span>
+        <span class="slb-name">CreamyBits Luxe</span>
+        <a href="/luxe">Explore event catering →</a>
       </div>
     </div>
   </div>
 </section>
 
+<!-- MOBILE LUXE PROMO -->
+<div class="luxe-promo" id="luxePromo">
+  <button class="luxe-promo-close" onclick="document.getElementById('luxePromo').style.display='none'" aria-label="Close">✕</button>
+  <div class="luxe-promo-inner">
+    <div class="luxe-promo-img">
+      <img src="/luxe-images/DSC_4284.jpg" alt="CreamyBits Luxe" />
+    </div>
+    <div class="luxe-promo-body">
+      <p class="luxe-promo-tag">✨ Event Catering</p>
+      <h3>CreamyBits Luxe</h3>
+      <p>Premium catering for weddings, birthdays &amp; more</p>
+      <a href="/luxe" class="luxe-promo-btn">Explore Luxe →</a>
+    </div>
+  </div>
+</div>
+
 <!-- FEATURES -->
 <section class="features" aria-label="Features">
   <div class="feature reveal">
-    <div class="feature-icon fi-blue" aria-hidden="true">🌾</div>
-    <h3>Premium Ingredients</h3>
-    <p>We use only the finest locally sourced flour and real butter for that perfect flake in every bite.</p>
+    <div class="feature-icon" style="background:#1a130a;font-size:1.75rem" aria-hidden="true">✨</div>
+    <h3 style="color:#0f0f0f">CreamyBits Luxe</h3>
+    <p>Premium event catering for weddings, birthdays, corporate events &amp; more — elevated African cuisine, beautifully presented. <a href="/luxe" style="color:#c9a84c;font-weight:600;text-decoration:none">Explore Luxe →</a></p>
   </div>
   <div class="feature reveal" style="transition-delay:.15s">
-    <div class="feature-icon fi-pink" aria-hidden="true">👩‍🍳</div>
-    <h3>Handcrafted Fresh</h3>
-    <p>Made from scratch every time — no shortcuts, no preservatives, just real African flavors.</p>
+    <div class="feature-icon" style="background:#fff7ed;font-size:1.75rem" aria-hidden="true">🎪</div>
+    <h3>Full Event Experiences</h3>
+    <p>From small chops and mocktails to full meals and desserts — we handle every detail so you can enjoy your event.</p>
   </div>
   <div class="feature reveal" style="transition-delay:.3s">
     <div class="feature-icon fi-yellow" aria-hidden="true">📦</div>
@@ -539,6 +593,18 @@
   let cart = JSON.parse(localStorage.getItem('cb_cart') || '[]');
   let productsData = [];  // populated by loadProducts()
   let blockedDatesSet = new Set(); // ISO date strings YYYY-MM-DD
+  // ── Hero slideshow ──────────────────────────────────────────────────────
+  (function() {
+    const slides = document.querySelectorAll('#heroSlideshow img');
+    if (!slides.length) return;
+    let cur = 0;
+    setInterval(() => {
+      slides[cur].classList.remove('active');
+      cur = (cur + 1) % slides.length;
+      slides[cur].classList.add('active');
+    }, 3500);
+  })();
+
   // ── Mobile nav ─────────────────────────────────────────────────────────
   function toggleMenu() {
     const nav = document.getElementById('navLinks');
