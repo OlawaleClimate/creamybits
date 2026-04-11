@@ -72,42 +72,73 @@
     .slide-luxe-badge a { font-size: .72rem; color: rgba(201,168,76,.7); text-decoration: none; margin-top: .1rem; }
     .slide-luxe-badge a:hover { color: #c9a84c; }
 
-    /* ── MOBILE LUXE PROMO POPUP ── */
+    /* ── MOBILE LUXE PROMO BOTTOM SHEET ── */
+    .luxe-promo-backdrop {
+      display: none;
+      position: fixed; inset: 0; z-index: 340;
+      background: rgba(0,0,0,.5);
+    }
     .luxe-promo {
       display: none;
-      position: fixed; bottom: 1rem; left: 1rem; right: 1rem;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 42svh; min-height: 280px;
       z-index: 350;
-      background: linear-gradient(135deg,#0d0b07,#1e1408);
-      border: 1px solid rgba(201,168,76,.3);
-      border-radius: 20px;
-      box-shadow: 0 8px 40px rgba(0,0,0,.55);
-      animation: promoSlideUp .4s cubic-bezier(.34,1.3,.64,1) both;
+      background: linear-gradient(160deg,#0d0b07 0%,#1e1408 60%,#0d0b07 100%);
+      border-top: 1px solid rgba(201,168,76,.3);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -8px 48px rgba(0,0,0,.6);
+      flex-direction: column;
+      overflow: hidden;
+      animation: promoSlideUp .38s cubic-bezier(.32,1.1,.64,1) both;
     }
     @keyframes promoSlideUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
     }
-    .luxe-promo.hidden { display: none !important; }
-    .luxe-promo-inner { display: flex; gap: 0; min-height: 160px; border-radius: 20px; overflow: hidden; }
-    .luxe-promo-img { width: 140px; flex-shrink: 0; }
+    /* drag handle */
+    .luxe-promo-handle {
+      width: 40px; height: 4px; border-radius: 2px;
+      background: rgba(201,168,76,.3);
+      margin: .75rem auto .5rem;
+      flex-shrink: 0;
+    }
+    /* photo + text row */
+    .luxe-promo-inner {
+      display: flex; flex: 1; gap: 0; overflow: hidden;
+    }
+    .luxe-promo-img { width: 38%; flex-shrink: 0; }
     .luxe-promo-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .luxe-promo-body { padding: 1.2rem 1.25rem 1.2rem; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: .35rem; }
-    .luxe-promo-tag { font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #c9a84c; }
-    .luxe-promo-body h3 { font-size: 1.05rem; font-weight: 700; color: #fdf8ee; line-height: 1.2; }
-    .luxe-promo-body p { font-size: .78rem; color: rgba(245,230,184,.6); line-height: 1.45; }
-    .luxe-promo-btn { display: inline-block; margin-top: .5rem; font-size: .8rem; font-weight: 700; color: #0e0a03; background: linear-gradient(135deg,#c9a84c,#e8c97a); padding: .42rem 1rem; border-radius: 8px; text-decoration: none; align-self: flex-start; }
-    .luxe-promo-close {
-      position: absolute; top: 0; right: 0;
-      width: 44px; height: 44px;
-      background: rgba(201,168,76,.12);
-      border: none; border-radius: 0 20px 0 14px;
-      color: rgba(201,168,76,.8);
-      font-size: 1.1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 10;
+    .luxe-promo-body {
+      flex: 1; padding: 1rem 1.25rem;
+      display: flex; flex-direction: column; justify-content: center; gap: .4rem;
     }
-    .luxe-promo-close:hover { background: rgba(201,168,76,.22); }
-    @media(min-width:681px) { .luxe-promo { display: none !important; } }
+    .luxe-promo-tag { font-size: .58rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #c9a84c; }
+    .luxe-promo-body h3 { font-size: 1.15rem; font-weight: 700; color: #fdf8ee; line-height: 1.2; }
+    .luxe-promo-body p { font-size: .8rem; color: rgba(245,230,184,.6); line-height: 1.5; }
+    .luxe-promo-btn {
+      display: inline-block; margin-top: .4rem;
+      font-size: .82rem; font-weight: 700;
+      color: #0e0a03;
+      background: linear-gradient(135deg,#c9a84c,#e8c97a);
+      padding: .5rem 1.1rem; border-radius: 9px;
+      text-decoration: none; align-self: flex-start;
+    }
+    /* big dismiss button at bottom */
+    .luxe-promo-dismiss {
+      flex-shrink: 0;
+      width: calc(100% - 2.5rem); margin: .75rem 1.25rem 1.1rem;
+      padding: .85rem;
+      background: rgba(201,168,76,.1);
+      border: 1px solid rgba(201,168,76,.25);
+      border-radius: 12px;
+      color: rgba(245,230,184,.65);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem; font-weight: 600;
+      cursor: pointer; letter-spacing: .02em;
+    }
+    @media(min-width:681px) {
+      .luxe-promo, .luxe-promo-backdrop { display: none !important; }
+    }
 
     .hero-img-box { display: none; } /* legacy, replaced by slideshow */
     .review-card { position: absolute; bottom: -20px; left: -40px; background: #111; color: #fff; border-radius: 16px; padding: 1rem 1.25rem; max-width: 210px; box-shadow: 0 8px 32px rgba(0,0,0,.3); animation: float 4s ease-in-out infinite; }
@@ -406,9 +437,10 @@
   </div>
 </section>
 
-<!-- MOBILE LUXE PROMO POPUP -->
-<div class="luxe-promo" id="luxePromo" style="position:relative">
-  <button class="luxe-promo-close" onclick="closeLuxePromo()" aria-label="Close">✕</button>
+<!-- MOBILE LUXE PROMO BOTTOM SHEET -->
+<div class="luxe-promo-backdrop" id="luxePromoBackdrop" onclick="closeLuxePromo()"></div>
+<div class="luxe-promo" id="luxePromo">
+  <div class="luxe-promo-handle"></div>
   <div class="luxe-promo-inner">
     <div class="luxe-promo-img">
       <img src="/luxe-images/DSC_4284.jpg" alt="CreamyBits Luxe" />
@@ -420,6 +452,7 @@
       <a href="/luxe" class="luxe-promo-btn">Explore Luxe →</a>
     </div>
   </div>
+  <button class="luxe-promo-dismiss" onclick="closeLuxePromo()">Not right now</button>
 </div>
 
 <!-- FEATURES -->
@@ -607,16 +640,19 @@
   let cart = JSON.parse(localStorage.getItem('cb_cart') || '[]');
   let productsData = [];  // populated by loadProducts()
   let blockedDatesSet = new Set(); // ISO date strings YYYY-MM-DD
-  // ── Luxe promo popup ────────────────────────────────────────────────────
+  // ── Luxe promo bottom sheet ─────────────────────────────────────────────
   function closeLuxePromo() {
-    const el = document.getElementById('luxePromo');
-    if (el) { el.style.display = 'none'; sessionStorage.setItem('luxePromoClosed','1'); }
+    document.getElementById('luxePromo').style.display = 'none';
+    document.getElementById('luxePromoBackdrop').style.display = 'none';
+    sessionStorage.setItem('luxePromoClosed', '1');
   }
   (function() {
     if (window.innerWidth >= 681) return;
     if (sessionStorage.getItem('luxePromoClosed')) return;
-    const el = document.getElementById('luxePromo');
-    if (el) el.style.display = 'block';
+    setTimeout(function() {
+      document.getElementById('luxePromo').style.display = 'flex';
+      document.getElementById('luxePromoBackdrop').style.display = 'block';
+    }, 1200);
   })();
 
   // ── Hero slideshow ──────────────────────────────────────────────────────
