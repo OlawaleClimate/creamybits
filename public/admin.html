@@ -449,21 +449,21 @@
 </div>
 
 <!-- ── ADD SECTION MODAL ── -->
-<div class="modal-overlay" id="addSecOverlay" style="display:none;align-items:center;justify-content:center" onclick="if(event.target===this)closeAddSectionModal()">
-  <div class="modal" style="max-width:360px">
-    <div class="modal-header">
+<div class="prod-modal-overlay" id="addSecOverlay" onclick="if(event.target===this)closeAddSectionModal()">
+  <div class="prod-modal" style="max-width:360px">
+    <div class="prod-modal-header">
       <h3>Add Section</h3>
-      <button class="modal-close" onclick="closeAddSectionModal()">✕</button>
+      <button class="prod-modal-close" onclick="closeAddSectionModal()">✕</button>
     </div>
-    <div class="modal-body">
+    <div class="prod-modal-body">
       <p id="addSecError" style="color:#dc2626;font-size:.82rem;margin-bottom:.5rem;display:none"></p>
-      <div class="form-group">
+      <div class="prod-field">
         <label>Section Name *</label>
-        <input type="text" id="addSecName" class="form-input" placeholder="e.g. Soups" />
+        <input type="text" id="addSecName" class="prod-input" placeholder="e.g. Soups" onkeydown="if(event.key==='Enter')submitAddSection()" />
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-checkout" onclick="submitAddSection()">Create Section</button>
+    <div class="prod-modal-footer">
+      <button class="save-btn" onclick="submitAddSection()">Create Section</button>
     </div>
   </div>
 </div>
