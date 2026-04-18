@@ -1140,15 +1140,19 @@ app.get('/admin/deals', requireAdmin, async (_req, res) => {
 });
 
 app.post('/admin/deals', requireAdmin, async (req, res) => {
-  const { productId, discountType, discountValue, active } = req.body;
-  if (!productId || !discountValue) return res.status(400).json({ error: 'Missing fields' });
-  const { createId } = await import('@paralleldrive/cuid2');
-  const id = createId();
-  const { rows } = await pool.query(
-    'INSERT INTO deals (id,product_id,discount_type,discount_value,active) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-    [id, productId, discountType || 'percent', discountValue, active !== false]
-  );
-  res.json(rows[0]);
+  try {
+    const { productId, discountType, discountValue, active } = req.body;
+    if (!productId || !discountValue) return res.status(400).json({ error: 'Missing fields' });
+    const id = uuidv4();
+    const { rows } = await pool.query(
+      'INSERT INTO deals (id,product_id,discount_type,discount_value,active) VALUES ($1,$2,$3,$4,$5) RETURNING *',
+      [id, productId, discountType || 'percent', discountValue, active !== false]
+    );
+    res.json(rows[0]);
+  } catch(e) {
+    console.error('POST /admin/deals error:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.patch('/admin/deals/:id', requireAdmin, async (req, res) => {
