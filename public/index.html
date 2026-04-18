@@ -203,8 +203,8 @@
     .deal-heading { font-family: 'Playfair Display', serif; font-size: clamp(1.9rem,4vw,2.5rem); font-weight: 900; color: #fff; margin-bottom: .5rem; }
     .deal-sub { color: #9ca3af; font-size: .92rem; margin-bottom: 3rem; }
     .deal-header { text-align: center; }
-    .deal-cards { display: flex; gap: 1.75rem; justify-content: center; flex-wrap: wrap; }
-    .deal-card { background: #fff; border-radius: 22px; overflow: hidden; width: 300px; flex-shrink: 0; box-shadow: 0 20px 60px rgba(0,0,0,.45); display: flex; flex-direction: column; position: relative; transition: transform .25s, box-shadow .25s; }
+    .deal-cards { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1.5rem; }
+    .deal-card { background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.45); display: flex; flex-direction: column; position: relative; transition: transform .25s, box-shadow .25s; }
     .deal-card:hover { transform: translateY(-5px); box-shadow: 0 28px 70px rgba(0,0,0,.55); }
     .deal-img-wrap { position: relative; }
     .deal-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #f3f4f6; }
@@ -222,8 +222,8 @@
     .deal-add-btn { width: 100%; background: #0f0f0f; color: #fff; border: none; padding: .75rem; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: .92rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .45rem; transition: background .2s, transform .15s; }
     .deal-add-btn:hover { background: #222; transform: scale(1.01); }
     .deal-add-btn.added { background: #16a34a; }
-    @media(max-width:900px) { #dealSection { padding: 3.5rem 2rem; } .deal-card { width: 260px; } }
-    @media(max-width:600px) { #dealSection { padding: 3rem 1.25rem; } .deal-cards { gap: 1rem; } .deal-card { width: calc(50% - .5rem); min-width: 0; } .deal-name { font-size: .88rem; } .deal-price-new { font-size: 1.1rem; } .deal-badge { font-size: 1rem; padding: .4rem .8rem; } }
+    @media(max-width:900px) { #dealSection { padding: 3.5rem 2rem; } }
+    @media(max-width:600px) { #dealSection { padding: 3rem 1.25rem; } .deal-cards { grid-template-columns: 1fr 1fr; gap: 1rem; } .deal-name { font-size: .88rem; } .deal-price-new { font-size: 1.1rem; } .deal-badge { font-size: 1rem; padding: .4rem .8rem; } }
 
     /* ── MENU ── */
     #menu { background: #fff; padding: 5rem; }
