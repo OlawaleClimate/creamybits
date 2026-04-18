@@ -221,7 +221,7 @@
     .deal-add-btn:hover { background: #222; transform: scale(1.01); }
     .deal-add-btn.added { background: #16a34a; }
     @media(max-width:900px) { #dealSection { padding: 3.5rem 2rem; } .deal-card { width: 260px; } }
-    @media(max-width:600px) { #dealSection { padding: 3rem 1.25rem; } .deal-cards { flex-direction: column; align-items: center; } .deal-card { width: 100%; max-width: 360px; } }
+    @media(max-width:600px) { #dealSection { padding: 3rem 1.25rem; } .deal-cards { gap: 1rem; } .deal-card { width: calc(50% - .5rem); min-width: 0; } .deal-name { font-size: .88rem; } .deal-price-new { font-size: 1.1rem; } .deal-badge { font-size: 1rem; padding: .4rem .8rem; } }
 
     /* ── MENU ── */
     #menu { background: #fff; padding: 5rem; }
@@ -539,19 +539,6 @@
   <div class="deal-cards" id="dealCards"></div>
 </section>
 
-<!-- FEATURES -->
-<section class="features" aria-label="Features">
-  <div class="feature reveal">
-    <div class="feature-icon" style="background:#1a130a;font-size:1.75rem" aria-hidden="true">✨</div>
-    <h3 style="color:#0f0f0f">CreamyBits Luxe</h3>
-    <p>Premium event catering for weddings, birthdays, corporate events &amp; more — elevated African cuisine, beautifully presented. <a href="/luxe" style="color:#c9a84c;font-weight:600;text-decoration:none">Explore Luxe →</a></p>
-  </div>
-  <div class="feature reveal" style="transition-delay:.3s">
-    <div class="feature-icon fi-yellow" aria-hidden="true">📦</div>
-    <h3>Easy Online Order</h3>
-    <p>Order online, pay securely, and we'll have everything ready for you in Albuquerque, NM.</p>
-  </div>
-</section>
 
 
 <!-- FEATURED PRODUCTS -->
