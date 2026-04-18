@@ -101,6 +101,15 @@ async function initDB() {
     );
     ALTER TABLE luxe_sections ADD COLUMN IF NOT EXISTS archived BOOLEAN DEFAULT false;
 
+    CREATE TABLE IF NOT EXISTS deals (
+      id             TEXT PRIMARY KEY,
+      product_id     TEXT NOT NULL,
+      discount_type  TEXT NOT NULL DEFAULT 'percent',
+      discount_value NUMERIC(10,2) NOT NULL,
+      active         BOOLEAN DEFAULT true,
+      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     CREATE TABLE IF NOT EXISTS luxe_bookings (
       id                TEXT PRIMARY KEY,
       stripe_session_id TEXT,
@@ -1098,6 +1107,68 @@ app.get('/menu', (_req, res) => {
 app.get('/luxe', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe.html'));
 });
+// ── Deals (public) ───────────────────────────────────────────────────────────
+app.get('/deals', async (_req, res) => {
+  const { rows } = await pool.query(`
+    SELECT d.id, d.discount_type, d.discount_value,
+           p.id AS product_id, p.name, p.price, p.image_url, p.emoji,
+           p.variant_type, p.variants, p.unit_label
+    FROM deals d
+    JOIN products p ON p.id = d.product_id
+    WHERE d.active = true AND p.active = true
+    ORDER BY d.created_at
+  `);
+  const result = rows.map(r => {
+    const orig = parseFloat(r.price);
+    const disc = parseFloat(r.discount_value);
+    const sale = r.discount_type === 'percent'
+      ? Math.max(0, orig * (1 - disc / 100))
+      : Math.max(0, orig - disc);
+    return { ...r, original_price: orig.toFixed(2), sale_price: sale.toFixed(2) };
+  });
+  res.json(result);
+});
+
+// ── Deals (admin CRUD) ────────────────────────────────────────────────────────
+app.get('/admin/deals', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query(`
+    SELECT d.*, p.name AS product_name, p.price AS product_price
+    FROM deals d JOIN products p ON p.id = d.product_id
+    ORDER BY d.created_at
+  `);
+  res.json(rows);
+});
+
+app.post('/admin/deals', requireAdmin, async (req, res) => {
+  const { productId, discountType, discountValue, active } = req.body;
+  if (!productId || !discountValue) return res.status(400).json({ error: 'Missing fields' });
+  const { createId } = await import('@paralleldrive/cuid2');
+  const id = createId();
+  const { rows } = await pool.query(
+    'INSERT INTO deals (id,product_id,discount_type,discount_value,active) VALUES ($1,$2,$3,$4,$5) RETURNING *',
+    [id, productId, discountType || 'percent', discountValue, active !== false]
+  );
+  res.json(rows[0]);
+});
+
+app.patch('/admin/deals/:id', requireAdmin, async (req, res) => {
+  const { active, discountType, discountValue } = req.body;
+  const fields = [];
+  const vals = [];
+  if (active !== undefined) { fields.push(`active=$${vals.length+1}`); vals.push(active); }
+  if (discountType)         { fields.push(`discount_type=$${vals.length+1}`); vals.push(discountType); }
+  if (discountValue !== undefined) { fields.push(`discount_value=$${vals.length+1}`); vals.push(discountValue); }
+  if (!fields.length) return res.status(400).json({ error: 'Nothing to update' });
+  vals.push(req.params.id);
+  await pool.query(`UPDATE deals SET ${fields.join(',')} WHERE id=$${vals.length}`, vals);
+  res.json({ ok: true });
+});
+
+app.delete('/admin/deals/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM deals WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
 app.get('/luxe-menu', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe-menu.html'));
 });
