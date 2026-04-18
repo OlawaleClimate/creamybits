@@ -208,6 +208,24 @@
     .deal-heading em { color: #ea580c; font-style: italic; }
     .deal-sub { color: #78716c; font-size: .92rem; }
     .deal-cards { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1.5rem; position: relative; }
+    .deal-cards-single { grid-template-columns: 1fr; }
+    .deal-cards-single .deal-card { display: grid; grid-template-columns: 1fr 1fr; border-radius: 24px; }
+    .deal-cards-single .deal-card-top-bar { grid-column: 1/-1; }
+    .deal-cards-single .deal-img-wrap { border-radius: 0; }
+    .deal-cards-single .deal-img { aspect-ratio: unset; height: 100%; min-height: 280px; }
+    .deal-cards-single .deal-img-placeholder { aspect-ratio: unset; height: 100%; min-height: 280px; }
+    .deal-cards-single .deal-body { padding: 2rem 2rem 2rem; }
+    .deal-cards-single .deal-name { font-size: 1.4rem; margin-bottom: .4rem; }
+    .deal-cards-single .deal-price-new { font-size: 2rem; }
+    .deal-cards-single .deal-badge { font-size: 1.5rem; padding: .5rem 1.3rem; }
+    @media(max-width:700px) {
+      .deal-cards-single .deal-card { grid-template-columns: 1fr; }
+      .deal-cards-single .deal-img { height: auto; min-height: unset; aspect-ratio: 4/3; }
+      .deal-cards-single .deal-img-placeholder { height: auto; min-height: unset; aspect-ratio: 4/3; }
+      .deal-cards-single .deal-body { padding: 1.25rem; }
+      .deal-cards-single .deal-name { font-size: 1.05rem; }
+      .deal-cards-single .deal-price-new { font-size: 1.5rem; }
+    }
     .deal-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.08); display: flex; flex-direction: column; position: relative; transition: transform .25s, box-shadow .25s; border: 1px solid #f0ebe4; }
     .deal-card:hover { transform: translateY(-6px); box-shadow: 0 8px 16px rgba(0,0,0,.06), 0 24px 52px rgba(0,0,0,.13); }
     .deal-card-top-bar { height: 5px; background: linear-gradient(90deg,#f97316,#dc2626); }
@@ -1352,7 +1370,9 @@
       const section = document.getElementById('dealSection');
       if (!deals.length) { section.classList.remove('visible'); return; }
       section.classList.add('visible');
-      document.getElementById('dealCards').innerHTML = deals.map(renderDealCard).join('');
+      const container = document.getElementById('dealCards');
+      container.innerHTML = deals.map(renderDealCard).join('');
+      container.classList.toggle('deal-cards-single', deals.length === 1);
     } catch(e) {
       console.warn('Could not load deals:', e);
     }
