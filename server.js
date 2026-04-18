@@ -1112,7 +1112,7 @@ app.get('/deals', async (_req, res) => {
   const { rows } = await pool.query(`
     SELECT d.id, d.discount_type, d.discount_value,
            p.id AS product_id, p.name, p.price, p.image_url, p.emoji,
-           p.variant_type, p.variants, p.unit_label
+           p.variant_type, p.variants, p.unit_label, p.description
     FROM deals d
     JOIN products p ON p.id = d.product_id
     WHERE d.active = true AND p.active = true
