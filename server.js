@@ -71,6 +71,7 @@ async function initDB() {
     ALTER TABLE products ADD COLUMN IF NOT EXISTS min_qty INTEGER DEFAULT 1;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT NULL;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT NULL;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS is_upsell BOOLEAN DEFAULT false;
     CREATE TABLE IF NOT EXISTS blocked_dates (
       id         TEXT PRIMARY KEY,
       date       DATE NOT NULL UNIQUE,
@@ -272,6 +273,7 @@ function rowToProduct(r) {
     minQty:      r.min_qty ?? 1,
     maxQty:      r.max_qty ?? null,
     stock:       r.stock != null ? parseInt(r.stock) : null,
+    isUpsell:    r.is_upsell || false,
     createdAt:   r.created_at,
   };
 }
@@ -877,6 +879,12 @@ app.patch('/admin/products/:id', requireAdmin, async (req, res) => {
   const updated = await updateProductById(req.params.id, patch);
   if (!updated) return res.status(404).json({ error: 'Product not found.' });
   res.json(updated);
+});
+
+app.post('/admin/products/:id/set-upsell', requireAdmin, async (req, res) => {
+  await pool.query('UPDATE products SET is_upsell=false');
+  await pool.query('UPDATE products SET is_upsell=true WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
 });
 
 app.delete('/admin/products/:id', requireAdmin, async (req, res) => {

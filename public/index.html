@@ -1215,7 +1215,8 @@
   function openUpsell() {
     if (!cart.length) return;
     const cartNames = new Set(cart.map(i => i.name));
-    const candidate = productsData.find(p => p.variantType !== 'glazed' && !cartNames.has(p.name));
+    const pinned = productsData.find(p => p.isUpsell && !cartNames.has(p.name));
+    const candidate = pinned || productsData.find(p => p.variantType !== 'glazed' && !cartNames.has(p.name));
     if (!candidate) { openModal(); return; }
     _upsellProduct = candidate;
 

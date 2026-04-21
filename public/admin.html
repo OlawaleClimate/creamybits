@@ -1146,9 +1146,13 @@
         <td data-label="Category">${CAT_LABELS[p.category]||p.category}</td>
         <td data-label="Price">$${p.price.toFixed(2)}</td>
         <td data-label="Variants / Stock" style="font-size:.8rem;color:#6b7280;white-space:normal">${variantSummary === '—' ? stockSummary : variantSummary + '<br><span style="color:#374151;font-size:.75rem">' + stockSummary + '</span>'}</td>
-        <td data-label="Status"><span class="active-dot ${p.active?'dot-on':'dot-off'}"></span>${p.active?'Active':'Hidden'}</td>
-        <td data-label="" class="td-actions" style="display:flex;gap:.4rem">
+        <td data-label="Status"><span class="active-dot ${p.active?'dot-on':'dot-off'}"></span>${p.active?'Active':'Hidden'}${p.isUpsell ? '<br><span style="font-size:.7rem;font-weight:700;color:#ec4899;margin-top:.2rem;display:inline-block">⭐ Upsell</span>' : ''}</td>
+        <td data-label="" class="td-actions" style="display:flex;gap:.4rem;flex-wrap:wrap">
           <button class="edit-btn" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+          ${p.isUpsell
+            ? `<button class="edit-btn" style="background:#fdf2f8;color:#ec4899;border:1.5px solid #fbcfe8" disabled>⭐ Upsell</button>`
+            : `<button class="edit-btn" style="background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb" onclick="setUpsellProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Set Upsell</button>`
+          }
           <button class="del-btn" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
         </td>
       </tr>`;
@@ -1317,6 +1321,17 @@
       await loadAllProducts();
     } catch(e) {
       alert('Delete failed: ' + e.message);
+    }
+  }
+
+  async function setUpsellProduct(id, name) {
+    if (!confirm(`Set "${name}" as the upsell product shown at checkout?`)) return;
+    try {
+      const res = await fetch(`/admin/products/${id}/set-upsell`, { method: 'POST' });
+      if (!res.ok) throw new Error('Request failed');
+      await loadAllProducts();
+    } catch(e) {
+      alert('Failed to set upsell product: ' + e.message);
     }
   }
 
