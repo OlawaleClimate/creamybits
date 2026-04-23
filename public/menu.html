@@ -331,6 +331,13 @@
       </div>
     </div>
     <div class="modal-footer">
+      <div id="couponWrap" style="margin-bottom:1rem">
+        <div style="display:flex;gap:.5rem">
+          <input class="form-input" id="couponInput" placeholder="Coupon code" style="flex:1;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyCoupon()}" />
+          <button type="button" onclick="applyCoupon()" style="padding:.6rem 1rem;border-radius:10px;border:1.5px solid #e5e7eb;background:#f9fafb;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#f9fafb'">Apply</button>
+        </div>
+        <p id="couponMsg" style="font-size:.8rem;margin-top:.4rem;display:none"></p>
+      </div>
       <button class="btn-checkout" id="submitOrderBtn" onclick="submitOrder()">Pay Securely with Stripe →</button>
     </div>
   </div>
@@ -680,6 +687,7 @@
     document.body.style.overflow = 'hidden';
     initCal();
     document.getElementById('formError').style.display = 'none';
+    resetCoupon();
     trapFocus(modal);
   }
   function closeModal() {
@@ -687,6 +695,7 @@
     modal.classList.remove('open');
     document.body.style.overflow = '';
     releaseFocus(modal);
+    resetCoupon();
     if (_modalOpener) { _modalOpener.focus(); _modalOpener = null; }
   }
 
@@ -719,7 +728,7 @@
     try {
       const res = await fetch('/create-checkout-session', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cart, customerName: name, customerEmail: email, customerPhone: phone, pickupDay, pickupDate, pickupTime, allergies }),
+        body: JSON.stringify({ items: cart, customerName: name, customerEmail: email, customerPhone: phone, pickupDay, pickupDate, pickupTime, allergies, couponCode: _appliedCoupon ? _appliedCoupon.code : null }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
@@ -838,6 +847,44 @@
   document.getElementById('orderModal').addEventListener('click', e => {
     if (e.target === document.getElementById('orderModal')) closeModal();
   });
+
+  // ── Coupon ────────────────────────────────────────────────────────────────
+  let _appliedCoupon = null;
+
+  function resetCoupon() {
+    _appliedCoupon = null;
+    const inp = document.getElementById('couponInput');
+    const msg = document.getElementById('couponMsg');
+    if (inp) inp.value = '';
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+  }
+
+  async function applyCoupon() {
+    const code = document.getElementById('couponInput').value.trim().toUpperCase();
+    const msg  = document.getElementById('couponMsg');
+    if (!code) return;
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    try {
+      const res  = await fetch('/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        _appliedCoupon = null;
+        msg.style.cssText = 'display:block;color:#dc2626;font-size:.8rem;margin-top:.4rem';
+        msg.textContent = data.error || 'Invalid coupon.';
+        return;
+      }
+      _appliedCoupon = data;
+      msg.style.cssText = 'display:block;color:#16a34a;font-size:.8rem;margin-top:.4rem;font-weight:600';
+      msg.textContent = `✓ ${data.code} applied — you save $${data.savings.toFixed(2)}!`;
+    } catch(e) {
+      msg.style.cssText = 'display:block;color:#dc2626;font-size:.8rem;margin-top:.4rem';
+      msg.textContent = 'Could not apply coupon. Try again.';
+    }
+  }
 
   // ── Upsell popup ─────────────────────────────────────────────────────────
   let _upsellProduct = null;

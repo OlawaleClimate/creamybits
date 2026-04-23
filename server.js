@@ -72,6 +72,19 @@ async function initDB() {
     ALTER TABLE products ADD COLUMN IF NOT EXISTS max_qty INTEGER DEFAULT NULL;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT NULL;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS is_upsell BOOLEAN DEFAULT false;
+    CREATE TABLE IF NOT EXISTS coupons (
+      id            TEXT PRIMARY KEY,
+      code          TEXT UNIQUE NOT NULL,
+      discount_type TEXT NOT NULL,
+      discount_value NUMERIC NOT NULL,
+      active        BOOLEAN DEFAULT true,
+      max_uses      INTEGER DEFAULT NULL,
+      uses          INTEGER DEFAULT 0,
+      expires_at    DATE DEFAULT NULL,
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code TEXT DEFAULT NULL;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount NUMERIC DEFAULT NULL;
     CREATE TABLE IF NOT EXISTS blocked_dates (
       id         TEXT PRIMARY KEY,
       date       DATE NOT NULL UNIQUE,
@@ -342,8 +355,9 @@ async function saveOrder(order) {
     `INSERT INTO orders
        (id, stripe_session_id, status, pickup_status, placed_at,
         customer_name, customer_email, customer_phone,
-        pickup_day, pickup_date, pickup_time, allergies, items)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        pickup_day, pickup_date, pickup_time, allergies, items,
+        coupon_code, discount_amount)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
     [
       order.id,
       order.stripeSessionId,
@@ -358,6 +372,8 @@ async function saveOrder(order) {
       order.pickupTime,
       order.allergies,
       JSON.stringify(order.items),
+      order.couponCode || null,
+      order.discountAmount || null,
     ]
   );
 }
@@ -399,6 +415,8 @@ function rowToOrder(r) {
     pickupTime:           r.pickup_time,
     allergies:            r.allergies,
     items:                r.items,
+    couponCode:           r.coupon_code || null,
+    discountAmount:       r.discount_amount != null ? parseFloat(r.discount_amount) : null,
   };
 }
 
@@ -406,7 +424,7 @@ function rowToOrder(r) {
 // ── Email ─────────────────────────────────────────────────────────────────────
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-function buildEmailHtml(bodyHtml, itemRows, total, order) {
+function buildEmailHtml(bodyHtml, itemRows, order) {
   return `
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0">
     <div style="background:#0f0f0f;padding:28px 32px;text-align:center">
@@ -425,9 +443,14 @@ function buildEmailHtml(bodyHtml, itemRows, total, order) {
         </thead>
         <tbody>${itemRows}</tbody>
         <tfoot>
+          ${order.discountAmount ? `
+          <tr style="color:#16a34a;font-size:13px">
+            <td colspan="2" style="padding:6px 12px">Coupon ${order.couponCode}</td>
+            <td style="padding:6px 12px;text-align:right">−$${order.discountAmount.toFixed(2)}</td>
+          </tr>` : ''}
           <tr style="background:#f8f8f8;font-weight:700">
-            <td colspan="2" style="padding:10px 12px">Total</td>
-            <td style="padding:10px 12px;text-align:right">$${total}</td>
+            <td colspan="2" style="padding:10px 12px">Total Charged</td>
+            <td style="padding:10px 12px;text-align:right">$${(order.items.reduce((s,i)=>s+i.price*i.qty,0)-(order.discountAmount||0)).toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
@@ -450,8 +473,6 @@ async function sendEmails(order) {
       <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;text-align:center">${i.qty}</td>
       <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
     </tr>`).join('');
-  const total = order.items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
-
   const customerBody = `
     <h2 style="margin:0 0 10px;font-size:22px">Hi ${order.customerName}, your order is confirmed! 🎉</h2>
     <p style="color:#6b7280;margin:0 0 18px;line-height:1.6">
@@ -474,8 +495,9 @@ async function sendEmails(order) {
       ${order.allergies ? `<tr><td style="color:#dc2626;padding:4px 0">Allergies</td><td style="color:#dc2626"><strong>${order.allergies}</strong></td></tr>` : ''}
     </table>`;
 
-  const shortId = order.id.slice(0, 8).toUpperCase();
-  const total2  = order.items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
+  const shortId  = order.id.slice(0, 8).toUpperCase();
+  const subtotal = order.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const charged  = (subtotal - (order.discountAmount || 0)).toFixed(2);
 
   await Promise.all([
     resend.emails.send({
@@ -483,13 +505,13 @@ async function sendEmails(order) {
       reply_to: 'creamybitsllc@gmail.com',
       to:       order.customerEmail,
       subject:  `Order confirmed #${shortId} – CreamyBits 🥧`,
-      html:     buildEmailHtml(customerBody, itemRows, total2, order),
+      html:     buildEmailHtml(customerBody, itemRows, order),
     }),
     resend.emails.send({
       from: `CreamyBits Orders <orders@${process.env.RESEND_FROM_DOMAIN}>`,
       to:   process.env.ADMIN_EMAIL,
-      subject: `New paid order from ${order.customerName} – $${total2} (#${shortId})`,
-      html: buildEmailHtml(adminBody, itemRows, total2, order),
+      subject: `New paid order from ${order.customerName} – $${charged} (#${shortId})`,
+      html: buildEmailHtml(adminBody, itemRows, order),
     }),
   ]);
 }
@@ -601,6 +623,10 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
         stripePaymentIntent: s.payment_intent,
       });
       if (updated) {
+        if (s.metadata.couponCode) {
+          await pool.query('UPDATE coupons SET uses=uses+1 WHERE code=$1', [s.metadata.couponCode])
+            .catch(e => console.error('Coupon increment failed:', e.message));
+        }
         try { await sendEmails(updated); }
         catch (e) { console.error('Email send failed:', e.message); }
       }
@@ -640,7 +666,7 @@ const checkoutLimiter = rateLimit({
 
 // ── Checkout session ──────────────────────────────────────────────────────────
 app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
-  const { items, customerName, customerEmail, customerPhone, pickupDay, pickupDate, pickupTime, allergies } = req.body;
+  const { items, customerName, customerEmail, customerPhone, pickupDay, pickupDate, pickupTime, allergies, couponCode } = req.body;
 
   if (!Array.isArray(items) || items.length === 0)
     return res.status(400).json({ error: 'Cart is empty.' });
@@ -684,18 +710,55 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))
     return res.status(400).json({ error: 'Please enter a valid email address.' });
 
-  const orderId    = uuidv4();
-  const line_items = items.map(item => ({
+  // Validate and apply coupon
+  let appliedCoupon = null;
+  let discountAmount = 0;
+  const couponCodeUpper = couponCode ? couponCode.trim().toUpperCase() : '';
+  if (couponCodeUpper) {
+    const { rows: cRows } = await pool.query('SELECT * FROM coupons WHERE code=$1', [couponCodeUpper]);
+    const c = cRows[0];
+    if (!c || !c.active)
+      return res.status(400).json({ error: 'Invalid or inactive coupon code.' });
+    if (c.expires_at && new Date(c.expires_at) < new Date())
+      return res.status(400).json({ error: 'This coupon has expired.' });
+    if (c.max_uses !== null && c.uses >= c.max_uses)
+      return res.status(400).json({ error: 'This coupon has reached its usage limit.' });
+    appliedCoupon = c;
+  }
+
+  const orderId = uuidv4();
+  const rawItems = items.map(item => ({ ...item, unit_amount: Math.round(item.price * 100) }));
+  const subtotalCents = rawItems.reduce((s, i) => s + i.unit_amount * i.qty, 0);
+
+  if (appliedCoupon) {
+    const val = parseFloat(appliedCoupon.discount_value);
+    if (appliedCoupon.discount_type === 'percent') {
+      discountAmount = Math.round(subtotalCents * val) / 10000;
+      const scale = 1 - val / 100;
+      rawItems.forEach(i => { i.unit_amount = Math.max(1, Math.round(i.unit_amount * scale)); });
+    } else {
+      const discountCents = Math.min(Math.round(val * 100), subtotalCents - rawItems.length);
+      discountAmount = discountCents / 100;
+      const scale = (subtotalCents - discountCents) / subtotalCents;
+      rawItems.forEach(i => { i.unit_amount = Math.max(1, Math.round(i.unit_amount * scale)); });
+    }
+  }
+
+  const line_items = rawItems.map(item => ({
     price_data: {
       currency: 'usd',
       product_data: {
         name: item.name,
         ...(item.variant ? { description: item.variant } : {}),
       },
-      unit_amount: Math.round(item.price * 100),
+      unit_amount: item.unit_amount,
     },
     quantity: item.qty,
   }));
+
+  const discountNote = appliedCoupon
+    ? ` · Coupon ${appliedCoupon.code} applied (-$${discountAmount.toFixed(2)})`
+    : '';
 
   try {
     const stripeSession = await stripe.checkout.sessions.create({
@@ -705,10 +768,10 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
       success_url: `${BASE_URL}/success.html?order_id=${orderId}`,
       cancel_url:  `${BASE_URL}/cancel.html`,
       customer_email: customerEmail,
-      metadata: { orderId },
+      metadata: { orderId, ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}) },
       custom_text: {
         submit: {
-          message: `Pick-up: ${pickupDate || pickupDay} at ${pickupTime} · Albuquerque, NM. Confirmation sent to ${customerEmail}.`,
+          message: `Pick-up: ${pickupDate || pickupDay} at ${pickupTime} · Albuquerque, NM. Confirmation sent to ${customerEmail}.${discountNote}`,
         },
       },
     });
@@ -726,6 +789,8 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
       pickupTime,
       allergies: allergies.trim(),
       items,
+      couponCode: appliedCoupon ? appliedCoupon.code : null,
+      discountAmount: discountAmount > 0 ? discountAmount : null,
     });
 
     res.json({ url: stripeSession.url });
@@ -753,6 +818,38 @@ app.get('/admin/logout', (req, res) => {
 // ── Public products API ───────────────────────────────────────────────────────
 app.get('/products', async (_req, res) => {
   res.json(await readProducts(false));
+});
+
+// ── Public coupon validation ──────────────────────────────────────────────────
+app.post('/validate-coupon', async (req, res) => {
+  const code = (req.body.code || '').trim().toUpperCase();
+  const subtotal = parseFloat(req.body.subtotal) || 0;
+  if (!code) return res.status(400).json({ error: 'No coupon code provided.' });
+
+  const { rows } = await pool.query('SELECT * FROM coupons WHERE code=$1', [code]);
+  const coupon = rows[0];
+  if (!coupon) return res.status(404).json({ error: 'Coupon code not found.' });
+  if (!coupon.active) return res.status(400).json({ error: 'This coupon is no longer active.' });
+  if (coupon.expires_at && new Date(coupon.expires_at) < new Date())
+    return res.status(400).json({ error: 'This coupon has expired.' });
+  if (coupon.max_uses !== null && coupon.uses >= coupon.max_uses)
+    return res.status(400).json({ error: 'This coupon has reached its usage limit.' });
+
+  const value = parseFloat(coupon.discount_value);
+  let savings = 0;
+  if (coupon.discount_type === 'percent') {
+    savings = Math.round(subtotal * value) / 100;
+  } else {
+    savings = Math.min(value, subtotal);
+  }
+
+  res.json({
+    ok: true,
+    code: coupon.code,
+    discountType: coupon.discount_type,
+    discountValue: value,
+    savings: Math.round(savings * 100) / 100,
+  });
 });
 
 app.get('/blocked-dates', async (_req, res) => {
@@ -889,6 +986,65 @@ app.post('/admin/products/:id/set-upsell', requireAdmin, async (req, res) => {
 
 app.delete('/admin/products/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Admin coupons ─────────────────────────────────────────────────────────────
+app.get('/admin/coupons', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM coupons ORDER BY created_at DESC');
+  res.json(rows.map(r => ({
+    id: r.id, code: r.code,
+    discountType: r.discount_type, discountValue: parseFloat(r.discount_value),
+    active: r.active, maxUses: r.max_uses, uses: r.uses,
+    expiresAt: r.expires_at ? r.expires_at.toISOString().slice(0,10) : null,
+    createdAt: r.created_at,
+  })));
+});
+
+app.post('/admin/coupons', requireAdmin, async (req, res) => {
+  const { code, discountType, discountValue, maxUses, expiresAt } = req.body;
+  const cleanCode = (code || '').trim().toUpperCase();
+  if (!cleanCode) return res.status(400).json({ error: 'Coupon code is required.' });
+  if (!['percent', 'dollar'].includes(discountType))
+    return res.status(400).json({ error: 'Discount type must be percent or dollar.' });
+  const val = parseFloat(discountValue);
+  if (isNaN(val) || val <= 0) return res.status(400).json({ error: 'Discount value must be positive.' });
+  if (discountType === 'percent' && val > 100)
+    return res.status(400).json({ error: 'Percent discount cannot exceed 100.' });
+  const id = uuidv4();
+  try {
+    await pool.query(
+      `INSERT INTO coupons (id, code, discount_type, discount_value, max_uses, expires_at)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [id, cleanCode, discountType, val,
+       maxUses ? parseInt(maxUses) : null,
+       expiresAt || null]
+    );
+    const { rows } = await pool.query('SELECT * FROM coupons WHERE id=$1', [id]);
+    const r = rows[0];
+    res.status(201).json({ id: r.id, code: r.code, discountType: r.discount_type,
+      discountValue: parseFloat(r.discount_value), active: r.active,
+      maxUses: r.max_uses, uses: r.uses,
+      expiresAt: r.expires_at ? r.expires_at.toISOString().slice(0,10) : null });
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ error: 'Coupon code already exists.' });
+    throw e;
+  }
+});
+
+app.patch('/admin/coupons/:id', requireAdmin, async (req, res) => {
+  const { active } = req.body;
+  if (active === undefined) return res.status(400).json({ error: 'Nothing to update.' });
+  const { rows } = await pool.query(
+    'UPDATE coupons SET active=$1 WHERE id=$2 RETURNING *', [!!active, req.params.id]
+  );
+  if (!rows.length) return res.status(404).json({ error: 'Coupon not found.' });
+  const r = rows[0];
+  res.json({ id: r.id, code: r.code, active: r.active });
+});
+
+app.delete('/admin/coupons/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM coupons WHERE id=$1', [req.params.id]);
   res.json({ ok: true });
 });
 

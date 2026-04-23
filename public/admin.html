@@ -308,6 +308,7 @@
   <button class="admin-tab" id="tabBlocked" onclick="switchTab('blocked')">🚫 Blocked Dates</button>
   <button class="admin-tab" id="tabLuxe" onclick="switchTab('luxe')">✨ Luxe Menu</button>
   <button class="admin-tab" id="tabDeals" onclick="switchTab('deals')">🔥 Deals</button>
+  <button class="admin-tab" id="tabCoupons" onclick="switchTab('coupons')">🎟️ Coupons</button>
 </div>
 
 <!-- ── ORDERS SECTION ─────────────────────────────────────── -->
@@ -486,6 +487,62 @@
   </div>
   <p style="font-size:.82rem;color:#6b7280;margin-bottom:1rem">Up to 2 active deals shown on the home page. Inactive deals are hidden from customers.</p>
   <div id="dealsList"></div>
+</div>
+
+<!-- ── COUPONS SECTION ────────────────────────────────────────── -->
+<div class="products-section" id="couponsSection">
+  <div class="section-toolbar">
+    <div style="font-size:1rem;font-weight:700;color:var(--black)">🎟️ Coupons</div>
+    <button class="add-product-btn" onclick="openCouponModal()">+ Create Coupon</button>
+  </div>
+  <p style="font-size:.82rem;color:#6b7280;margin-bottom:1rem">Customers enter a code at checkout to get a discount. Codes are case-insensitive.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Code</th><th>Type</th><th>Value</th><th>Uses</th><th>Expires</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody id="couponsBody"><tr><td colspan="7" class="state-msg">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── COUPON MODAL ────────────────────────────────────────────── -->
+<div class="prod-modal-overlay" id="couponModalOverlay" onclick="if(event.target===this)closeCouponModal()">
+  <div class="prod-modal" style="max-width:400px">
+    <div class="prod-modal-header">
+      <h3>Create Coupon</h3>
+      <button class="prod-modal-close" onclick="closeCouponModal()">✕</button>
+    </div>
+    <div class="prod-modal-body">
+      <p id="couponError" style="color:#dc2626;font-size:.82rem;margin-bottom:.5rem;display:none"></p>
+      <div class="prod-field">
+        <label>Coupon Code *</label>
+        <input type="text" id="couponCode" class="prod-input" placeholder="e.g. SAVE10" style="text-transform:uppercase" />
+      </div>
+      <div class="prod-field">
+        <label>Discount Type *</label>
+        <select id="couponType" class="prod-input">
+          <option value="percent">Percent Off (%)</option>
+          <option value="dollar">Dollar Off ($)</option>
+        </select>
+      </div>
+      <div class="prod-field">
+        <label>Discount Value *</label>
+        <input type="number" id="couponValue" class="prod-input" placeholder="e.g. 10" min="0.01" step="0.01" />
+      </div>
+      <div class="prod-field">
+        <label>Max Uses <span style="color:#9ca3af;font-weight:400">(leave blank for unlimited)</span></label>
+        <input type="number" id="couponMaxUses" class="prod-input" placeholder="e.g. 50" min="1" step="1" />
+      </div>
+      <div class="prod-field">
+        <label>Expiry Date <span style="color:#9ca3af;font-weight:400">(leave blank = no expiry)</span></label>
+        <input type="date" id="couponExpiry" class="prod-input" />
+      </div>
+    </div>
+    <div class="prod-modal-footer">
+      <button class="save-btn" onclick="submitCoupon()">Create Coupon</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── DEAL MODAL ──────────────────────────────────────────────── -->
@@ -1097,15 +1154,18 @@
     document.getElementById('blockedSection').classList.toggle('active', tab === 'blocked');
     document.getElementById('luxeSection').classList.toggle('active', tab === 'luxe');
     document.getElementById('dealsSection').classList.toggle('active', tab === 'deals');
+    document.getElementById('couponsSection').classList.toggle('active', tab === 'coupons');
     document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
     document.getElementById('tabBlocked').classList.toggle('active', tab === 'blocked');
     document.getElementById('tabLuxe').classList.toggle('active', tab === 'luxe');
     document.getElementById('tabDeals').classList.toggle('active', tab === 'deals');
+    document.getElementById('tabCoupons').classList.toggle('active', tab === 'coupons');
     if (tab === 'products') loadAllProducts();
     if (tab === 'blocked') loadBlockedDates();
     if (tab === 'luxe') { loadLuxeItems(); loadTrash(); }
     if (tab === 'deals') loadDeals();
+    if (tab === 'coupons') loadCoupons();
   }
 
   // ── Products management ─────────────────────────────────────────────────
@@ -1779,6 +1839,105 @@
     try {
       await fetch(`/admin/deals/${id}`, { method: 'DELETE' });
       await loadDeals();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  // ── Coupons management ───────────────────────────────────────────────────
+  let allCoupons = [];
+
+  async function loadCoupons() {
+    try {
+      const res = await fetch('/admin/coupons');
+      allCoupons = await res.json();
+      renderCoupons();
+    } catch(e) {
+      document.getElementById('couponsBody').innerHTML = `<tr><td colspan="7" class="state-msg">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderCoupons() {
+    const tbody = document.getElementById('couponsBody');
+    if (!allCoupons.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="state-msg">No coupons yet. Create one above.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = allCoupons.map(c => {
+      const typeLabel = c.discountType === 'percent' ? `${c.discountValue}% off` : `$${parseFloat(c.discountValue).toFixed(2)} off`;
+      const usesLabel = c.maxUses ? `${c.uses} / ${c.maxUses}` : `${c.uses} / ∞`;
+      const expiry    = c.expiresAt || '—';
+      const expired   = c.expiresAt && c.expiresAt < new Date().toISOString().slice(0,10);
+      const statusDot = c.active && !expired ? 'dot-on' : 'dot-off';
+      const statusTxt = expired ? 'Expired' : (c.active ? 'Active' : 'Inactive');
+      return `<tr>
+        <td data-label="Code"><strong style="font-family:monospace;font-size:.95rem;letter-spacing:.04em">${c.code}</strong></td>
+        <td data-label="Type">${typeLabel}</td>
+        <td data-label="Value">${c.discountType === 'percent' ? c.discountValue + '%' : '$' + parseFloat(c.discountValue).toFixed(2)}</td>
+        <td data-label="Uses">${usesLabel}</td>
+        <td data-label="Expires">${expiry}</td>
+        <td data-label="Status"><span class="active-dot ${statusDot}"></span>${statusTxt}</td>
+        <td data-label="" class="td-actions" style="display:flex;gap:.4rem">
+          <button class="edit-btn" onclick="toggleCoupon('${c.id}','${c.code}',${c.active})">${c.active ? 'Deactivate' : 'Activate'}</button>
+          <button class="del-btn" onclick="deleteCoupon('${c.id}','${c.code}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openCouponModal() {
+    document.getElementById('couponError').style.display = 'none';
+    document.getElementById('couponCode').value = '';
+    document.getElementById('couponType').value = 'percent';
+    document.getElementById('couponValue').value = '';
+    document.getElementById('couponMaxUses').value = '';
+    document.getElementById('couponExpiry').value = '';
+    document.getElementById('couponModalOverlay').classList.add('open');
+  }
+
+  function closeCouponModal() {
+    document.getElementById('couponModalOverlay').classList.remove('open');
+  }
+
+  async function submitCoupon() {
+    const code         = document.getElementById('couponCode').value.trim().toUpperCase();
+    const discountType = document.getElementById('couponType').value;
+    const discountValue = document.getElementById('couponValue').value;
+    const maxUses      = document.getElementById('couponMaxUses').value;
+    const expiresAt    = document.getElementById('couponExpiry').value;
+    const errEl        = document.getElementById('couponError');
+
+    if (!code) { errEl.textContent = 'Coupon code is required.'; errEl.style.display = 'block'; return; }
+    if (!discountValue || parseFloat(discountValue) <= 0) { errEl.textContent = 'Enter a valid discount value.'; errEl.style.display = 'block'; return; }
+
+    try {
+      const res  = await fetch('/admin/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, discountType, discountValue: parseFloat(discountValue), maxUses: maxUses || null, expiresAt: expiresAt || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) { errEl.textContent = data.error || 'Failed to create coupon.'; errEl.style.display = 'block'; return; }
+      closeCouponModal();
+      await loadCoupons();
+    } catch(e) { errEl.textContent = 'Error: ' + e.message; errEl.style.display = 'block'; }
+  }
+
+  async function toggleCoupon(id, code, currentlyActive) {
+    try {
+      const res = await fetch(`/admin/coupons/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !currentlyActive }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      await loadCoupons();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function deleteCoupon(id, code) {
+    if (!confirm(`Delete coupon "${code}"? This cannot be undone.`)) return;
+    try {
+      await fetch(`/admin/coupons/${id}`, { method: 'DELETE' });
+      await loadCoupons();
     } catch(e) { alert('Error: ' + e.message); }
   }
 </script>
