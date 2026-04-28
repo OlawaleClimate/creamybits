@@ -450,7 +450,7 @@ function buildEmailHtml(bodyHtml, itemRows, order) {
           </tr>` : ''}
           <tr style="background:#f8f8f8;font-weight:700">
             <td colspan="2" style="padding:10px 12px">Total Charged</td>
-            <td style="padding:10px 12px;text-align:right">$${(order.items.reduce((s,i)=>s+i.price*i.qty,0)-(order.discountAmount||0)).toFixed(2)}</td>
+            <td style="padding:10px 12px;text-align:right">$${((order.items||[]).reduce((s,i)=>s+i.price*i.qty,0)-(order.discountAmount||0)).toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
@@ -467,7 +467,7 @@ function buildEmailHtml(bodyHtml, itemRows, order) {
 }
 
 async function sendEmails(order) {
-  const itemRows = order.items.map(i =>
+  const itemRows = (order.items || []).map(i =>
     `<tr>
       <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0">${i.name}${i.variant ? ` <em style="color:#6b7280;font-size:12px">(${i.variant})</em>` : ''}</td>
       <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;text-align:center">${i.qty}</td>
@@ -496,7 +496,7 @@ async function sendEmails(order) {
     </table>`;
 
   const shortId  = order.id.slice(0, 8).toUpperCase();
-  const subtotal = order.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = (order.items || []).reduce((s, i) => s + i.price * i.qty, 0);
   const charged  = (subtotal - (order.discountAmount || 0)).toFixed(2);
 
   await Promise.all([
@@ -1073,9 +1073,10 @@ app.delete('/admin/blocked-dates/:id', requireAdmin, async (req, res) => {
 });
 
 async function sendPickupEmail(order) {
-  const total = order.items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
+  const items = order.items || [];
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
   const shortId = order.id.slice(0, 8).toUpperCase();
-  const itemRows = order.items.map(i =>
+  const itemRows = items.map(i =>
     `<tr>
       <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0">${i.name}${i.variant ? ` <em style="color:#6b7280;font-size:12px">(${i.variant})</em>` : ''}</td>
       <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;text-align:center">${i.qty}</td>
