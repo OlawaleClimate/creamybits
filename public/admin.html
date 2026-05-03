@@ -210,8 +210,17 @@
     .luxe-checkbox-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
     .luxe-checkbox-row label { display: flex; align-items: center; gap: .4rem; font-size: .88rem; cursor: pointer; }
 
+    /* Products group headers (desktop table) */
+    .prod-group-hdr-row { cursor: pointer; user-select: none; }
+    .prod-group-hdr-row:hover td { background: #f0f0f0 !important; }
+    .prod-group-hdr-row td { background: #f8f8f8; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray); padding: .6rem 1rem; border-bottom: 1px solid #e5e7eb; }
+    .prod-group-chevron { float: right; font-style: normal; transition: transform .2s; }
+
     /* Products mobile card list */
     .prod-cards-mobile { display: none; }
+    .prod-mobile-group-hdr { display: flex; align-items: center; justify-content: space-between; background: #f8f8f8; border: 1px solid #e5e7eb; border-radius: 10px; padding: .55rem .9rem; cursor: pointer; user-select: none; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray); }
+    .prod-mobile-group-hdr:hover { background: #f0f0f0; }
+    .prod-mobile-group-body { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .35rem; }
     @media(max-width:680px) {
       #productsTableWrap { display: none; }
       .prod-cards-mobile { display: flex; flex-direction: column; gap: .5rem; padding: 0 .75rem .75rem; }
@@ -424,9 +433,8 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="productsBody">
-        <tr><td colspan="7" class="state-msg">Loading products…</td></tr>
-      </tbody>
+      <tbody id="prodActiveBody"></tbody>
+      <tbody id="prodInactiveBody"></tbody>
     </table>
   </div>
   <div class="prod-cards-mobile" id="prodCardsMobile"></div>
@@ -1197,20 +1205,13 @@
       allProducts = await res.json();
       renderProductsTable();
     } catch(e) {
-      document.getElementById('productsBody').innerHTML = `<tr><td colspan="7" class="state-msg">Error: ${e.message}</td></tr>`;
+      document.getElementById('prodActiveBody').innerHTML = `<tr><td colspan="7" class="state-msg">Error: ${e.message}</td></tr>`;
     }
   }
 
-  function renderProductsTable() {
-    const tbody   = document.getElementById('productsBody');
-    const mCards  = document.getElementById('prodCardsMobile');
-    if (!allProducts.length) {
-      tbody.innerHTML  = '<tr><td colspan="7" class="state-msg">No products yet.</td></tr>';
-      mCards.innerHTML = '';
-      return;
-    }
+  function prodTableRows(products) {
     const CAT_LABELS = { drinks:'Drinks', puffpuff:'Puff Puff', pastries:'Pastries', catering:'Catering' };
-    tbody.innerHTML = allProducts.map(p => {
+    return products.map(p => {
       const imgEl = p.imageUrl
         ? `<img class="prod-img-thumb" src="${p.imageUrl}" alt="${p.name}" onerror="this.style.display='none'">`
         : `<div class="prod-img-placeholder">${p.emoji||'🥧'}</div>`;
@@ -1238,9 +1239,11 @@
         </td>
       </tr>`;
     }).join('');
+  }
 
-    // Mobile card list
-    mCards.innerHTML = allProducts.map(p => {
+  function prodMobileCards(products) {
+    const CAT_LABELS = { drinks:'Drinks', puffpuff:'Puff Puff', pastries:'Pastries', catering:'Catering' };
+    return products.map(p => {
       const imgEl = p.imageUrl
         ? `<img class="prod-card-m-img" src="${p.imageUrl}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="prod-card-m-img-ph" style="display:none">${p.emoji||'🥧'}</div>`
         : `<div class="prod-card-m-img-ph">${p.emoji||'🥧'}</div>`;
@@ -1265,6 +1268,69 @@
         </div>
       </div>`;
     }).join('');
+  }
+
+  function renderProductsTable() {
+    const activeBody   = document.getElementById('prodActiveBody');
+    const inactiveBody = document.getElementById('prodInactiveBody');
+    const mCards       = document.getElementById('prodCardsMobile');
+
+    const active   = allProducts.filter(p => p.active);
+    const inactive = allProducts.filter(p => !p.active);
+
+    if (!allProducts.length) {
+      activeBody.innerHTML   = '<tr><td colspan="7" class="state-msg">No products yet.</td></tr>';
+      inactiveBody.innerHTML = '';
+      mCards.innerHTML       = '';
+      return;
+    }
+
+    // Desktop: group header row + product rows per group
+    activeBody.innerHTML =
+      `<tr class="prod-group-hdr-row" onclick="toggleProdGroup('prodActiveBody')">
+        <td colspan="7">Active (${active.length})<i class="prod-group-chevron">▼</i></td>
+      </tr>` + prodTableRows(active);
+
+    inactiveBody.innerHTML =
+      `<tr class="prod-group-hdr-row" onclick="toggleProdGroup('prodInactiveBody')">
+        <td colspan="7">Hidden (${inactive.length})<i class="prod-group-chevron">▶</i></td>
+      </tr>` + prodTableRows(inactive);
+
+    // Collapse inactive by default
+    setGroupCollapsed('prodInactiveBody', true);
+
+    // Mobile: two collapsible groups
+    mCards.innerHTML =
+      `<div class="prod-mobile-group-hdr" onclick="toggleMobileProdGroup(this)">
+        <span>Active (${active.length})</span><i class="prod-group-chevron">▼</i>
+      </div>
+      <div class="prod-mobile-group-body">${prodMobileCards(active)}</div>
+      <div class="prod-mobile-group-hdr" onclick="toggleMobileProdGroup(this)">
+        <span>Hidden (${inactive.length})</span><i class="prod-group-chevron">▶</i>
+      </div>
+      <div class="prod-mobile-group-body" style="display:none">${prodMobileCards(inactive)}</div>`;
+  }
+
+  function setGroupCollapsed(tbodyId, collapsed) {
+    const tbody = document.getElementById(tbodyId);
+    const rows  = Array.from(tbody.querySelectorAll('tr:not(.prod-group-hdr-row)'));
+    rows.forEach(r => r.style.display = collapsed ? 'none' : '');
+    const chev = tbody.querySelector('.prod-group-chevron');
+    if (chev) chev.textContent = collapsed ? '▶' : '▼';
+  }
+
+  function toggleProdGroup(tbodyId) {
+    const tbody     = document.getElementById(tbodyId);
+    const firstRow  = tbody.querySelector('tr:not(.prod-group-hdr-row)');
+    const collapsed = firstRow && firstRow.style.display === 'none';
+    setGroupCollapsed(tbodyId, !collapsed);
+  }
+
+  function toggleMobileProdGroup(hdr) {
+    const body      = hdr.nextElementSibling;
+    const collapsed = body.style.display === 'none';
+    body.style.display = collapsed ? '' : 'none';
+    hdr.querySelector('.prod-group-chevron').textContent = collapsed ? '▼' : '▶';
   }
 
   // Modal helpers
