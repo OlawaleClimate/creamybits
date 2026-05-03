@@ -210,6 +210,24 @@
     .luxe-checkbox-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
     .luxe-checkbox-row label { display: flex; align-items: center; gap: .4rem; font-size: .88rem; cursor: pointer; }
 
+    /* Products mobile card list */
+    .prod-cards-mobile { display: none; }
+    @media(max-width:680px) {
+      #productsTableWrap { display: none; }
+      .prod-cards-mobile { display: flex; flex-direction: column; gap: .5rem; padding: 0 .75rem .75rem; }
+      .prod-card-m { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+      .prod-card-m-top { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; }
+      .prod-card-m-img { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; flex-shrink: 0; display: block; }
+      .prod-card-m-img-ph { width: 52px; height: 52px; border-radius: 10px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+      .prod-card-m-info { flex: 1; min-width: 0; }
+      .prod-card-m-name { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .prod-card-m-meta { font-size: .75rem; color: #6b7280; margin-top: .2rem; }
+      .prod-card-m-status { flex-shrink: 0; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; }
+      .prod-card-m-status.on  { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+      .prod-card-m-status.off { background: #f9fafb; color: #9ca3af; border: 1px solid #e5e7eb; }
+      .prod-card-m-actions { display: flex; gap: .4rem; flex-wrap: wrap; padding: .6rem 1rem; border-top: 1px solid #f3f4f6; background: #fafafa; }
+    }
+
     @media(max-width:900px){
       .stats-row { grid-template-columns: 1fr 1fr; }
     }
@@ -256,7 +274,7 @@
     @media(max-width:600px){
       .stats-row { grid-template-columns: 1fr 1fr; }
 
-      /* Orders & Products tables → card layout */
+      /* Orders table → card layout */
       .table-wrap table { min-width: unset; }
       .table-wrap thead { display: none; }
       .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; }
@@ -393,7 +411,7 @@
     <div style="font-size:1rem;font-weight:700;color:var(--black)">All Products</div>
     <button class="add-product-btn" onclick="openProductModal()">+ Add Product</button>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" id="productsTableWrap">
     <table>
       <thead>
         <tr>
@@ -411,6 +429,7 @@
       </tbody>
     </table>
   </div>
+  <div class="prod-cards-mobile" id="prodCardsMobile"></div>
 </div>
 
 <!-- ── BLOCKED DATES SECTION ─────────────────────────────────── -->
@@ -1183,9 +1202,11 @@
   }
 
   function renderProductsTable() {
-    const tbody = document.getElementById('productsBody');
+    const tbody   = document.getElementById('productsBody');
+    const mCards  = document.getElementById('prodCardsMobile');
     if (!allProducts.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="state-msg">No products yet.</td></tr>';
+      tbody.innerHTML  = '<tr><td colspan="7" class="state-msg">No products yet.</td></tr>';
+      mCards.innerHTML = '';
       return;
     }
     const CAT_LABELS = { drinks:'Drinks', puffpuff:'Puff Puff', pastries:'Pastries', catering:'Catering' };
@@ -1216,6 +1237,33 @@
           <button class="del-btn" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
         </td>
       </tr>`;
+    }).join('');
+
+    // Mobile card list
+    mCards.innerHTML = allProducts.map(p => {
+      const imgEl = p.imageUrl
+        ? `<img class="prod-card-m-img" src="${p.imageUrl}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="prod-card-m-img-ph" style="display:none">${p.emoji||'🥧'}</div>`
+        : `<div class="prod-card-m-img-ph">${p.emoji||'🥧'}</div>`;
+      const meta = [CAT_LABELS[p.category]||p.category, `$${p.price.toFixed(2)}`];
+      if (p.isUpsell) meta.push('⭐ Upsell');
+      return `<div class="prod-card-m">
+        <div class="prod-card-m-top">
+          ${imgEl}
+          <div class="prod-card-m-info">
+            <div class="prod-card-m-name">${p.name}</div>
+            <div class="prod-card-m-meta">${meta.join(' · ')}</div>
+          </div>
+          <span class="prod-card-m-status ${p.active?'on':'off'}">${p.active?'Active':'Hidden'}</span>
+        </div>
+        <div class="prod-card-m-actions">
+          <button class="edit-btn" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+          ${p.isUpsell
+            ? `<button class="edit-btn" style="background:#fdf2f8;color:#ec4899;border:1.5px solid #fbcfe8" disabled>⭐ Upsell</button>`
+            : `<button class="edit-btn" style="background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb" onclick="setUpsellProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Set Upsell</button>`
+          }
+          <button class="del-btn" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
+        </div>
+      </div>`;
     }).join('');
   }
 
