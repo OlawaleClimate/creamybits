@@ -1098,6 +1098,21 @@ app.delete('/admin/coupons/:id', requireAdmin, async (req, res) => {
 });
 
 // ── Classes (public) ─────────────────────────────────────────────────────────
+app.get('/classes/:id', async (req, res) => {
+  const { rows } = await pool.query(
+    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active FROM classes WHERE id=$1 AND active=true',
+    [req.params.id]
+  );
+  if (!rows[0]) return res.status(404).json({ error: 'Class not found.' });
+  const r = rows[0];
+  res.json({
+    id: r.id, title: r.title, description: r.description,
+    classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
+    classTime: r.class_time, price: parseFloat(r.price),
+    capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
+  });
+});
+
 app.get('/classes', async (_req, res) => {
   const { rows } = await pool.query(
     'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active FROM classes WHERE active=true ORDER BY class_date ASC, created_at ASC'
@@ -1145,7 +1160,7 @@ app.post('/create-class-session', async (req, res) => {
       }],
       customer_email: customerEmail.trim().toLowerCase(),
       success_url: `${BASE_URL}/class-success.html?reg_id=${regId}`,
-      cancel_url:  `${BASE_URL}/classes.html`,
+      cancel_url:  `${BASE_URL}/class-detail.html?id=${classId}`,
       metadata: { type: 'class_registration', regId, classId },
     });
     res.json({ url: session.url });

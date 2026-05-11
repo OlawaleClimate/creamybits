@@ -2173,7 +2173,8 @@
         <td><span class="active-dot ${statusDot}"></span>${statusTxt}</td>
         <td><button class="edit-btn" onclick="showClassRegs('${c.id}','${c.title.replace(/'/g,'\\\'')}')" >View</button></td>
         <td class="td-actions" style="display:flex;gap:.4rem">
-          <button class="edit-btn" onclick="openClassModal('${c.id}')">${c.active ? 'Edit' : 'Edit'}</button>
+          <button class="edit-btn" onclick="copyClassLink('${c.id}')" id="copyBtn_${c.id}">📋 Copy Link</button>
+          <button class="edit-btn" onclick="openClassModal('${c.id}')">Edit</button>
           <button class="edit-btn" onclick="toggleClassActive('${c.id}',${c.active})">${c.active ? 'Hide' : 'Show'}</button>
           <button class="del-btn" onclick="deleteClass('${c.id}','${c.title.replace(/'/g,'\\\'')}')" >Delete</button>
         </td>
@@ -2279,6 +2280,19 @@
 
   function hideClassRegs() {
     document.getElementById('classRegsPanel').style.display = 'none';
+  }
+
+  function copyClassLink(classId) {
+    const url = `${location.origin}/class-detail.html?id=${classId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById(`copyBtn_${classId}`);
+      if (!btn) return;
+      const orig = btn.textContent;
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }).catch(() => {
+      prompt('Copy this link:', url);
+    });
   }
 </script>
 </body>

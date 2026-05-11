@@ -175,9 +175,10 @@
             <div class="class-price">$${c.price.toFixed(2)}</div>
             ${spotsText ? `<div class="class-spots${low?' low':''}">${spotsText}</div>` : ''}
           </div>
-          <button class="reg-btn" onclick="openRegModal('${c.id}')" ${full?'disabled':''}>
-            ${full ? 'Class Full' : 'Register & Pay →'}
-          </button>
+          ${full
+            ? `<button class="reg-btn" disabled>Class Full</button>`
+            : `<a class="reg-btn" href="/class-detail.html?id=${c.id}" style="text-decoration:none;display:inline-flex;align-items:center">Register & Pay →</a>`
+          }
         </div>
       </div>`;
     }).join('');

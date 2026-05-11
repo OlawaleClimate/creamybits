@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cooking Class – CreamyBits</title>
+  <meta name="description" content="Register for a CreamyBits cooking class. Learn to make authentic African pastries in Albuquerque, NM." />
+  <link rel="icon" href="/logo.png" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B2V6H11PP"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-7B2V6H11PP');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --black: #0f0f0f; --pink: #ec4899; --gray: #6b7280; }
+    body { font-family: 'DM Sans', sans-serif; background: #f8f8f8; color: var(--black); min-height: 100vh; }
+
+    nav { background: var(--black); padding: 0 3rem; height: 70px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 200; }
+    .nav-logo { display: flex; align-items: center; gap: .75rem; text-decoration: none; }
+    .nav-logo img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+    .nav-logo span { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 900; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .92rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover, .nav-links a.active { color: #fff; }
+    @media(max-width:640px) { nav { padding: 0 1.25rem; } .nav-links { gap: 1rem; } .nav-links a { font-size: .82rem; } }
+
+    .page { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+
+    .back-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--gray); font-size: .875rem; text-decoration: none; margin-bottom: 1.5rem; transition: color .2s; }
+    .back-link:hover { color: var(--black); }
+
+    .class-hero { background: var(--black); border-radius: 24px; padding: 2.5rem 2rem; color: #fff; margin-bottom: 1.5rem; }
+    .class-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); margin-bottom: .75rem; }
+    .class-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900; line-height: 1.2; margin-bottom: 1rem; }
+    .class-meta-row { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .88rem; color: rgba(255,255,255,.75); margin-bottom: 1.5rem; }
+    .class-meta-row span { display: flex; align-items: center; gap: .4rem; }
+    .class-price-tag { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; }
+    .spots-badge { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; font-weight: 700; padding: .3rem .75rem; border-radius: 999px; margin-left: .75rem; vertical-align: middle; }
+    .spots-low  { background: #fef2f2; color: #dc2626; }
+    .spots-ok   { background: rgba(255,255,255,.12); color: rgba(255,255,255,.9); }
+    .spots-full { background: #fee2e2; color: #dc2626; }
+
+    .class-desc { background: #fff; border-radius: 20px; padding: 1.5rem 1.75rem; font-size: .95rem; line-height: 1.75; color: #374151; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; }
+    .class-desc h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--black); margin-bottom: .6rem; }
+
+    .reg-card { background: #fff; border-radius: 20px; padding: 1.75rem; border: 1px solid #e5e7eb; box-shadow: 0 2px 16px rgba(0,0,0,.06); }
+    .reg-card h2 { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { font-size: .82rem; font-weight: 700; color: #374151; margin-bottom: .35rem; display: block; }
+    .form-input { width: 100%; padding: .7rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .95rem; background: #fff; transition: border-color .2s; }
+    .form-input:focus { outline: none; border-color: var(--black); }
+    .req { color: var(--pink); }
+    .form-error { color: #dc2626; font-size: .82rem; margin-bottom: .75rem; display: none; }
+    .pay-btn { width: 100%; background: linear-gradient(135deg, var(--pink), #8b5cf6); color: #fff; border: none; border-radius: 14px; padding: 1rem; font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: opacity .2s; margin-top: .25rem; }
+    .pay-btn:hover:not(:disabled) { opacity: .88; }
+    .pay-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .full-notice { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 1rem; color: #dc2626; font-size: .9rem; text-align: center; }
+
+    .spinner { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 5rem 1rem; color: var(--gray); }
+    .spinner-ring { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: var(--pink); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 1.5rem; color: #dc2626; font-size: .9rem; text-align: center; }
+  </style>
+</head>
+<body>
+
+<nav aria-label="Main navigation">
+  <a href="/" class="nav-logo">
+    <img src="/logo.png" alt="CreamyBits logo" />
+    <span>CreamyBits</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/menu.html">Menu</a></li>
+    <li><a href="/classes.html" class="active">Classes</a></li>
+    <li><a href="/luxe.html">Luxe</a></li>
+  </ul>
+</nav>
+
+<div class="page" id="page">
+  <div class="spinner">
+    <div class="spinner-ring"></div>
+    <p>Loading class details…</p>
+  </div>
+</div>
+
+<script>
+  const params  = new URLSearchParams(location.search);
+  const classId = params.get('id');
+
+  async function init() {
+    const page = document.getElementById('page');
+    if (!classId) {
+      page.innerHTML = `<div class="error-box">No class specified. <a href="/classes.html">Browse all classes →</a></div>`;
+      return;
+    }
+    try {
+      const res = await fetch(`/classes/${classId}`);
+      if (!res.ok) { throw new Error('Class not found.'); }
+      const c = await res.json();
+
+      document.title = `${c.title} – CreamyBits`;
+
+      const dateStr = c.classDate
+        ? new Date(c.classDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})
+        : null;
+      const full = c.spotsLeft !== null && c.spotsLeft <= 0;
+      const low  = c.spotsLeft !== null && c.spotsLeft <= 5 && c.spotsLeft > 0;
+      const spotsText = c.spotsLeft === null ? null
+        : full ? 'Class full'
+        : low  ? `Only ${c.spotsLeft} spot${c.spotsLeft===1?'':'s'} left`
+        : `${c.spotsLeft} spots left`;
+      const spotsBadge = spotsText
+        ? `<span class="spots-badge ${full?'spots-full':low?'spots-low':'spots-ok'}">${spotsText}</span>`
+        : '';
+
+      page.innerHTML = `
+        <a class="back-link" href="/classes.html">← All Classes</a>
+
+        <div class="class-hero">
+          <div class="class-eyebrow">🎓 Cooking Class</div>
+          <h1>${c.title}</h1>
+          <div class="class-meta-row">
+            ${dateStr ? `<span>📅 ${dateStr}</span>` : ''}
+            ${c.classTime ? `<span>🕐 ${c.classTime}</span>` : ''}
+            ${c.capacity ? `<span>👥 Up to ${c.capacity} students</span>` : ''}
+          </div>
+          <div>
+            <span class="class-price-tag">$${c.price.toFixed(2)}</span>
+            ${spotsBadge}
+          </div>
+        </div>
+
+        ${c.description ? `
+        <div class="class-desc">
+          <h2>About this class</h2>
+          <p>${c.description}</p>
+        </div>` : ''}
+
+        <div class="reg-card" id="regCard">
+          ${full ? `
+            <div class="full-notice">😔 This class is currently full. <a href="/classes.html">See other classes →</a></div>
+          ` : `
+            <h2>Register & Pay</h2>
+            <div class="form-group">
+              <label class="form-label" for="regName">Full Name <span class="req">*</span></label>
+              <input class="form-input" id="regName" type="text" placeholder="Your full name" autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regEmail">Email <span class="req">*</span></label>
+              <input class="form-input" id="regEmail" type="email" placeholder="your@email.com" autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regPhone">Phone <span style="color:#9ca3af;font-weight:400">(optional)</span></label>
+              <input class="form-input" id="regPhone" type="tel" placeholder="(505) 000-0000" autocomplete="tel" />
+            </div>
+            <p class="form-error" id="regError"></p>
+            <button class="pay-btn" id="payBtn" onclick="submitReg()">Pay Securely with Stripe →</button>
+          `}
+        </div>
+      `;
+
+      if (!full) {
+        document.getElementById('regName').focus();
+      }
+    } catch(e) {
+      page.innerHTML = `<div class="error-box">${e.message} <a href="/classes.html">Browse all classes →</a></div>`;
+    }
+  }
+
+  async function submitReg() {
+    const name  = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const errEl = document.getElementById('regError');
+    const btn   = document.getElementById('payBtn');
+
+    errEl.style.display = 'none';
+    if (!name)  { errEl.textContent = 'Please enter your full name.'; errEl.style.display = 'block'; return; }
+    if (!email) { errEl.textContent = 'Please enter your email.'; errEl.style.display = 'block'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to payment…';
+    try {
+      const res  = await fetch('/create-class-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classId, customerName: name, customerEmail: email, customerPhone: phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      window.location.href = data.url;
+    } catch(e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Pay Securely with Stripe →';
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
