@@ -336,6 +336,7 @@
   <button class="admin-tab" id="tabLuxe" onclick="switchTab('luxe')">✨ Luxe Menu</button>
   <button class="admin-tab" id="tabDeals" onclick="switchTab('deals')">🔥 Deals</button>
   <button class="admin-tab" id="tabCoupons" onclick="switchTab('coupons')">🎟️ Coupons</button>
+  <button class="admin-tab" id="tabClasses" onclick="switchTab('classes')">🎓 Classes</button>
 </div>
 
 <!-- ── ORDERS SECTION ─────────────────────────────────────── -->
@@ -530,6 +531,84 @@
       </tr></thead>
       <tbody id="couponsBody"><tr><td colspan="7" class="state-msg">Loading…</td></tr></tbody>
     </table>
+  </div>
+</div>
+
+<!-- ── CLASSES SECTION ───────────────────────────────────────── -->
+<div class="products-section" id="classesSection">
+  <div class="section-toolbar">
+    <div style="font-size:1rem;font-weight:700;color:var(--black)">🎓 Cooking Classes</div>
+    <button class="add-product-btn" onclick="openClassModal()">+ Add Class</button>
+  </div>
+  <div class="table-wrap" id="classesTableWrap">
+    <table>
+      <thead><tr>
+        <th>Title</th><th>Date</th><th>Time</th><th>Price</th><th>Spots</th><th>Status</th><th>Registrations</th><th></th>
+      </tr></thead>
+      <tbody id="classesBody"><tr><td colspan="8" class="state-msg">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Registrations sub-panel -->
+  <div id="classRegsPanel" style="display:none;margin-top:1.5rem">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem" id="classRegsTitle">Registrations</h3>
+      <button class="edit-btn" onclick="hideClassRegs()">✕ Close</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Paid At</th></tr></thead>
+        <tbody id="classRegsBody"><tr><td colspan="5" class="state-msg">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── CLASS MODAL ───────────────────────────────────────────── -->
+<div class="prod-modal-overlay" id="classModalOverlay" onclick="if(event.target===this)closeClassModal()">
+  <div class="prod-modal" style="max-width:480px">
+    <div class="prod-modal-header">
+      <h3 id="classModalTitle">Add Class</h3>
+      <button class="prod-modal-close" onclick="closeClassModal()">✕</button>
+    </div>
+    <div class="prod-modal-body" style="display:flex;flex-direction:column;gap:.85rem">
+      <div>
+        <label class="form-label">Title <span style="color:var(--pink)">*</span></label>
+        <input class="form-input" id="classTitle" type="text" placeholder="e.g. African Pastry Masterclass" />
+      </div>
+      <div>
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="classDesc" rows="3" placeholder="What students will learn…" style="resize:vertical"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label class="form-label">Date</label>
+          <input class="form-input" id="classDate" type="date" />
+        </div>
+        <div>
+          <label class="form-label">Time</label>
+          <input class="form-input" id="classTime" type="text" placeholder="e.g. 2:00 PM – 5:00 PM" />
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label class="form-label">Price ($) <span style="color:var(--pink)">*</span></label>
+          <input class="form-input" id="classPrice" type="number" min="0" step="0.01" placeholder="75.00" />
+        </div>
+        <div>
+          <label class="form-label">Capacity (blank = unlimited)</label>
+          <input class="form-input" id="classCapacity" type="number" min="1" placeholder="20" />
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Telegram Group Link <span style="color:var(--pink)">*</span></label>
+        <input class="form-input" id="classTelegram" type="url" placeholder="https://t.me/yourclass" />
+      </div>
+      <p class="form-error" id="classModalError" style="margin:0"></p>
+    </div>
+    <div class="prod-modal-footer" style="border-top:1px solid #f0f0f0;padding:1rem 1.5rem">
+      <button class="save-btn" onclick="submitClass()">Save Class</button>
+    </div>
   </div>
 </div>
 
@@ -1182,17 +1261,20 @@
     document.getElementById('luxeSection').classList.toggle('active', tab === 'luxe');
     document.getElementById('dealsSection').classList.toggle('active', tab === 'deals');
     document.getElementById('couponsSection').classList.toggle('active', tab === 'coupons');
+    document.getElementById('classesSection').classList.toggle('active', tab === 'classes');
     document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
     document.getElementById('tabBlocked').classList.toggle('active', tab === 'blocked');
     document.getElementById('tabLuxe').classList.toggle('active', tab === 'luxe');
     document.getElementById('tabDeals').classList.toggle('active', tab === 'deals');
     document.getElementById('tabCoupons').classList.toggle('active', tab === 'coupons');
+    document.getElementById('tabClasses').classList.toggle('active', tab === 'classes');
     if (tab === 'products') loadAllProducts();
     if (tab === 'blocked') loadBlockedDates();
     if (tab === 'luxe') { loadLuxeItems(); loadTrash(); }
     if (tab === 'deals') loadDeals();
     if (tab === 'coupons') loadCoupons();
+    if (tab === 'classes') loadClasses();
   }
 
   // ── Products management ─────────────────────────────────────────────────
@@ -2053,6 +2135,150 @@
       await fetch(`/admin/coupons/${id}`, { method: 'DELETE' });
       await loadCoupons();
     } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  // ── Classes management ───────────────────────────────────────────────────
+  let allClasses = [];
+  let _editClassId = null;
+
+  async function loadClasses() {
+    try {
+      const res = await fetch('/admin/classes');
+      allClasses = await res.json();
+      renderClassesTable();
+    } catch(e) {
+      document.getElementById('classesBody').innerHTML = `<tr><td colspan="8" class="state-msg">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderClassesTable() {
+    const tbody = document.getElementById('classesBody');
+    if (!allClasses.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="state-msg">No classes yet. Add one above.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = allClasses.map(c => {
+      const dateStr = c.classDate
+        ? new Date(c.classDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})
+        : '—';
+      const statusDot = c.active ? 'dot-active' : 'dot-inactive';
+      const statusTxt = c.active ? 'Active' : 'Hidden';
+      const spots = c.spotsLeft !== null ? `${c.spotsLeft} left` : '∞';
+      return `<tr>
+        <td><strong>${c.title}</strong></td>
+        <td style="white-space:nowrap">${dateStr}</td>
+        <td>${c.classTime || '—'}</td>
+        <td>$${parseFloat(c.price).toFixed(2)}</td>
+        <td>${spots}</td>
+        <td><span class="active-dot ${statusDot}"></span>${statusTxt}</td>
+        <td><button class="edit-btn" onclick="showClassRegs('${c.id}','${c.title.replace(/'/g,'\\\'')}')" >View</button></td>
+        <td class="td-actions" style="display:flex;gap:.4rem">
+          <button class="edit-btn" onclick="openClassModal('${c.id}')">${c.active ? 'Edit' : 'Edit'}</button>
+          <button class="edit-btn" onclick="toggleClassActive('${c.id}',${c.active})">${c.active ? 'Hide' : 'Show'}</button>
+          <button class="del-btn" onclick="deleteClass('${c.id}','${c.title.replace(/'/g,'\\\'')}')" >Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openClassModal(editId) {
+    _editClassId = editId || null;
+    const c = editId ? allClasses.find(x => x.id === editId) : null;
+    document.getElementById('classModalTitle').textContent = c ? 'Edit Class' : 'Add Class';
+    document.getElementById('classTitle').value    = c ? c.title : '';
+    document.getElementById('classDesc').value     = c ? (c.description || '') : '';
+    document.getElementById('classDate').value     = c ? (c.classDate || '') : '';
+    document.getElementById('classTime').value     = c ? (c.classTime || '') : '';
+    document.getElementById('classPrice').value    = c ? c.price : '';
+    document.getElementById('classCapacity').value = c ? (c.capacity || '') : '';
+    document.getElementById('classTelegram').value = c ? (c.telegramLink || '') : '';
+    document.getElementById('classModalError').style.display = 'none';
+    document.getElementById('classModalOverlay').classList.add('open');
+  }
+
+  function closeClassModal() {
+    document.getElementById('classModalOverlay').classList.remove('open');
+    _editClassId = null;
+  }
+
+  async function submitClass() {
+    const errEl = document.getElementById('classModalError');
+    errEl.style.display = 'none';
+    const title    = document.getElementById('classTitle').value.trim();
+    const price    = document.getElementById('classPrice').value.trim();
+    const telegram = document.getElementById('classTelegram').value.trim();
+    if (!title)    { errEl.textContent = 'Title is required.'; errEl.style.display = 'block'; return; }
+    if (!price)    { errEl.textContent = 'Price is required.'; errEl.style.display = 'block'; return; }
+    if (!telegram) { errEl.textContent = 'Telegram link is required.'; errEl.style.display = 'block'; return; }
+
+    const payload = {
+      title,
+      description: document.getElementById('classDesc').value.trim() || null,
+      classDate:   document.getElementById('classDate').value || null,
+      classTime:   document.getElementById('classTime').value.trim() || null,
+      price:       parseFloat(price),
+      capacity:    document.getElementById('classCapacity').value ? parseInt(document.getElementById('classCapacity').value) : null,
+      telegramLink: telegram,
+    };
+    try {
+      const url    = _editClassId ? `/admin/classes/${_editClassId}` : '/admin/classes';
+      const method = _editClassId ? 'PATCH' : 'POST';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data   = await res.json();
+      if (!res.ok) { errEl.textContent = data.error || 'Failed to save class.'; errEl.style.display = 'block'; return; }
+      closeClassModal();
+      await loadClasses();
+    } catch(e) { errEl.textContent = 'Error: ' + e.message; errEl.style.display = 'block'; }
+  }
+
+  async function toggleClassActive(id, currentlyActive) {
+    try {
+      await fetch(`/admin/classes/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !currentlyActive }),
+      });
+      await loadClasses();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function deleteClass(id, title) {
+    if (!confirm(`Delete class "${title}"? This cannot be undone.`)) return;
+    try {
+      await fetch(`/admin/classes/${id}`, { method: 'DELETE' });
+      hideClassRegs();
+      await loadClasses();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function showClassRegs(classId, classTitle) {
+    document.getElementById('classRegsPanel').style.display = 'block';
+    document.getElementById('classRegsTitle').textContent = `Registrations — ${classTitle}`;
+    document.getElementById('classRegsBody').innerHTML = '<tr><td colspan="5" class="state-msg">Loading…</td></tr>';
+    try {
+      const res  = await fetch(`/admin/class-registrations?classId=${classId}`);
+      const regs = await res.json();
+      if (!regs.length) {
+        document.getElementById('classRegsBody').innerHTML = '<tr><td colspan="5" class="state-msg">No registrations yet.</td></tr>';
+        return;
+      }
+      document.getElementById('classRegsBody').innerHTML = regs.map(r => {
+        const paidAt = r.paidAt ? new Date(r.paidAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+        const badgeCls = r.status === 'paid' ? 'badge-paid' : 'badge-pending';
+        return `<tr>
+          <td><strong>${r.customerName}</strong></td>
+          <td>${r.customerEmail}</td>
+          <td>${r.customerPhone || '—'}</td>
+          <td><span class="badge ${badgeCls}">${r.status}</span></td>
+          <td>${paidAt}</td>
+        </tr>`;
+      }).join('');
+    } catch(e) {
+      document.getElementById('classRegsBody').innerHTML = `<tr><td colspan="5" class="state-msg">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  function hideClassRegs() {
+    document.getElementById('classRegsPanel').style.display = 'none';
   }
 </script>
 </body>

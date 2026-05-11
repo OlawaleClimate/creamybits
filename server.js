@@ -85,6 +85,30 @@ async function initDB() {
     );
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code TEXT DEFAULT NULL;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount NUMERIC DEFAULT NULL;
+    CREATE TABLE IF NOT EXISTS classes (
+      id             TEXT PRIMARY KEY,
+      title          TEXT NOT NULL,
+      description    TEXT,
+      class_date     DATE,
+      class_time     TEXT,
+      price          NUMERIC NOT NULL,
+      capacity       INTEGER DEFAULT NULL,
+      spots_left     INTEGER DEFAULT NULL,
+      telegram_link  TEXT NOT NULL,
+      active         BOOLEAN DEFAULT true,
+      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS class_registrations (
+      id                TEXT PRIMARY KEY,
+      class_id          TEXT NOT NULL,
+      customer_name     TEXT NOT NULL,
+      customer_email    TEXT NOT NULL,
+      customer_phone    TEXT,
+      stripe_session_id TEXT,
+      status            TEXT NOT NULL DEFAULT 'pending_payment',
+      paid_at           TIMESTAMPTZ,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
     CREATE TABLE IF NOT EXISTS blocked_dates (
       id         TEXT PRIMARY KEY,
       date       DATE NOT NULL UNIQUE,
@@ -614,6 +638,31 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
       return res.sendStatus(200);
     }
 
+    // Class registration payment
+    if (s.metadata && s.metadata.type === 'class_registration') {
+      const regId = s.metadata.regId;
+      try {
+        await pool.query(
+          `UPDATE class_registrations SET status='paid', paid_at=NOW(), stripe_session_id=$1 WHERE id=$2`,
+          [s.id, regId]
+        );
+        const { rows: regRows } = await pool.query(
+          'SELECT cr.*, c.title, c.class_date, c.class_time FROM class_registrations cr JOIN classes c ON c.id=cr.class_id WHERE cr.id=$1',
+          [regId]
+        );
+        if (regRows[0]) {
+          await pool.query(
+            'UPDATE classes SET spots_left = GREATEST(spots_left - 1, 0) WHERE id=$1 AND spots_left IS NOT NULL',
+            [regRows[0].class_id]
+          );
+          await sendClassConfirmationEmail(regRows[0]).catch(e =>
+            console.error('Class email failed:', e.message)
+          );
+        }
+      } catch(e) { console.error('Class registration webhook error:', e.message); }
+      return res.sendStatus(200);
+    }
+
     // Regular order payment
     const orderId = s.metadata && s.metadata.orderId;
     if (orderId) {
@@ -1047,6 +1096,192 @@ app.delete('/admin/coupons/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM coupons WHERE id=$1', [req.params.id]);
   res.json({ ok: true });
 });
+
+// ── Classes (public) ─────────────────────────────────────────────────────────
+app.get('/classes', async (_req, res) => {
+  const { rows } = await pool.query(
+    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active FROM classes WHERE active=true ORDER BY class_date ASC, created_at ASC'
+  );
+  res.json(rows.map(r => ({
+    id: r.id, title: r.title, description: r.description,
+    classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
+    classTime: r.class_time, price: parseFloat(r.price),
+    capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
+  })));
+});
+
+app.post('/create-class-session', async (req, res) => {
+  const { classId, customerName, customerEmail, customerPhone } = req.body;
+  if (!classId || !customerName || !customerEmail)
+    return res.status(400).json({ error: 'Class, name and email are required.' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+
+  const { rows } = await pool.query('SELECT * FROM classes WHERE id=$1 AND active=true', [classId]);
+  const cls = rows[0];
+  if (!cls) return res.status(404).json({ error: 'Class not found or no longer available.' });
+  if (cls.spots_left !== null && cls.spots_left <= 0)
+    return res.status(400).json({ error: 'Sorry, this class is full.' });
+
+  const regId = uuidv4();
+  await pool.query(
+    `INSERT INTO class_registrations (id, class_id, customer_name, customer_email, customer_phone, status)
+     VALUES ($1,$2,$3,$4,$5,'pending_payment')`,
+    [regId, classId, customerName.trim(), customerEmail.trim().toLowerCase(), (customerPhone||'').trim()]
+  );
+
+  const dateLabel = cls.class_date ? new Date(cls.class_date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) : 'TBD';
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: cls.title, description: `${dateLabel}${cls.class_time ? ' · ' + cls.class_time : ''}` },
+          unit_amount: Math.round(parseFloat(cls.price) * 100),
+        },
+        quantity: 1,
+      }],
+      customer_email: customerEmail.trim().toLowerCase(),
+      success_url: `${BASE_URL}/class-success.html?reg_id=${regId}`,
+      cancel_url:  `${BASE_URL}/classes.html`,
+      metadata: { type: 'class_registration', regId, classId },
+    });
+    res.json({ url: session.url });
+  } catch(e) {
+    console.error('Stripe class error:', e.message);
+    res.status(500).json({ error: 'Unable to start checkout. Please try again.' });
+  }
+});
+
+app.get('/class-registration/:id/telegram', async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT cr.status, cr.customer_name, c.telegram_link, c.title, c.class_date, c.class_time
+     FROM class_registrations cr JOIN classes c ON c.id=cr.class_id WHERE cr.id=$1`,
+    [req.params.id]
+  );
+  if (!rows[0]) return res.status(404).json({ error: 'Registration not found.' });
+  if (rows[0].status !== 'paid') return res.status(402).json({ error: 'Payment not confirmed yet.' });
+  const r = rows[0];
+  res.json({
+    telegramLink: r.telegram_link,
+    classTitle:   r.title,
+    classDate:    r.class_date ? r.class_date.toISOString().slice(0,10) : null,
+    classTime:    r.class_time,
+    customerName: r.customer_name,
+  });
+});
+
+// ── Admin classes ─────────────────────────────────────────────────────────────
+app.get('/admin/classes', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM classes ORDER BY class_date ASC, created_at ASC');
+  res.json(rows.map(r => ({
+    id: r.id, title: r.title, description: r.description,
+    classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
+    classTime: r.class_time, price: parseFloat(r.price),
+    capacity: r.capacity, spotsLeft: r.spots_left,
+    telegramLink: r.telegram_link, active: r.active, createdAt: r.created_at,
+  })));
+});
+
+app.post('/admin/classes', requireAdmin, async (req, res) => {
+  const { title, description, classDate, classTime, price, capacity, telegramLink } = req.body;
+  if (!title || !price || !telegramLink)
+    return res.status(400).json({ error: 'Title, price and Telegram link are required.' });
+  const id  = uuidv4();
+  const cap = capacity ? parseInt(capacity) : null;
+  await pool.query(
+    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    [id, title.trim(), description||'', classDate||null, classTime||'', parseFloat(price), cap, cap, telegramLink.trim()]
+  );
+  const { rows } = await pool.query('SELECT * FROM classes WHERE id=$1', [id]);
+  const r = rows[0];
+  res.status(201).json({ id:r.id, title:r.title, classDate:r.class_date?r.class_date.toISOString().slice(0,10):null,
+    classTime:r.class_time, price:parseFloat(r.price), capacity:r.capacity, spotsLeft:r.spots_left,
+    telegramLink:r.telegram_link, active:r.active });
+});
+
+app.patch('/admin/classes/:id', requireAdmin, async (req, res) => {
+  const allowed = { title:'title', description:'description', classDate:'class_date', classTime:'class_time',
+    price:'price', capacity:'capacity', spotsLeft:'spots_left', telegramLink:'telegram_link', active:'active' };
+  const sets=[]; const vals=[]; let i=1;
+  for (const [key, col] of Object.entries(allowed)) {
+    if (req.body[key] !== undefined) { sets.push(`${col}=$${i++}`); vals.push(req.body[key]); }
+  }
+  if (!sets.length) return res.status(400).json({ error: 'Nothing to update.' });
+  vals.push(req.params.id);
+  const { rows } = await pool.query(`UPDATE classes SET ${sets.join(',')} WHERE id=$${i} RETURNING *`, vals);
+  if (!rows.length) return res.status(404).json({ error: 'Class not found.' });
+  const r = rows[0];
+  res.json({ id:r.id, title:r.title, classDate:r.class_date?r.class_date.toISOString().slice(0,10):null,
+    classTime:r.class_time, price:parseFloat(r.price), capacity:r.capacity, spotsLeft:r.spots_left,
+    telegramLink:r.telegram_link, active:r.active });
+});
+
+app.delete('/admin/classes/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM classes WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+app.get('/admin/class-registrations', requireAdmin, async (req, res) => {
+  const { classId } = req.query;
+  const q = classId
+    ? 'SELECT cr.*, c.title FROM class_registrations cr JOIN classes c ON c.id=cr.class_id WHERE cr.class_id=$1 ORDER BY cr.created_at DESC'
+    : 'SELECT cr.*, c.title FROM class_registrations cr JOIN classes c ON c.id=cr.class_id ORDER BY cr.created_at DESC';
+  const { rows } = await pool.query(q, classId ? [classId] : []);
+  res.json(rows.map(r => ({
+    id: r.id, classId: r.class_id, classTitle: r.title,
+    customerName: r.customer_name, customerEmail: r.customer_email, customerPhone: r.customer_phone,
+    status: r.status, paidAt: r.paid_at, createdAt: r.created_at,
+  })));
+});
+
+async function sendClassConfirmationEmail(reg) {
+  const dateLabel = reg.class_date
+    ? new Date(reg.class_date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})
+    : 'TBD';
+  const shortId = reg.id.slice(0,8).toUpperCase();
+  const html = `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0">
+    <div style="background:#0f0f0f;padding:28px 32px;text-align:center">
+      <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:1px">🥧 CreamyBits</span><br>
+      <span style="color:#9ca3af;font-size:13px">Cooking Classes · Albuquerque, NM</span>
+    </div>
+    <div style="padding:32px">
+      <h2 style="margin:0 0 10px;font-size:22px">You're registered, ${reg.customer_name}! 🎉</h2>
+      <p style="color:#6b7280;margin:0 0 20px;line-height:1.6">Your spot in <strong>${reg.title}</strong> is confirmed.</p>
+      <table style="font-size:14px;margin-bottom:20px;width:100%" cellpadding="0" cellspacing="0">
+        <tr><td style="color:#6b7280;width:110px;padding:4px 0">Class</td><td><strong>${reg.title}</strong></td></tr>
+        <tr><td style="color:#6b7280;padding:4px 0">Date</td><td>${dateLabel}</td></tr>
+        ${reg.class_time ? `<tr><td style="color:#6b7280;padding:4px 0">Time</td><td>${reg.class_time}</td></tr>` : ''}
+        <tr><td style="color:#6b7280;padding:4px 0">Registration</td><td>#${shortId}</td></tr>
+      </table>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:20px">
+        <p style="margin:0;font-size:14px;color:#166534;line-height:1.6">
+          ✅ <strong>Join the class Telegram group</strong> using the link on your confirmation page.<br>
+          Go back to your confirmation page: <a href="${process.env.BASE_URL}/class-success.html?reg_id=${reg.id}" style="color:#166534">${process.env.BASE_URL}/class-success.html?reg_id=${reg.id}</a>
+        </p>
+      </div>
+      <p style="font-size:12px;color:#9ca3af">Questions? Email creamybitsllc@gmail.com</p>
+    </div>
+  </div>`;
+  await Promise.all([
+    resend.emails.send({
+      from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to: reg.customer_email,
+      subject: `You're registered for ${reg.title}! 🎓`,
+      html,
+    }),
+    resend.emails.send({
+      from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: `New class registration: ${reg.customer_name} → ${reg.title}`,
+      html: `<p><strong>${reg.customer_name}</strong> (${reg.customer_email}) registered and paid for <strong>${reg.title}</strong> on ${dateLabel}.</p>`,
+    }),
+  ]);
+}
 
 // ── Admin blocked dates ───────────────────────────────────────────────────────
 app.get('/admin/blocked-dates', requireAdmin, async (_req, res) => {
