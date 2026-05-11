@@ -98,6 +98,7 @@ async function initDB() {
       active         BOOLEAN DEFAULT true,
       created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    ALTER TABLE classes ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT NULL;
     CREATE TABLE IF NOT EXISTS class_registrations (
       id                TEXT PRIMARY KEY,
       class_id          TEXT NOT NULL,
@@ -1100,7 +1101,7 @@ app.delete('/admin/coupons/:id', requireAdmin, async (req, res) => {
 // ── Classes (public) ─────────────────────────────────────────────────────────
 app.get('/classes/:id', async (req, res) => {
   const { rows } = await pool.query(
-    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active FROM classes WHERE id=$1 AND active=true',
+    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url FROM classes WHERE id=$1 AND active=true',
     [req.params.id]
   );
   if (!rows[0]) return res.status(404).json({ error: 'Class not found.' });
@@ -1110,18 +1111,20 @@ app.get('/classes/:id', async (req, res) => {
     classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
     classTime: r.class_time, price: parseFloat(r.price),
     capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
+    imageUrl: r.image_url || null,
   });
 });
 
 app.get('/classes', async (_req, res) => {
   const { rows } = await pool.query(
-    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active FROM classes WHERE active=true ORDER BY class_date ASC, created_at ASC'
+    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url FROM classes WHERE active=true ORDER BY class_date ASC, created_at ASC'
   );
   res.json(rows.map(r => ({
     id: r.id, title: r.title, description: r.description,
     classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
     classTime: r.class_time, price: parseFloat(r.price),
     capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
+    imageUrl: r.image_url || null,
   })));
 });
 
@@ -1197,30 +1200,31 @@ app.get('/admin/classes', requireAdmin, async (_req, res) => {
     classTime: r.class_time, price: parseFloat(r.price),
     capacity: r.capacity, spotsLeft: r.spots_left,
     telegramLink: r.telegram_link, active: r.active, createdAt: r.created_at,
+    imageUrl: r.image_url || null,
   })));
 });
 
 app.post('/admin/classes', requireAdmin, async (req, res) => {
-  const { title, description, classDate, classTime, price, capacity, telegramLink } = req.body;
+  const { title, description, classDate, classTime, price, capacity, telegramLink, imageUrl } = req.body;
   if (!title || !price || !telegramLink)
     return res.status(400).json({ error: 'Title, price and Telegram link are required.' });
   const id  = uuidv4();
   const cap = capacity ? parseInt(capacity) : null;
   await pool.query(
-    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-    [id, title.trim(), description||'', classDate||null, classTime||'', parseFloat(price), cap, cap, telegramLink.trim()]
+    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link,image_url)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    [id, title.trim(), description||'', classDate||null, classTime||'', parseFloat(price), cap, cap, telegramLink.trim(), imageUrl||null]
   );
   const { rows } = await pool.query('SELECT * FROM classes WHERE id=$1', [id]);
   const r = rows[0];
   res.status(201).json({ id:r.id, title:r.title, classDate:r.class_date?r.class_date.toISOString().slice(0,10):null,
     classTime:r.class_time, price:parseFloat(r.price), capacity:r.capacity, spotsLeft:r.spots_left,
-    telegramLink:r.telegram_link, active:r.active });
+    telegramLink:r.telegram_link, active:r.active, imageUrl:r.image_url||null });
 });
 
 app.patch('/admin/classes/:id', requireAdmin, async (req, res) => {
   const allowed = { title:'title', description:'description', classDate:'class_date', classTime:'class_time',
-    price:'price', capacity:'capacity', spotsLeft:'spots_left', telegramLink:'telegram_link', active:'active' };
+    price:'price', capacity:'capacity', spotsLeft:'spots_left', telegramLink:'telegram_link', active:'active', imageUrl:'image_url' };
   const sets=[]; const vals=[]; let i=1;
   for (const [key, col] of Object.entries(allowed)) {
     if (req.body[key] !== undefined) { sets.push(`${col}=$${i++}`); vals.push(req.body[key]); }
@@ -1232,7 +1236,7 @@ app.patch('/admin/classes/:id', requireAdmin, async (req, res) => {
   const r = rows[0];
   res.json({ id:r.id, title:r.title, classDate:r.class_date?r.class_date.toISOString().slice(0,10):null,
     classTime:r.class_time, price:parseFloat(r.price), capacity:r.capacity, spotsLeft:r.spots_left,
-    telegramLink:r.telegram_link, active:r.active });
+    telegramLink:r.telegram_link, active:r.active, imageUrl:r.image_url||null });
 });
 
 app.delete('/admin/classes/:id', requireAdmin, async (req, res) => {

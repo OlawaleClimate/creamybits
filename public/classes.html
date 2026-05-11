@@ -34,6 +34,7 @@
 
     .classes-grid { display: flex; flex-direction: column; gap: 1.25rem; }
     .class-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.06); display: flex; flex-direction: column; }
+    .class-card-img { width: 100%; height: 200px; object-fit: cover; display: block; }
     .class-card-body { padding: 1.5rem 1.75rem 1rem; flex: 1; }
     .class-badge { display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--pink); margin-bottom: .6rem; }
     .class-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; line-height: 1.3; }
@@ -160,6 +161,7 @@
         : low  ? `Only ${c.spotsLeft} spot${c.spotsLeft===1?'':'s'} left!`
         : `${c.spotsLeft} spots left`;
       return `<div class="class-card">
+        ${c.imageUrl ? `<img class="class-card-img" src="${c.imageUrl}" alt="${c.title}" loading="lazy" />` : ''}
         <div class="class-card-body">
           <div class="class-badge">🎓 Cooking Class</div>
           <h2 class="class-title">${c.title}</h2>

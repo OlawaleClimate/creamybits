@@ -604,6 +604,15 @@
         <label class="form-label">Telegram Group Link <span style="color:var(--pink)">*</span></label>
         <input class="form-input" id="classTelegram" type="url" placeholder="https://t.me/yourclass" />
       </div>
+      <div>
+        <label class="form-label">Class Photo</label>
+        <div id="classImgPreviewWrap" style="display:none;margin-bottom:.5rem">
+          <img id="classImgPreview" src="" alt="Class photo preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1px solid #e5e7eb" />
+          <button type="button" onclick="removeClassImg()" style="margin-top:.35rem;font-size:.78rem;color:#dc2626;background:none;border:none;cursor:pointer;padding:0">✕ Remove photo</button>
+        </div>
+        <input class="form-input" id="classImgFile" type="file" accept="image/*" onchange="previewClassImg(this)" style="padding:.45rem" />
+        <input type="hidden" id="classImgUrl" value="" />
+      </div>
       <p class="form-error" id="classModalError" style="margin:0"></p>
     </div>
     <div class="prod-modal-footer" style="border-top:1px solid #f0f0f0;padding:1rem 1.5rem">
@@ -2193,6 +2202,11 @@
     document.getElementById('classPrice').value    = c ? c.price : '';
     document.getElementById('classCapacity').value = c ? (c.capacity || '') : '';
     document.getElementById('classTelegram').value = c ? (c.telegramLink || '') : '';
+    document.getElementById('classImgUrl').value   = c ? (c.imageUrl || '') : '';
+    document.getElementById('classImgFile').value  = '';
+    const hasImg = c && c.imageUrl;
+    document.getElementById('classImgPreviewWrap').style.display = hasImg ? 'block' : 'none';
+    if (hasImg) document.getElementById('classImgPreview').src = c.imageUrl;
     document.getElementById('classModalError').style.display = 'none';
     document.getElementById('classModalOverlay').classList.add('open');
   }
@@ -2200,6 +2214,23 @@
   function closeClassModal() {
     document.getElementById('classModalOverlay').classList.remove('open');
     _editClassId = null;
+  }
+
+  function previewClassImg(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('classImgPreview').src = e.target.result;
+      document.getElementById('classImgPreviewWrap').style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  function removeClassImg() {
+    document.getElementById('classImgUrl').value = '';
+    document.getElementById('classImgFile').value = '';
+    document.getElementById('classImgPreviewWrap').style.display = 'none';
+    document.getElementById('classImgPreview').src = '';
   }
 
   async function submitClass() {
@@ -2212,6 +2243,19 @@
     if (!price)    { errEl.textContent = 'Price is required.'; errEl.style.display = 'block'; return; }
     if (!telegram) { errEl.textContent = 'Telegram link is required.'; errEl.style.display = 'block'; return; }
 
+    let imageUrl = document.getElementById('classImgUrl').value || null;
+    const fileInput = document.getElementById('classImgFile');
+    if (fileInput.files && fileInput.files[0]) {
+      try {
+        const fd = new FormData();
+        fd.append('image', fileInput.files[0]);
+        const upRes  = await fetch('/admin/upload-image', { method: 'POST', body: fd });
+        const upData = await upRes.json();
+        if (!upRes.ok) throw new Error(upData.error || 'Upload failed');
+        imageUrl = upData.url;
+      } catch(e) { errEl.textContent = 'Image upload failed: ' + e.message; errEl.style.display = 'block'; return; }
+    }
+
     const payload = {
       title,
       description: document.getElementById('classDesc').value.trim() || null,
@@ -2220,6 +2264,7 @@
       price:       parseFloat(price),
       capacity:    document.getElementById('classCapacity').value ? parseInt(document.getElementById('classCapacity').value) : null,
       telegramLink: telegram,
+      imageUrl,
     };
     try {
       const url    = _editClassId ? `/admin/classes/${_editClassId}` : '/admin/classes';
