@@ -174,12 +174,21 @@
         </div>
         <div class="class-card-footer">
           <div>
-            <div class="class-price">$${c.price.toFixed(2)}</div>
+            ${c.earlyBirdActive
+              ? `<div style="display:flex;align-items:baseline;gap:.5rem">
+                   <div class="class-price" style="color:var(--pink)">$${c.earlyBirdPrice.toFixed(2)}</div>
+                   <div style="font-size:.85rem;color:var(--gray);text-decoration:line-through">$${c.price.toFixed(2)}</div>
+                 </div>
+                 <div style="font-size:.75rem;font-weight:700;color:var(--pink);margin-top:.1rem">🐣 Early bird price${c.earlyBirdEnds ? ` · ends ${new Date(c.earlyBirdEnds+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}</div>`
+              : `<div class="class-price">$${c.price.toFixed(2)}</div>`
+            }
             ${spotsText ? `<div class="class-spots${low?' low':''}">${spotsText}</div>` : ''}
           </div>
-          ${full
-            ? `<button class="reg-btn" disabled>Class Full</button>`
-            : `<a class="reg-btn" href="/class-detail.html?id=${c.id}" style="text-decoration:none;display:inline-flex;align-items:center">Register & Pay →</a>`
+          ${c.registrationClosed
+            ? `<button class="reg-btn" disabled>Registration Closed</button>`
+            : full
+              ? `<button class="reg-btn" disabled>Class Full</button>`
+              : `<a class="reg-btn" href="/class-detail.html?id=${c.id}" style="text-decoration:none;display:inline-flex;align-items:center">Register & Pay →</a>`
           }
         </div>
       </div>`;

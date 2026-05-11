@@ -131,7 +131,14 @@
             ${c.capacity ? `<span>👥 Up to ${c.capacity} students</span>` : ''}
           </div>
           <div>
-            <span class="class-price-tag">$${c.price.toFixed(2)}</span>
+            ${c.earlyBirdActive
+              ? `<div style="display:flex;align-items:baseline;gap:.65rem;flex-wrap:wrap">
+                   <span class="class-price-tag" style="color:var(--pink)">$${c.earlyBirdPrice.toFixed(2)}</span>
+                   <span style="font-size:1.1rem;text-decoration:line-through;opacity:.55">$${c.price.toFixed(2)}</span>
+                 </div>
+                 <div style="margin-top:.35rem;font-size:.82rem;font-weight:700;color:var(--pink)">🐣 Early bird price${c.earlyBirdEnds ? ` · ends ${new Date(c.earlyBirdEnds+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric'})}` : ''}</div>`
+              : `<span class="class-price-tag">$${c.price.toFixed(2)}</span>`
+            }
             ${spotsBadge}
           </div>
           </div>
@@ -144,7 +151,9 @@
         </div>` : ''}
 
         <div class="reg-card" id="regCard">
-          ${full ? `
+          ${c.registrationClosed ? `
+            <div class="full-notice">🔒 Registration for this class is closed. <a href="/classes.html">See other classes →</a></div>
+          ` : full ? `
             <div class="full-notice">😔 This class is currently full. <a href="/classes.html">See other classes →</a></div>
           ` : `
             <h2>Register & Pay</h2>
@@ -166,7 +175,7 @@
         </div>
       `;
 
-      if (!full) {
+      if (!full && !c.registrationClosed) {
         document.getElementById('regName').focus();
       }
     } catch(e) {

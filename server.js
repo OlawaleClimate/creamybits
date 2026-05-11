@@ -99,6 +99,9 @@ async function initDB() {
       created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT NULL;
+    ALTER TABLE classes ADD COLUMN IF NOT EXISTS early_bird_price NUMERIC DEFAULT NULL;
+    ALTER TABLE classes ADD COLUMN IF NOT EXISTS early_bird_ends DATE DEFAULT NULL;
+    ALTER TABLE classes ADD COLUMN IF NOT EXISTS registration_closes DATE DEFAULT NULL;
     CREATE TABLE IF NOT EXISTS class_registrations (
       id                TEXT PRIMARY KEY,
       class_id          TEXT NOT NULL,
@@ -1099,33 +1102,41 @@ app.delete('/admin/coupons/:id', requireAdmin, async (req, res) => {
 });
 
 // ── Classes (public) ─────────────────────────────────────────────────────────
-app.get('/classes/:id', async (req, res) => {
-  const { rows } = await pool.query(
-    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url FROM classes WHERE id=$1 AND active=true',
-    [req.params.id]
-  );
-  if (!rows[0]) return res.status(404).json({ error: 'Class not found.' });
-  const r = rows[0];
-  res.json({
+const CLASS_COLS = 'id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url,early_bird_price,early_bird_ends,registration_closes';
+
+function rowToClass(r) {
+  const today = new Date().toISOString().slice(0,10);
+  const ebEnds = r.early_bird_ends ? r.early_bird_ends.toISOString().slice(0,10) : null;
+  const regCloses = r.registration_closes ? r.registration_closes.toISOString().slice(0,10) : null;
+  const earlyBirdActive = r.early_bird_price != null && (ebEnds === null || today <= ebEnds);
+  return {
     id: r.id, title: r.title, description: r.description,
     classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
-    classTime: r.class_time, price: parseFloat(r.price),
+    classTime: r.class_time,
+    price: parseFloat(r.price),
+    earlyBirdPrice: r.early_bird_price != null ? parseFloat(r.early_bird_price) : null,
+    earlyBirdEnds: ebEnds,
+    earlyBirdActive,
+    registrationCloses: regCloses,
+    registrationClosed: regCloses !== null && today > regCloses,
     capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
     imageUrl: r.image_url || null,
-  });
+  };
+}
+
+app.get('/classes/:id', async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT ${CLASS_COLS} FROM classes WHERE id=$1 AND active=true`, [req.params.id]
+  );
+  if (!rows[0]) return res.status(404).json({ error: 'Class not found.' });
+  res.json(rowToClass(rows[0]));
 });
 
 app.get('/classes', async (_req, res) => {
   const { rows } = await pool.query(
-    'SELECT id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url FROM classes WHERE active=true ORDER BY class_date ASC, created_at ASC'
+    `SELECT ${CLASS_COLS} FROM classes WHERE active=true ORDER BY class_date ASC, created_at ASC`
   );
-  res.json(rows.map(r => ({
-    id: r.id, title: r.title, description: r.description,
-    classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
-    classTime: r.class_time, price: parseFloat(r.price),
-    capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
-    imageUrl: r.image_url || null,
-  })));
+  res.json(rows.map(rowToClass));
 });
 
 app.post('/create-class-session', async (req, res) => {
@@ -1140,6 +1151,16 @@ app.post('/create-class-session', async (req, res) => {
   if (!cls) return res.status(404).json({ error: 'Class not found or no longer available.' });
   if (cls.spots_left !== null && cls.spots_left <= 0)
     return res.status(400).json({ error: 'Sorry, this class is full.' });
+
+  const today = new Date().toISOString().slice(0,10);
+  if (cls.registration_closes) {
+    const closes = cls.registration_closes.toISOString().slice(0,10);
+    if (today > closes) return res.status(400).json({ error: 'Registration for this class is closed.' });
+  }
+
+  const ebEnds = cls.early_bird_ends ? cls.early_bird_ends.toISOString().slice(0,10) : null;
+  const earlyBirdActive = cls.early_bird_price != null && (ebEnds === null || today <= ebEnds);
+  const chargePrice = earlyBirdActive ? parseFloat(cls.early_bird_price) : parseFloat(cls.price);
 
   const regId = uuidv4();
   await pool.query(
@@ -1157,7 +1178,7 @@ app.post('/create-class-session', async (req, res) => {
         price_data: {
           currency: 'usd',
           product_data: { name: cls.title, description: `${dateLabel}${cls.class_time ? ' · ' + cls.class_time : ''}` },
-          unit_amount: Math.round(parseFloat(cls.price) * 100),
+          unit_amount: Math.round(chargePrice * 100),
         },
         quantity: 1,
       }],
@@ -1192,51 +1213,58 @@ app.get('/class-registration/:id/telegram', async (req, res) => {
 });
 
 // ── Admin classes ─────────────────────────────────────────────────────────────
-app.get('/admin/classes', requireAdmin, async (_req, res) => {
-  const { rows } = await pool.query('SELECT * FROM classes ORDER BY class_date ASC, created_at ASC');
-  res.json(rows.map(r => ({
+function rowToClassAdmin(r) {
+  return {
     id: r.id, title: r.title, description: r.description,
     classDate: r.class_date ? r.class_date.toISOString().slice(0,10) : null,
     classTime: r.class_time, price: parseFloat(r.price),
+    earlyBirdPrice: r.early_bird_price != null ? parseFloat(r.early_bird_price) : null,
+    earlyBirdEnds: r.early_bird_ends ? r.early_bird_ends.toISOString().slice(0,10) : null,
+    registrationCloses: r.registration_closes ? r.registration_closes.toISOString().slice(0,10) : null,
     capacity: r.capacity, spotsLeft: r.spots_left,
     telegramLink: r.telegram_link, active: r.active, createdAt: r.created_at,
     imageUrl: r.image_url || null,
-  })));
+  };
+}
+
+app.get('/admin/classes', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM classes ORDER BY class_date ASC, created_at ASC');
+  res.json(rows.map(rowToClassAdmin));
 });
 
 app.post('/admin/classes', requireAdmin, async (req, res) => {
-  const { title, description, classDate, classTime, price, capacity, telegramLink, imageUrl } = req.body;
+  const { title, description, classDate, classTime, price, capacity, telegramLink, imageUrl,
+          earlyBirdPrice, earlyBirdEnds, registrationCloses } = req.body;
   if (!title || !price || !telegramLink)
     return res.status(400).json({ error: 'Title, price and Telegram link are required.' });
   const id  = uuidv4();
   const cap = capacity ? parseInt(capacity) : null;
   await pool.query(
-    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link,image_url)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-    [id, title.trim(), description||'', classDate||null, classTime||'', parseFloat(price), cap, cap, telegramLink.trim(), imageUrl||null]
+    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link,image_url,early_bird_price,early_bird_ends,registration_closes)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+    [id, title.trim(), description||null, classDate||null, classTime||null, parseFloat(price), cap, cap,
+     telegramLink.trim(), imageUrl||null,
+     earlyBirdPrice != null ? parseFloat(earlyBirdPrice) : null,
+     earlyBirdEnds||null, registrationCloses||null]
   );
   const { rows } = await pool.query('SELECT * FROM classes WHERE id=$1', [id]);
-  const r = rows[0];
-  res.status(201).json({ id:r.id, title:r.title, classDate:r.class_date?r.class_date.toISOString().slice(0,10):null,
-    classTime:r.class_time, price:parseFloat(r.price), capacity:r.capacity, spotsLeft:r.spots_left,
-    telegramLink:r.telegram_link, active:r.active, imageUrl:r.image_url||null });
+  res.status(201).json(rowToClassAdmin(rows[0]));
 });
 
 app.patch('/admin/classes/:id', requireAdmin, async (req, res) => {
   const allowed = { title:'title', description:'description', classDate:'class_date', classTime:'class_time',
-    price:'price', capacity:'capacity', spotsLeft:'spots_left', telegramLink:'telegram_link', active:'active', imageUrl:'image_url' };
+    price:'price', capacity:'capacity', spotsLeft:'spots_left', telegramLink:'telegram_link', active:'active',
+    imageUrl:'image_url', earlyBirdPrice:'early_bird_price', earlyBirdEnds:'early_bird_ends',
+    registrationCloses:'registration_closes' };
   const sets=[]; const vals=[]; let i=1;
   for (const [key, col] of Object.entries(allowed)) {
-    if (req.body[key] !== undefined) { sets.push(`${col}=$${i++}`); vals.push(req.body[key]); }
+    if (req.body[key] !== undefined) { sets.push(`${col}=$${i++}`); vals.push(req.body[key] === '' ? null : req.body[key]); }
   }
   if (!sets.length) return res.status(400).json({ error: 'Nothing to update.' });
   vals.push(req.params.id);
   const { rows } = await pool.query(`UPDATE classes SET ${sets.join(',')} WHERE id=$${i} RETURNING *`, vals);
   if (!rows.length) return res.status(404).json({ error: 'Class not found.' });
-  const r = rows[0];
-  res.json({ id:r.id, title:r.title, classDate:r.class_date?r.class_date.toISOString().slice(0,10):null,
-    classTime:r.class_time, price:parseFloat(r.price), capacity:r.capacity, spotsLeft:r.spots_left,
-    telegramLink:r.telegram_link, active:r.active, imageUrl:r.image_url||null });
+  res.json(rowToClassAdmin(rows[0]));
 });
 
 app.delete('/admin/classes/:id', requireAdmin, async (req, res) => {

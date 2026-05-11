@@ -600,6 +600,20 @@
           <input class="form-input" id="classCapacity" type="number" min="1" placeholder="20" />
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label class="form-label">Early Bird Price ($)</label>
+          <input class="form-input" id="classEarlyBirdPrice" type="number" min="0" step="0.01" placeholder="e.g. 55.00" />
+        </div>
+        <div>
+          <label class="form-label">Early Bird Ends <span style="color:#9ca3af;font-weight:400">(blank = whole period)</span></label>
+          <input class="form-input" id="classEarlyBirdEnds" type="date" />
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Registration Closes <span style="color:#9ca3af;font-weight:400">(blank = never)</span></label>
+        <input class="form-input" id="classRegCloses" type="date" />
+      </div>
       <div>
         <label class="form-label">Telegram Group Link <span style="color:var(--pink)">*</span></label>
         <input class="form-input" id="classTelegram" type="url" placeholder="https://t.me/yourclass" />
@@ -2201,8 +2215,11 @@
     document.getElementById('classTime').value     = c ? (c.classTime || '') : '';
     document.getElementById('classPrice').value    = c ? c.price : '';
     document.getElementById('classCapacity').value = c ? (c.capacity || '') : '';
-    document.getElementById('classTelegram').value = c ? (c.telegramLink || '') : '';
-    document.getElementById('classImgUrl').value   = c ? (c.imageUrl || '') : '';
+    document.getElementById('classTelegram').value        = c ? (c.telegramLink || '') : '';
+    document.getElementById('classEarlyBirdPrice').value  = c && c.earlyBirdPrice != null ? c.earlyBirdPrice : '';
+    document.getElementById('classEarlyBirdEnds').value   = c ? (c.earlyBirdEnds || '') : '';
+    document.getElementById('classRegCloses').value       = c ? (c.registrationCloses || '') : '';
+    document.getElementById('classImgUrl').value          = c ? (c.imageUrl || '') : '';
     document.getElementById('classImgFile').value  = '';
     const hasImg = c && c.imageUrl;
     document.getElementById('classImgPreviewWrap').style.display = hasImg ? 'block' : 'none';
@@ -2265,6 +2282,9 @@
       capacity:    document.getElementById('classCapacity').value ? parseInt(document.getElementById('classCapacity').value) : null,
       telegramLink: telegram,
       imageUrl,
+      earlyBirdPrice: document.getElementById('classEarlyBirdPrice').value ? parseFloat(document.getElementById('classEarlyBirdPrice').value) : null,
+      earlyBirdEnds:  document.getElementById('classEarlyBirdEnds').value || null,
+      registrationCloses: document.getElementById('classRegCloses').value || null,
     };
     try {
       const url    = _editClassId ? `/admin/classes/${_editClassId}` : '/admin/classes';
