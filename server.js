@@ -1103,7 +1103,7 @@ app.delete('/admin/coupons/:id', requireAdmin, async (req, res) => {
 });
 
 // ── Classes (public) ─────────────────────────────────────────────────────────
-const CLASS_COLS = 'id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url,early_bird_price,early_bird_ends,registration_closes';
+const CLASS_COLS = 'id,title,description,class_date,class_time,price,capacity,spots_left,active,image_url,early_bird_price,early_bird_ends,registration_closes,show_spots';
 
 function rowToClass(r) {
   const today = new Date().toISOString().slice(0,10);
