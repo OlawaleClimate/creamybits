@@ -614,6 +614,10 @@
         <label class="form-label">Registration Closes <span style="color:#9ca3af;font-weight:400">(blank = never)</span></label>
         <input class="form-input" id="classRegCloses" type="date" />
       </div>
+      <div style="display:flex;align-items:center;gap:.65rem;padding:.5rem 0">
+        <input type="checkbox" id="classShowSpots" style="width:16px;height:16px;cursor:pointer" />
+        <label for="classShowSpots" style="font-size:.88rem;font-weight:600;cursor:pointer">Show "X spots left" to customers</label>
+      </div>
       <div>
         <label class="form-label">Telegram Group Link <span style="color:var(--pink)">*</span></label>
         <input class="form-input" id="classTelegram" type="url" placeholder="https://t.me/yourclass" />
@@ -2219,6 +2223,7 @@
     document.getElementById('classEarlyBirdPrice').value  = c && c.earlyBirdPrice != null ? c.earlyBirdPrice : '';
     document.getElementById('classEarlyBirdEnds').value   = c ? (c.earlyBirdEnds || '') : '';
     document.getElementById('classRegCloses').value       = c ? (c.registrationCloses || '') : '';
+    document.getElementById('classShowSpots').checked     = c ? (c.showSpots !== false) : true;
     document.getElementById('classImgUrl').value          = c ? (c.imageUrl || '') : '';
     document.getElementById('classImgFile').value  = '';
     const hasImg = c && c.imageUrl;
@@ -2285,6 +2290,7 @@
       earlyBirdPrice: document.getElementById('classEarlyBirdPrice').value ? parseFloat(document.getElementById('classEarlyBirdPrice').value) : null,
       earlyBirdEnds:  document.getElementById('classEarlyBirdEnds').value || null,
       registrationCloses: document.getElementById('classRegCloses').value || null,
+      showSpots: document.getElementById('classShowSpots').checked,
     };
     try {
       const url    = _editClassId ? `/admin/classes/${_editClassId}` : '/admin/classes';

@@ -109,7 +109,8 @@
         : null;
       const full = c.spotsLeft !== null && c.spotsLeft <= 0;
       const low  = c.spotsLeft !== null && c.spotsLeft <= 5 && c.spotsLeft > 0;
-      const spotsText = c.spotsLeft === null ? null
+      const spotsText = !c.showSpots ? null
+        : c.spotsLeft === null ? null
         : full ? 'Class full'
         : low  ? `Only ${c.spotsLeft} spot${c.spotsLeft===1?'':'s'} left`
         : `${c.spotsLeft} spots left`;

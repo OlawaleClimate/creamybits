@@ -102,6 +102,7 @@ async function initDB() {
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS early_bird_price NUMERIC DEFAULT NULL;
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS early_bird_ends DATE DEFAULT NULL;
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS registration_closes DATE DEFAULT NULL;
+    ALTER TABLE classes ADD COLUMN IF NOT EXISTS show_spots BOOLEAN DEFAULT true;
     CREATE TABLE IF NOT EXISTS class_registrations (
       id                TEXT PRIMARY KEY,
       class_id          TEXT NOT NULL,
@@ -1119,7 +1120,7 @@ function rowToClass(r) {
     earlyBirdActive,
     registrationCloses: regCloses,
     registrationClosed: regCloses !== null && today > regCloses,
-    capacity: r.capacity, spotsLeft: r.spots_left, active: r.active,
+    capacity: r.capacity, spotsLeft: r.spots_left, showSpots: r.show_spots !== false, active: r.active,
     imageUrl: r.image_url || null,
   };
 }
@@ -1221,7 +1222,7 @@ function rowToClassAdmin(r) {
     earlyBirdPrice: r.early_bird_price != null ? parseFloat(r.early_bird_price) : null,
     earlyBirdEnds: r.early_bird_ends ? r.early_bird_ends.toISOString().slice(0,10) : null,
     registrationCloses: r.registration_closes ? r.registration_closes.toISOString().slice(0,10) : null,
-    capacity: r.capacity, spotsLeft: r.spots_left,
+    capacity: r.capacity, spotsLeft: r.spots_left, showSpots: r.show_spots !== false,
     telegramLink: r.telegram_link, active: r.active, createdAt: r.created_at,
     imageUrl: r.image_url || null,
   };
@@ -1234,18 +1235,18 @@ app.get('/admin/classes', requireAdmin, async (_req, res) => {
 
 app.post('/admin/classes', requireAdmin, async (req, res) => {
   const { title, description, classDate, classTime, price, capacity, telegramLink, imageUrl,
-          earlyBirdPrice, earlyBirdEnds, registrationCloses } = req.body;
+          earlyBirdPrice, earlyBirdEnds, registrationCloses, showSpots } = req.body;
   if (!title || !price || !telegramLink)
     return res.status(400).json({ error: 'Title, price and Telegram link are required.' });
   const id  = uuidv4();
   const cap = capacity ? parseInt(capacity) : null;
   await pool.query(
-    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link,image_url,early_bird_price,early_bird_ends,registration_closes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+    `INSERT INTO classes (id,title,description,class_date,class_time,price,capacity,spots_left,telegram_link,image_url,early_bird_price,early_bird_ends,registration_closes,show_spots)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
     [id, title.trim(), description||null, classDate||null, classTime||null, parseFloat(price), cap, cap,
      telegramLink.trim(), imageUrl||null,
      earlyBirdPrice != null ? parseFloat(earlyBirdPrice) : null,
-     earlyBirdEnds||null, registrationCloses||null]
+     earlyBirdEnds||null, registrationCloses||null, showSpots !== false]
   );
   const { rows } = await pool.query('SELECT * FROM classes WHERE id=$1', [id]);
   res.status(201).json(rowToClassAdmin(rows[0]));
@@ -1255,7 +1256,7 @@ app.patch('/admin/classes/:id', requireAdmin, async (req, res) => {
   const allowed = { title:'title', description:'description', classDate:'class_date', classTime:'class_time',
     price:'price', capacity:'capacity', spotsLeft:'spots_left', telegramLink:'telegram_link', active:'active',
     imageUrl:'image_url', earlyBirdPrice:'early_bird_price', earlyBirdEnds:'early_bird_ends',
-    registrationCloses:'registration_closes' };
+    registrationCloses:'registration_closes', showSpots:'show_spots' };
   const sets=[]; const vals=[]; let i=1;
   for (const [key, col] of Object.entries(allowed)) {
     if (req.body[key] !== undefined) { sets.push(`${col}=$${i++}`); vals.push(req.body[key] === '' ? null : req.body[key]); }
