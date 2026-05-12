@@ -112,8 +112,10 @@ async function initDB() {
       stripe_session_id TEXT,
       status            TEXT NOT NULL DEFAULT 'pending_payment',
       paid_at           TIMESTAMPTZ,
+      reminder_sent     BOOLEAN DEFAULT false,
       created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    ALTER TABLE class_registrations ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN DEFAULT false;
     CREATE TABLE IF NOT EXISTS blocked_dates (
       id         TEXT PRIMARY KEY,
       date       DATE NOT NULL UNIQUE,
@@ -652,7 +654,7 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
           [s.id, regId]
         );
         const { rows: regRows } = await pool.query(
-          'SELECT cr.*, c.title, c.class_date, c.class_time FROM class_registrations cr JOIN classes c ON c.id=cr.class_id WHERE cr.id=$1',
+          'SELECT cr.*, c.title, c.class_date, c.class_time, c.telegram_link FROM class_registrations cr JOIN classes c ON c.id=cr.class_id WHERE cr.id=$1',
           [regId]
         );
         if (regRows[0]) {
@@ -1286,49 +1288,124 @@ app.get('/admin/class-registrations', requireAdmin, async (req, res) => {
   })));
 });
 
+function classEmailHeader() {
+  return `<div style="background:#0f0f0f;padding:28px 32px;text-align:center">
+    <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:1px">🥧 CreamyBits</span><br>
+    <span style="color:#9ca3af;font-size:13px">Cooking Classes · Albuquerque, NM</span>
+  </div>`;
+}
+
+function classEmailDetails(reg, dateLabel) {
+  return `<table style="font-size:14px;margin-bottom:20px;width:100%;border-collapse:collapse" cellpadding="0" cellspacing="0">
+    <tr><td style="color:#6b7280;width:130px;padding:5px 0;vertical-align:top">Class</td><td><strong>${reg.title}</strong></td></tr>
+    <tr><td style="color:#6b7280;padding:5px 0">Date</td><td>${dateLabel}</td></tr>
+    ${reg.class_time ? `<tr><td style="color:#6b7280;padding:5px 0">Time</td><td>${reg.class_time}</td></tr>` : ''}
+    <tr><td style="color:#6b7280;padding:5px 0">Name</td><td>${reg.customer_name}</td></tr>
+    <tr><td style="color:#6b7280;padding:5px 0">Email</td><td>${reg.customer_email}</td></tr>
+    ${reg.customer_phone ? `<tr><td style="color:#6b7280;padding:5px 0">Phone</td><td>${reg.customer_phone}</td></tr>` : ''}
+    <tr><td style="color:#6b7280;padding:5px 0">Ref #</td><td>${reg.id.slice(0,8).toUpperCase()}</td></tr>
+  </table>`;
+}
+
+function telegramButton(link) {
+  return `<div style="text-align:center;margin:24px 0">
+    <a href="${link}" style="display:inline-block;background:#229ED9;color:#fff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:700;font-size:15px">
+      ✈️ Join Telegram Group →
+    </a>
+  </div>
+  <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0">Save this email — this link is your way into the group.</p>`;
+}
+
 async function sendClassConfirmationEmail(reg) {
   const dateLabel = reg.class_date
     ? new Date(reg.class_date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})
     : 'TBD';
-  const shortId = reg.id.slice(0,8).toUpperCase();
-  const html = `
+
+  const customerHtml = `
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0">
-    <div style="background:#0f0f0f;padding:28px 32px;text-align:center">
-      <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:1px">🥧 CreamyBits</span><br>
-      <span style="color:#9ca3af;font-size:13px">Cooking Classes · Albuquerque, NM</span>
-    </div>
+    ${classEmailHeader()}
     <div style="padding:32px">
-      <h2 style="margin:0 0 10px;font-size:22px">You're registered, ${reg.customer_name}! 🎉</h2>
-      <p style="color:#6b7280;margin:0 0 20px;line-height:1.6">Your spot in <strong>${reg.title}</strong> is confirmed.</p>
-      <table style="font-size:14px;margin-bottom:20px;width:100%" cellpadding="0" cellspacing="0">
-        <tr><td style="color:#6b7280;width:110px;padding:4px 0">Class</td><td><strong>${reg.title}</strong></td></tr>
-        <tr><td style="color:#6b7280;padding:4px 0">Date</td><td>${dateLabel}</td></tr>
-        ${reg.class_time ? `<tr><td style="color:#6b7280;padding:4px 0">Time</td><td>${reg.class_time}</td></tr>` : ''}
-        <tr><td style="color:#6b7280;padding:4px 0">Registration</td><td>#${shortId}</td></tr>
-      </table>
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:20px">
+      <h2 style="margin:0 0 8px;font-size:22px">You're in, ${reg.customer_name}! 🎉</h2>
+      <p style="color:#6b7280;margin:0 0 24px;line-height:1.6">Your spot in <strong>${reg.title}</strong> is confirmed and payment received.</p>
+      ${classEmailDetails(reg, dateLabel)}
+      ${reg.telegram_link ? telegramButton(reg.telegram_link) : `
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 18px;margin-bottom:20px">
         <p style="margin:0;font-size:14px;color:#166534;line-height:1.6">
-          ✅ <strong>Join the class Telegram group</strong> using the link on your confirmation page.<br>
-          Go back to your confirmation page: <a href="${process.env.BASE_URL}/class-success.html?reg_id=${reg.id}" style="color:#166534">${process.env.BASE_URL}/class-success.html?reg_id=${reg.id}</a>
+          ✅ <strong>Access your Telegram group link:</strong><br>
+          <a href="${process.env.BASE_URL}/class-success.html?reg_id=${reg.id}" style="color:#166534">${process.env.BASE_URL}/class-success.html?reg_id=${reg.id}</a>
         </p>
-      </div>
-      <p style="font-size:12px;color:#9ca3af">Questions? Email creamybitsllc@gmail.com</p>
+      </div>`}
+      <p style="font-size:12px;color:#9ca3af;margin-top:24px">Questions? Email creamybitsllc@gmail.com</p>
     </div>
   </div>`;
+
+  const adminHtml = `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0">
+    ${classEmailHeader()}
+    <div style="padding:32px">
+      <h2 style="margin:0 0 8px;font-size:20px">New class registration 🎓</h2>
+      <p style="color:#6b7280;margin:0 0 24px">Someone just paid and registered for a class.</p>
+      ${classEmailDetails(reg, dateLabel)}
+    </div>
+  </div>`;
+
   await Promise.all([
     resend.emails.send({
       from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
       to: reg.customer_email,
       subject: `You're registered for ${reg.title}! 🎓`,
-      html,
+      html: customerHtml,
     }),
     resend.emails.send({
       from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
       to: process.env.ADMIN_EMAIL,
+      reply_to: reg.customer_email,
       subject: `New class registration: ${reg.customer_name} → ${reg.title}`,
-      html: `<p><strong>${reg.customer_name}</strong> (${reg.customer_email}) registered and paid for <strong>${reg.title}</strong> on ${dateLabel}.</p>`,
+      html: adminHtml,
     }),
   ]);
+}
+
+async function sendClassReminderEmails() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowISO = tomorrow.toISOString().slice(0,10);
+  try {
+    const { rows } = await pool.query(
+      `SELECT cr.id, cr.customer_name, cr.customer_email, cr.customer_phone,
+              c.title, c.class_date, c.class_time, c.telegram_link
+       FROM class_registrations cr
+       JOIN classes c ON c.id = cr.class_id
+       WHERE cr.status = 'paid'
+         AND cr.reminder_sent = false
+         AND c.class_date::date = $1`,
+      [tomorrowISO]
+    );
+    for (const reg of rows) {
+      const dateLabel = new Date(reg.class_date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+      const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0">
+        ${classEmailHeader()}
+        <div style="padding:32px">
+          <h2 style="margin:0 0 8px;font-size:22px">Your class is tomorrow! ⏰</h2>
+          <p style="color:#6b7280;margin:0 0 24px;line-height:1.6">Just a reminder — <strong>${reg.title}</strong> is happening tomorrow. We can't wait to see you!</p>
+          ${classEmailDetails(reg, dateLabel)}
+          ${reg.telegram_link ? telegramButton(reg.telegram_link) : ''}
+          <p style="font-size:12px;color:#9ca3af;margin-top:24px">Questions? Email creamybitsllc@gmail.com</p>
+        </div>
+      </div>`;
+      await resend.emails.send({
+        from: `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+        to: reg.customer_email,
+        subject: `Reminder: ${reg.title} is tomorrow 🎓`,
+        html,
+      });
+      await pool.query('UPDATE class_registrations SET reminder_sent=true WHERE id=$1', [reg.id]);
+      console.log(`Reminder sent to ${reg.customer_email} for ${reg.title}`);
+    }
+  } catch(e) {
+    console.error('Class reminder error:', e.message);
+  }
 }
 
 // ── Admin blocked dates ───────────────────────────────────────────────────────
@@ -1743,6 +1820,9 @@ app.get('*', (_req, res) => {
 if (require.main === module) {
   app.listen(PORT, () => console.log(`✅  CreamyBits → http://localhost:${PORT}`));
   initDB().catch(err => console.error('DB init error:', err.message));
+  // Run reminder check every hour; sends 24-hr emails to paid registrants when class is tomorrow
+  setInterval(() => sendClassReminderEmails(), 60 * 60 * 1000);
+  sendClassReminderEmails();
 }
 
 module.exports = app;
