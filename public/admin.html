@@ -1001,20 +1001,51 @@
       return;
     }
 
-    // Aggregate item quantities across all orders for this day
-    const totals = {};
+    // Parse dozen amount from a variant label e.g. "1/2 dozen" → 0.5, "4 dozens" → 4
+    function parseDozenQty(variant, qty) {
+      if (!variant) return null;
+      const lower = variant.toLowerCase();
+      const frac = lower.match(/(\d+)\/(\d+)\s*dozen/);
+      if (frac) return (parseInt(frac[1]) / parseInt(frac[2])) * qty;
+      const num = lower.match(/(\d+(?:\.\d+)?)\s*dozen/);
+      if (num) return parseFloat(num[1]) * qty;
+      return null;
+    }
+
+    // Aggregate by product name, collapsing all variants
+    const totals = {}; // name → { dozens, qty, allDozens }
     for (const o of dayOrders) {
       for (const item of o.items) {
-        const key = item.name + (item.variant ? ` (${item.variant})` : '');
-        totals[key] = (totals[key] || 0) + item.qty;
+        if (!totals[item.name]) totals[item.name] = { dozens: 0, qty: 0, allDozens: true };
+        const d = parseDozenQty(item.variant, item.qty);
+        if (d !== null) { totals[item.name].dozens += d; }
+        else            { totals[item.name].allDozens = false; }
+        totals[item.name].qty += item.qty;
       }
     }
+
     const rows = Object.entries(totals)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, qty]) => `<div class="weekend-qty-row"><span>${name}</span><span>×${qty}</span></div>`)
+      .sort((a, b) => b[1].qty - a[1].qty)
+      .map(([name, t]) => {
+        let label;
+        if (t.allDozens && t.dozens > 0) {
+          const doz = Number.isInteger(t.dozens) ? t.dozens : +t.dozens.toFixed(2);
+          const pcs = Math.round(t.dozens * 12);
+          label = `${doz} doz (${pcs} pcs)`;
+        } else {
+          label = `×${t.qty}`;
+        }
+        return `<div class="weekend-qty-row"><span>${name}</span><span>${label}</span></div>`;
+      })
       .join('');
-    const totalItems = Object.values(totals).reduce((s, q) => s + q, 0);
-    qtyEl.innerHTML = rows + `<div class="weekend-qty-row"><span>Total items</span><span>${totalItems}</span></div>`;
+
+    const totalDoz = Object.values(totals).filter(t => t.allDozens).reduce((s, t) => s + t.dozens, 0);
+    const totalPcs = Math.round(totalDoz * 12);
+    const totalQtyOnly = Object.values(totals).filter(t => !t.allDozens).reduce((s, t) => s + t.qty, 0);
+    const totalLine = totalDoz > 0
+      ? `${+totalDoz.toFixed(2)} doz (${totalPcs} pcs)${totalQtyOnly > 0 ? ' + ' + totalQtyOnly + ' units' : ''}`
+      : `${totalQtyOnly} units`;
+    qtyEl.innerHTML = rows + `<div class="weekend-qty-row"><span>Total</span><span>${totalLine}</span></div>`;
   }
 
   function renderWeekendCustomers(satOrders, sunOrders, satLabel, sunLabel, satEnded, sunEnded) {
