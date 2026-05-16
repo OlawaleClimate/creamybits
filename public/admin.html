@@ -1001,10 +1001,16 @@
       return;
     }
 
-    // Parse dozen amount from a variant label e.g. "1/2 dozen" → 0.5, "4 dozens" → 4
+    // Parse dozen amount from a variant label
+    // Handles: "One dozen", "Half dozen", "Two dozen", "1/2 dozen", "4 dozens", etc.
     function parseDozenQty(variant, qty) {
       if (!variant) return null;
       const lower = variant.toLowerCase();
+      if (!lower.includes('dozen')) return null;
+      const words = { half: 0.5, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+      for (const [word, val] of Object.entries(words)) {
+        if (lower.includes(word + ' dozen')) return val * qty;
+      }
       const frac = lower.match(/(\d+)\/(\d+)\s*dozen/);
       if (frac) return (parseInt(frac[1]) / parseInt(frac[2])) * qty;
       const num = lower.match(/(\d+(?:\.\d+)?)\s*dozen/);
