@@ -773,13 +773,13 @@
 
             <!-- Invoice Header -->
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #2a2a2a">
-              <div style="display:flex;align-items:center;gap:14px">
-                <img id="invLogoImg" src="/logo.png" alt="CreamyBits" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #C9A84C;flex-shrink:0" />
+              <div style="display:flex;align-items:center;gap:18px">
+                <img id="invLogoImg" src="/logo.png" alt="CreamyBits" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2.5px solid #C9A84C;flex-shrink:0" />
                 <div>
-                  <div style="font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:.5px">CreamyBits</div>
-                  <div style="color:#C9A84C;font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-top:3px">✦ Luxe Catering ✦</div>
-                  <div style="color:#6b7280;font-size:11px;margin-top:8px">creamybitsllc@gmail.com</div>
-                  <div style="color:#6b7280;font-size:11px">Albuquerque, NM</div>
+                  <div style="font-family:'Playfair Display',Georgia,serif;font-size:34px;font-weight:900;color:#fff;letter-spacing:.5px">CreamyBits</div>
+                  <div style="color:#C9A84C;font-size:12px;letter-spacing:.2em;text-transform:uppercase;margin-top:4px">✦ Luxe Catering ✦</div>
+                  <div style="color:#6b7280;font-size:13px;margin-top:10px">creamybitsllc@gmail.com</div>
+                  <div style="color:#6b7280;font-size:13px">Albuquerque, NM</div>
                 </div>
               </div>
               <div style="text-align:right">
@@ -795,11 +795,11 @@
 
             <!-- Line items table -->
             <div style="margin-bottom:24px">
-              <div style="display:grid;grid-template-columns:1fr 60px 90px 90px;gap:8px;padding:8px 0;border-bottom:1px solid #C9A84C;margin-bottom:6px">
-                <div style="color:#C9A84C;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em">Description</div>
-                <div style="color:#C9A84C;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-align:center">Qty</div>
-                <div style="color:#C9A84C;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-align:right">Unit Price</div>
-                <div style="color:#C9A84C;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-align:right">Total</div>
+              <div style="display:grid;grid-template-columns:1fr 60px 90px 90px;gap:8px;padding:10px 0;border-bottom:1px solid #C9A84C;margin-bottom:6px">
+                <div style="color:#C9A84C;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em">Description</div>
+                <div style="color:#C9A84C;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-align:center">Qty</div>
+                <div style="color:#C9A84C;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-align:right">Unit Price</div>
+                <div style="color:#C9A84C;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-align:right">Total</div>
               </div>
               <div id="prev-line-items"></div>
             </div>
@@ -2804,11 +2804,11 @@
     // Line items
     document.getElementById('prev-line-items').innerHTML = lineItems.length
       ? lineItems.map(li => `
-          <div style="display:grid;grid-template-columns:1fr 60px 90px 90px;gap:8px;padding:6px 0;border-bottom:1px solid #1e1e1e">
-            <div style="color:#e5e7eb">${li.name}</div>
-            <div style="color:#9ca3af;text-align:center">${li.qty}</div>
-            <div style="color:#9ca3af;text-align:right">${fmt(li.unitPrice)}</div>
-            <div style="color:#fff;text-align:right;font-weight:600">${fmt(li.total)}</div>
+          <div style="display:grid;grid-template-columns:1fr 60px 90px 90px;gap:8px;padding:8px 0;border-bottom:1px solid #1e1e1e">
+            <div style="color:#e5e7eb;font-size:15px">${li.name}</div>
+            <div style="color:#9ca3af;text-align:center;font-size:15px">${li.qty}</div>
+            <div style="color:#9ca3af;text-align:right;font-size:15px">${fmt(li.unitPrice)}</div>
+            <div style="color:#fff;text-align:right;font-weight:600;font-size:15px">${fmt(li.total)}</div>
           </div>`).join('')
       : '<div style="color:#4b5563;font-size:12px;padding:8px 0">No items added yet</div>';
 
