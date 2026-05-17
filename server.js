@@ -103,6 +103,23 @@ async function initDB() {
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS early_bird_ends DATE DEFAULT NULL;
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS registration_closes DATE DEFAULT NULL;
     ALTER TABLE classes ADD COLUMN IF NOT EXISTS show_spots BOOLEAN DEFAULT true;
+    CREATE TABLE IF NOT EXISTS luxe_invoices (
+      id             TEXT PRIMARY KEY,
+      invoice_number TEXT NOT NULL,
+      customer_name  TEXT,
+      customer_email TEXT,
+      customer_phone TEXT,
+      event_date     DATE,
+      event_type     TEXT,
+      num_guests     INTEGER,
+      line_items     JSONB NOT NULL DEFAULT '[]',
+      notes          TEXT,
+      subtotal       NUMERIC DEFAULT 0,
+      tax_rate       NUMERIC DEFAULT 0,
+      discount       NUMERIC DEFAULT 0,
+      total          NUMERIC DEFAULT 0,
+      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
     CREATE TABLE IF NOT EXISTS class_registrations (
       id                TEXT PRIMARY KEY,
       class_id          TEXT NOT NULL,
@@ -1620,6 +1637,65 @@ app.patch('/admin/luxe-items/:id', requireAdmin, async (req, res) => {
 
 app.delete('/admin/luxe-items/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM luxe_items WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Luxe invoices ─────────────────────────────────────────────────────────────
+function rowToInvoice(r) {
+  return {
+    id: r.id, invoiceNumber: r.invoice_number,
+    customerName: r.customer_name || null, customerEmail: r.customer_email || null,
+    customerPhone: r.customer_phone || null,
+    eventDate: r.event_date ? r.event_date.toISOString().slice(0,10) : null,
+    eventType: r.event_type || null, numGuests: r.num_guests || null,
+    lineItems: r.line_items || [], notes: r.notes || null,
+    subtotal: parseFloat(r.subtotal||0), taxRate: parseFloat(r.tax_rate||0),
+    discount: parseFloat(r.discount||0), total: parseFloat(r.total||0),
+    createdAt: r.created_at,
+  };
+}
+
+app.get('/admin/luxe-invoices', requireAdmin, async (_req, res) => {
+  const { rows } = await pool.query('SELECT * FROM luxe_invoices ORDER BY created_at DESC');
+  res.json(rows.map(rowToInvoice));
+});
+
+app.post('/admin/luxe-invoices', requireAdmin, async (req, res) => {
+  const { invoiceNumber, customerName, customerEmail, customerPhone, eventDate, eventType,
+          numGuests, lineItems, notes, subtotal, taxRate, discount, total } = req.body;
+  if (!invoiceNumber) return res.status(400).json({ error: 'Invoice number required.' });
+  const id = uuidv4();
+  const { rows } = await pool.query(
+    `INSERT INTO luxe_invoices (id,invoice_number,customer_name,customer_email,customer_phone,
+      event_date,event_type,num_guests,line_items,notes,subtotal,tax_rate,discount,total)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
+    [id, invoiceNumber, customerName||null, customerEmail||null, customerPhone||null,
+     eventDate||null, eventType||null, numGuests||null,
+     JSON.stringify(lineItems||[]), notes||null,
+     subtotal||0, taxRate||0, discount||0, total||0]
+  );
+  res.status(201).json(rowToInvoice(rows[0]));
+});
+
+app.patch('/admin/luxe-invoices/:id', requireAdmin, async (req, res) => {
+  const { invoiceNumber, customerName, customerEmail, customerPhone, eventDate, eventType,
+          numGuests, lineItems, notes, subtotal, taxRate, discount, total } = req.body;
+  const { rows } = await pool.query(
+    `UPDATE luxe_invoices SET invoice_number=$1,customer_name=$2,customer_email=$3,
+      customer_phone=$4,event_date=$5,event_type=$6,num_guests=$7,line_items=$8,
+      notes=$9,subtotal=$10,tax_rate=$11,discount=$12,total=$13
+     WHERE id=$14 RETURNING *`,
+    [invoiceNumber, customerName||null, customerEmail||null, customerPhone||null,
+     eventDate||null, eventType||null, numGuests||null,
+     JSON.stringify(lineItems||[]), notes||null,
+     subtotal||0, taxRate||0, discount||0, total||0, req.params.id]
+  );
+  if (!rows.length) return res.status(404).json({ error: 'Invoice not found.' });
+  res.json(rowToInvoice(rows[0]));
+});
+
+app.delete('/admin/luxe-invoices/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM luxe_invoices WHERE id=$1', [req.params.id]);
   res.json({ ok: true });
 });
 
