@@ -482,14 +482,7 @@
 
   <!-- STICKY NAV (mobile only) -->
   <nav class="snav" aria-label="Jump to section">
-    <div class="snav-track">
-      <button class="snav-pill" data-target="s1">Small Chops</button>
-      <button class="snav-pill" data-target="s2">Appetizers</button>
-      <button class="snav-pill" data-target="s3">Sides</button>
-      <button class="snav-pill" data-target="s4">Desserts</button>
-      <button class="snav-pill" data-target="s5">Mocktails</button>
-      <button class="snav-pill" data-target="s6">Breakfast</button>
-    </div>
+    <div class="snav-track" id="snavTrack"></div>
   </nav>
 
   <!-- MENU (populated by JS) -->
@@ -546,16 +539,6 @@
   }
   setTimeout(dismiss, 3400);
 
-  // ── Section metadata ─────────────────────────────
-  const SECTIONS = [
-    { id:'s1',  num:'01', title:'Small Chops &amp; Pastries', note:'Full tray' },
-    { id:'s2',  num:'02', title:'Appetizers', note:'Full tray' },
-    { id:'s3',  num:'03', title:'Salads', note:'Full tray' },
-    { id:'s4',  num:'04', title:'Desserts',  note:'Per dozen' },
-    { id:'s5',  num:'05', title:'Mocktails', note:'Per dozen' },
-    { id:'s6',  num:'06', title:'Breakfast', subSection:{ id:'s6b', title:'Breakfast Drinks' } },
-  ];
-
   function itemHtml(item) {
     const price = item.on_request
       ? `<span class="i-p req">On request</span>`
@@ -565,68 +548,71 @@
 
   async function loadMenu() {
     try {
-      const items = await fetch('/luxe-items').then(r => r.json());
+      const [sections, items] = await Promise.all([
+        fetch('/luxe-sections').then(r => r.json()),
+        fetch('/luxe-items').then(r => r.json()),
+      ]);
+
       const bySection = {};
       items.forEach(it => {
         (bySection[it.section] = bySection[it.section] || []).push(it);
       });
 
+      // Build nav pills dynamically
+      const track = document.getElementById('snavTrack');
+      track.innerHTML = sections.map(s =>
+        `<button class="snav-pill" data-target="${s.id}">${s.title}</button>`
+      ).join('');
+
+      // Build menu grid dynamically
       const grid = document.getElementById('menuGrid');
-      grid.innerHTML = SECTIONS.map(sec => {
+      grid.innerHTML = sections.map((sec, idx) => {
+        const num = String(idx + 1).padStart(2, '0');
         const secItems = (bySection[sec.id] || []).map(itemHtml).join('');
-        let subHtml = '';
-        if (sec.subSection) {
-          const subItems = (bySection[sec.subSection.id] || []).map(itemHtml).join('');
-          if (subItems) {
-            subHtml = `<div class="sub-sec"><div class="sec-title">${sec.subSection.title}</div>${subItems}</div>`;
-          }
-        }
         return `
           <section class="menu-sec" id="${sec.id}">
-            <span class="sec-num">${sec.num}</span>
+            <span class="sec-num">${num}</span>
             <div class="sec-title">${sec.title}</div>
-            ${sec.note ? `<span class="sec-note">${sec.note}</span>` : ''}
-            ${secItems}
-            ${subHtml}
+            ${secItems || '<div style="opacity:.4;font-size:.85rem;padding:.5rem 0">Coming soon</div>'}
           </section>`;
       }).join('');
+
+      // Wire up nav clicks
+      document.querySelectorAll('.snav-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const target = document.getElementById(pill.dataset.target);
+          if (!target) return;
+          const navH = document.querySelector('.snav').offsetHeight;
+          const top = target.getBoundingClientRect().top + window.scrollY - navH - 8;
+          window.scrollTo({ top, behavior: 'smooth' });
+        });
+      });
+
+      // Active pill on scroll
+      const sectionIds = sections.map(s => s.id);
+      const pills = document.querySelectorAll('.snav-pill');
+      function syncNav() {
+        const navH = document.querySelector('.snav').offsetHeight;
+        let active = sectionIds[0];
+        sectionIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.getBoundingClientRect().top - navH - 20 <= 0) active = id;
+        });
+        pills.forEach(p => {
+          const on = p.dataset.target === active;
+          p.classList.toggle('active', on);
+          if (on) p.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        });
+      }
+      window.addEventListener('scroll', syncNav, { passive: true });
+      syncNav();
+
     } catch (e) {
       document.getElementById('menuGrid').innerHTML =
         `<div style="grid-column:1/-1;text-align:center;padding:3rem 0;opacity:.5">Could not load menu. Please refresh.</div>`;
     }
   }
   loadMenu();
-
-  // ── Nav: click → smooth scroll ──────────────────
-  document.querySelectorAll('.snav-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      const target = document.getElementById(pill.dataset.target);
-      if (!target) return;
-      const navH = document.querySelector('.snav').offsetHeight;
-      const top = target.getBoundingClientRect().top + window.scrollY - navH - 8;
-      window.scrollTo({ top, behavior: 'smooth' });
-    });
-  });
-
-  // ── Nav: active pill on scroll ───────────────────
-  const sectionIds = ['s1','s2','s3','s4','s5','s6'];
-  const pills = document.querySelectorAll('.snav-pill');
-
-  function syncNav() {
-    const navH = document.querySelector('.snav').offsetHeight;
-    let active = sectionIds[0];
-    sectionIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.getBoundingClientRect().top - navH - 20 <= 0) active = id;
-    });
-    pills.forEach(p => {
-      const on = p.dataset.target === active;
-      p.classList.toggle('active', on);
-      if (on) p.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    });
-  }
-  window.addEventListener('scroll', syncNav, { passive: true });
-  syncNav();
 </script>
 </body>
 </html>

@@ -1522,7 +1522,12 @@ app.delete('/admin/orders/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-// ── Luxe menu items (public) ──────────────────────────────────────────────────
+// ── Luxe menu (public) ───────────────────────────────────────────────────────
+app.get('/luxe-sections', async (_req, res) => {
+  const { rows } = await pool.query('SELECT id,title,sort_order FROM luxe_sections WHERE archived=false ORDER BY sort_order, id');
+  res.json(rows);
+});
+
 app.get('/luxe-items', async (_req, res) => {
   const { rows } = await pool.query(
     'SELECT * FROM luxe_items WHERE active=true ORDER BY section, sort_order, name'
