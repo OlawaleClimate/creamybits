@@ -2713,6 +2713,7 @@
     document.getElementById('invoiceListView').style.display = 'none';
     document.getElementById('invoiceFormView').style.display = 'block';
     refreshPreview();
+    setTimeout(scaleInvoicePreview, 50);
   }
 
   function editInvoice(id) {
@@ -2737,6 +2738,7 @@
     document.getElementById('invoiceListView').style.display = 'none';
     document.getElementById('invoiceFormView').style.display = 'block';
     refreshPreview();
+    setTimeout(scaleInvoicePreview, 50);
   }
 
   function showInvoiceList() {
@@ -2861,7 +2863,6 @@
          </div>`
       : '';
 
-    scaleInvoicePreview();
   }
 
   function scaleInvoicePreview() {
@@ -2869,16 +2870,16 @@
     const wrapper = content && content.parentElement;
     if (!content || !wrapper) return;
     const FIXED_W = 595;
+    // Measure wrapper BEFORE touching content styles to avoid layout flash
+    const available = wrapper.getBoundingClientRect().width || wrapper.offsetWidth;
     content.style.width = FIXED_W + 'px';
-    content.style.transform = '';
     content.style.transformOrigin = 'top left';
-    const available = wrapper.offsetWidth;
     if (available > 0 && available < FIXED_W) {
       const scale = available / FIXED_W;
       content.style.transform = `scale(${scale})`;
       wrapper.style.height = (content.scrollHeight * scale) + 'px';
     } else {
-      content.style.width = '';
+      content.style.transform = '';
       wrapper.style.height = '';
     }
   }
