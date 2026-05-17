@@ -2892,13 +2892,29 @@
   function downloadInvoicePdf() {
     const num = document.getElementById('invNumber').value.trim() || 'invoice';
     const el  = document.getElementById('invoicePdfContent');
-    html2pdf().set({
-      margin: 0,
-      filename: `CreamyBits-${num}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0f0f0f' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    }).from(el).save();
+
+    // Temporarily restore full size so the capture isn't scaled
+    const prevTransform = el.style.transform;
+    const prevWidth     = el.style.width;
+    el.style.transform  = 'none';
+    el.style.width      = '595px';
+
+    // Use content's actual pixel height as the page size → always one page
+    const contentH = el.scrollHeight;
+
+    requestAnimationFrame(() => {
+      html2pdf().set({
+        margin: 0,
+        filename: `CreamyBits-${num}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0f0f0f' },
+        jsPDF: { unit: 'px', format: [595, contentH], orientation: 'portrait' },
+      }).from(el).save().then(() => {
+        el.style.transform = prevTransform;
+        el.style.width     = prevWidth;
+        scaleInvoicePreview();
+      });
+    });
   }
 
   function previewAndDownload(id) {
