@@ -6,6 +6,7 @@
   <title>Admin Dashboard – CreamyBits</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --black: #0f0f0f; --gray: #6b7280; --light: #f8f8f8; --pink: #ec4899; }
@@ -355,6 +356,7 @@
   <button class="admin-tab" id="tabCoupons" onclick="switchTab('coupons')">🎟️ Coupons</button>
   <button class="admin-tab" id="tabClasses" onclick="switchTab('classes')">🎓 Classes</button>
   <button class="admin-tab" id="tabInvoices" onclick="switchTab('invoices')">📄 Invoices</button>
+  <button class="admin-tab" id="tabQr" onclick="switchTab('qr')">📲 QR Codes</button>
 </div>
 
 <!-- ── ORDERS SECTION ─────────────────────────────────────── -->
@@ -833,6 +835,35 @@
 
     </div><!-- end grid -->
   </div><!-- end formView -->
+</div>
+
+<!-- ── QR CODES SECTION ──────────────────────────────────────── -->
+<div class="products-section" id="qrSection">
+  <div style="padding:2rem">
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;margin-bottom:.4rem">QR Codes</h2>
+    <p style="color:var(--gray);font-size:.88rem;margin-bottom:2rem">Scan or download to share your pages.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:700px">
+
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:1.75rem;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+        <div style="font-weight:800;font-size:1rem;margin-bottom:.3rem">🏠 Home Page</div>
+        <div style="font-size:.78rem;color:var(--gray);margin-bottom:1.25rem" id="qrHomeUrl"></div>
+        <div id="qrHome" style="display:inline-block;padding:12px;background:#fff;border-radius:12px;border:1px solid #e5e7eb"></div>
+        <div style="margin-top:1.25rem">
+          <button class="save-btn" onclick="downloadQr('qrHome','creamybits-home')">⬇ Download PNG</button>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:1.75rem;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+        <div style="font-weight:800;font-size:1rem;margin-bottom:.3rem">✨ Luxe Page</div>
+        <div style="font-size:.78rem;color:var(--gray);margin-bottom:1.25rem" id="qrLuxeUrl"></div>
+        <div id="qrLuxe" style="display:inline-block;padding:12px;background:#fff;border-radius:12px;border:1px solid #e5e7eb"></div>
+        <div style="margin-top:1.25rem">
+          <button class="save-btn" onclick="downloadQr('qrLuxe','creamybits-luxe')">⬇ Download PNG</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- ── COUPON MODAL ────────────────────────────────────────────── -->
@@ -1523,6 +1554,7 @@
     document.getElementById('couponsSection').classList.toggle('active', tab === 'coupons');
     document.getElementById('classesSection').classList.toggle('active', tab === 'classes');
     document.getElementById('invoicesSection').classList.toggle('active', tab === 'invoices');
+    document.getElementById('qrSection').classList.toggle('active', tab === 'qr');
     document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
     document.getElementById('tabBlocked').classList.toggle('active', tab === 'blocked');
@@ -1531,6 +1563,7 @@
     document.getElementById('tabCoupons').classList.toggle('active', tab === 'coupons');
     document.getElementById('tabClasses').classList.toggle('active', tab === 'classes');
     document.getElementById('tabInvoices').classList.toggle('active', tab === 'invoices');
+    document.getElementById('tabQr').classList.toggle('active', tab === 'qr');
     if (tab === 'products') loadAllProducts();
     if (tab === 'blocked') loadBlockedDates();
     if (tab === 'luxe') { loadLuxeItems(); loadTrash(); }
@@ -1538,6 +1571,7 @@
     if (tab === 'coupons') loadCoupons();
     if (tab === 'classes') loadClasses();
     if (tab === 'invoices') loadInvoices();
+    if (tab === 'qr') initQrCodes();
   }
 
   // ── Products management ─────────────────────────────────────────────────
@@ -2920,6 +2954,39 @@
   function previewAndDownload(id) {
     editInvoice(id);
     setTimeout(downloadInvoicePdf, 400);
+  }
+
+  // ── QR Codes ────────────────────────────────────────────────────
+  let _qrGenerated = false;
+  function initQrCodes() {
+    if (_qrGenerated) return;
+    _qrGenerated = true;
+    const base = window.location.origin;
+    const pages = [
+      { id: 'qrHome', labelId: 'qrHomeUrl', url: base + '/' },
+      { id: 'qrLuxe', labelId: 'qrLuxeUrl', url: base + '/luxe.html' },
+    ];
+    pages.forEach(({ id, labelId, url }) => {
+      document.getElementById(labelId).textContent = url;
+      document.getElementById(id).innerHTML = '';
+      new QRCode(document.getElementById(id), {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: '#0f0f0f',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    });
+  }
+
+  function downloadQr(containerId, filename) {
+    const canvas = document.querySelector('#' + containerId + ' canvas');
+    if (!canvas) return;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = filename + '.png';
+    a.click();
   }
 
   async function imgToBase64(url) {
