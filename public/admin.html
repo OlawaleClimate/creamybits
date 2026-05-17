@@ -279,6 +279,22 @@
       .prod-modal-row { grid-template-columns: 1fr; }
       .luxe-modal-overlay { padding: 0; align-items: flex-end; }
       .luxe-modal { border-radius: 20px 20px 0 0; max-height: 92vh; }
+
+      /* Invoice mobile */
+      .inv-layout { grid-template-columns: 1fr !important; }
+      .inv-preview-sticky { position: static !important; }
+      .inv-toolbar { flex-direction: column !important; align-items: stretch !important; gap: .5rem !important; }
+      .inv-toolbar-btns { flex-wrap: wrap !important; }
+      .inv-quickadd { flex-wrap: wrap !important; }
+      .inv-quickadd button { font-size: .78rem !important; }
+      .inv-line-row { flex-wrap: wrap !important; }
+      .inv-desc { flex: 1 1 100% !important; }
+      .inv-line-nums { flex: 1 !important; }
+      .inv-price { min-width: 80px !important; flex: 1 !important; }
+      .inv-2col { grid-template-columns: 1fr !important; }
+      .inv-preview-toggle { display: flex !important; }
+      .inv-preview-panel { display: none; }
+      .inv-preview-panel.open { display: block !important; }
     }
 
     @media(max-width:600px){
@@ -660,23 +676,25 @@
 
   <!-- Form + Preview view -->
   <div id="invoiceFormView" style="display:none">
-    <div class="section-toolbar" style="margin-bottom:1.25rem">
+    <div class="section-toolbar inv-toolbar" style="margin-bottom:1.25rem">
       <button class="edit-btn" onclick="showInvoiceList()">← Back to Invoices</button>
-      <div style="display:flex;gap:.5rem">
+      <div class="inv-toolbar-btns" style="display:flex;gap:.5rem">
         <button class="save-btn" onclick="saveInvoice()" id="invSaveBtn">Save Invoice</button>
         <button class="add-product-btn" style="background:#0f0f0f" onclick="downloadInvoicePdf()">⬇ Download PDF</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+    <!-- Mobile preview toggle -->
+    <button class="inv-preview-toggle" onclick="document.getElementById('invPreviewPanel').classList.toggle('open')" style="display:none;width:100%;justify-content:center;gap:.5rem;margin-bottom:1rem;padding:.65rem 1rem;background:#0f0f0f;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer">👁 Preview ▾</button>
+    <div class="inv-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
 
       <!-- LEFT: Form -->
       <div style="background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
         <p class="form-error" id="invError" style="margin:0;display:none"></p>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="inv-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
           <div>
             <label class="form-label">Invoice # <span style="color:var(--pink)">*</span></label>
-            <input class="form-input" id="invNumber" type="text" placeholder="LX-2026-001" oninput="refreshPreview()" />
+            <input class="form-input" id="invNumber" type="text" placeholder="LX-A3K7P2" oninput="refreshPreview()" />
           </div>
           <div>
             <label class="form-label">Invoice Date</label>
@@ -699,7 +717,7 @@
 
         <div style="border-top:1px solid #f0f0f0;padding-top:1rem">
           <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:.65rem">Event (all optional)</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+          <div class="inv-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
             <input class="form-input" id="invEventDate" type="date" placeholder="Event date" oninput="refreshPreview()" />
             <input class="form-input" id="invEventType" type="text" placeholder="Event type (optional)" oninput="refreshPreview()" />
           </div>
@@ -710,7 +728,7 @@
         <div style="border-top:1px solid #f0f0f0;padding-top:1rem">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
             <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray)">Line Items</div>
-            <div style="display:flex;gap:.4rem">
+            <div class="inv-quickadd" style="display:flex;gap:.4rem;flex-wrap:wrap">
               <button class="edit-btn" onclick="addLineItem('','','',1)">+ Custom</button>
               <button class="edit-btn" onclick="addLineItem('Floral Arrangement','',125,1)">+ Floral</button>
               <button class="edit-btn" onclick="addLineItem('Setup & Service Fee','',200,1)">+ Setup</button>
@@ -729,7 +747,7 @@
 
         <!-- Totals -->
         <div style="border-top:1px solid #f0f0f0;padding-top:1rem;display:flex;flex-direction:column;gap:.5rem">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+          <div class="inv-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
             <div>
               <label class="form-label">Tax %</label>
               <input class="form-input" id="invTax" type="number" min="0" max="100" step="0.1" value="0" placeholder="0" oninput="refreshPreview()" />
@@ -748,18 +766,21 @@
       </div>
 
       <!-- RIGHT: Live PDF Preview -->
-      <div style="position:sticky;top:80px">
+      <div class="inv-preview-panel inv-preview-sticky" id="invPreviewPanel" style="position:sticky;top:80px">
         <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:.65rem;text-align:center">Live Preview</div>
         <div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18)">
           <div id="invoicePdfContent" style="background:#0f0f0f;color:#fff;padding:40px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;min-height:600px">
 
             <!-- Invoice Header -->
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #2a2a2a">
-              <div>
-                <div style="font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:.5px">CreamyBits</div>
-                <div style="color:#C9A84C;font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-top:3px">✦ Luxe Catering ✦</div>
-                <div style="color:#6b7280;font-size:11px;margin-top:8px">creamybitsllc@gmail.com</div>
-                <div style="color:#6b7280;font-size:11px">Albuquerque, NM</div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <img id="invLogoImg" src="/logo.png" alt="CreamyBits" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #C9A84C;flex-shrink:0" />
+                <div>
+                  <div style="font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:.5px">CreamyBits</div>
+                  <div style="color:#C9A84C;font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-top:3px">✦ Luxe Catering ✦</div>
+                  <div style="color:#6b7280;font-size:11px;margin-top:8px">creamybitsllc@gmail.com</div>
+                  <div style="color:#6b7280;font-size:11px">Albuquerque, NM</div>
+                </div>
               </div>
               <div style="text-align:right">
                 <div style="font-family:'Playfair Display',Georgia,serif;font-size:32px;font-weight:900;color:#C9A84C;letter-spacing:.08em">INVOICE</div>
@@ -791,8 +812,15 @@
             <!-- Notes -->
             <div id="prev-notes-block"></div>
 
+            <!-- Luxe photo strip -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:32px;border-radius:10px;overflow:hidden">
+              <img id="invPhoto1" src="/luxe-images/DSC_4252.jpg" style="width:100%;height:90px;object-fit:cover;display:block" alt="" />
+              <img id="invPhoto2" src="/luxe-images/DSC_4270.jpg" style="width:100%;height:90px;object-fit:cover;display:block" alt="" />
+              <img id="invPhoto3" src="/luxe-images/DSC_4294.jpg" style="width:100%;height:90px;object-fit:cover;display:block" alt="" />
+            </div>
+
             <!-- Footer -->
-            <div style="margin-top:36px;padding-top:18px;border-top:1px solid #2a2a2a;text-align:center">
+            <div style="margin-top:20px;padding-top:18px;border-top:1px solid #2a2a2a;text-align:center">
               <div style="color:#C9A84C;font-size:10px;letter-spacing:.18em;text-transform:uppercase">CreamyBits LLC · creamybitsllc@gmail.com · Albuquerque, NM</div>
               <div style="color:#374151;font-size:10px;margin-top:4px">Thank you for choosing CreamyBits Luxe</div>
             </div>
@@ -2622,11 +2650,16 @@
     }).join('');
   }
 
+  function genInvoiceNumber() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let c = '';
+    for (let i = 0; i < 6; i++) c += chars[Math.floor(Math.random() * chars.length)];
+    return 'LX-' + c;
+  }
+
   function newInvoice() {
     _editInvoiceId = null;
-    const year = new Date().getFullYear();
-    const nextNum = String(allInvoices.length + 1).padStart(3, '0');
-    document.getElementById('invNumber').value  = `LX-${year}-${nextNum}`;
+    document.getElementById('invNumber').value  = genInvoiceNumber();
     document.getElementById('invDate').value    = new Date().toISOString().slice(0,10);
     document.getElementById('invDue').value     = '';
     document.getElementById('invCustName').value  = '';
@@ -2678,12 +2711,14 @@
     const container = document.getElementById('invLineItems');
     const row = document.createElement('div');
     row.className = 'inv-line-row';
-    row.style.cssText = 'display:grid;grid-template-columns:1fr 55px 90px auto;gap:.4rem;align-items:center';
+    row.style.cssText = 'display:flex;gap:.4rem;align-items:center';
     row.innerHTML = `
-      <input class="form-input" style="font-size:.82rem;padding:.45rem .7rem" type="text" placeholder="Description" value="${name||''}" oninput="refreshPreview()" />
-      <input class="form-input" style="font-size:.82rem;padding:.45rem .5rem;text-align:center" type="number" min="1" value="${qty||1}" oninput="refreshPreview()" />
-      <input class="form-input" style="font-size:.82rem;padding:.45rem .7rem;text-align:right" type="number" min="0" step="0.01" placeholder="0.00" value="${unitPrice||''}" oninput="refreshPreview()" />
-      <button class="del-btn" style="padding:.35rem .6rem;white-space:nowrap" onclick="this.parentElement.remove();refreshPreview()">✕</button>
+      <input class="form-input inv-desc" style="font-size:.82rem;padding:.45rem .7rem;flex:1;min-width:0" type="text" placeholder="Description" value="${name||''}" oninput="refreshPreview()" />
+      <div class="inv-line-nums" style="display:flex;gap:.4rem;flex-shrink:0">
+        <input class="form-input" style="font-size:.82rem;padding:.45rem .5rem;text-align:center;width:55px" type="number" min="1" value="${qty||1}" oninput="refreshPreview()" />
+        <input class="form-input inv-price" style="font-size:.82rem;padding:.45rem .7rem;text-align:right;width:90px" type="number" min="0" step="0.01" placeholder="0.00" value="${unitPrice||''}" oninput="refreshPreview()" />
+      </div>
+      <button class="del-btn inv-del" style="padding:.35rem .6rem;white-space:nowrap;flex-shrink:0" onclick="this.parentElement.remove();refreshPreview()">✕</button>
     `;
     container.appendChild(row);
     refreshPreview();
@@ -2845,6 +2880,34 @@
     editInvoice(id);
     setTimeout(downloadInvoicePdf, 400);
   }
+
+  async function imgToBase64(url) {
+    const res  = await fetch(url);
+    const blob = await res.blob();
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function loadInvoiceImages() {
+    const pairs = [
+      ['invLogoImg',  '/logo.png'],
+      ['invPhoto1',   '/luxe-images/DSC_4252.jpg'],
+      ['invPhoto2',   '/luxe-images/DSC_4270.jpg'],
+      ['invPhoto3',   '/luxe-images/DSC_4294.jpg'],
+    ];
+    await Promise.all(pairs.map(async ([id, url]) => {
+      try {
+        const b64 = await imgToBase64(url);
+        const el  = document.getElementById(id);
+        if (el) el.src = b64;
+      } catch(e) { /* image failed to load — leave original src */ }
+    }));
+  }
+
+  loadInvoiceImages();
 </script>
 </body>
 </html>
