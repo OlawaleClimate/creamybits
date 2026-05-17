@@ -684,7 +684,7 @@
       </div>
     </div>
     <!-- Mobile preview toggle -->
-    <button class="inv-preview-toggle" onclick="document.getElementById('invPreviewPanel').classList.toggle('open')" style="display:none;width:100%;justify-content:center;gap:.5rem;margin-bottom:1rem;padding:.65rem 1rem;background:#0f0f0f;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer">👁 Preview ▾</button>
+    <button class="inv-preview-toggle" onclick="document.getElementById('invPreviewPanel').classList.toggle('open');setTimeout(scaleInvoicePreview,50)" style="display:none;width:100%;justify-content:center;gap:.5rem;margin-bottom:1rem;padding:.65rem 1rem;background:#0f0f0f;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer">👁 Preview ▾</button>
     <div class="inv-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
 
       <!-- LEFT: Form -->
@@ -2823,7 +2823,29 @@
            <div style="color:#9ca3af;font-size:12px;line-height:1.6">${notes.replace(/\n/g,'<br>')}</div>
          </div>`
       : '';
+
+    scaleInvoicePreview();
   }
+
+  function scaleInvoicePreview() {
+    const content = document.getElementById('invoicePdfContent');
+    const wrapper = content && content.parentElement;
+    if (!content || !wrapper) return;
+    const FIXED_W = 595;
+    content.style.width = FIXED_W + 'px';
+    content.style.transform = '';
+    content.style.transformOrigin = 'top left';
+    const available = wrapper.offsetWidth;
+    if (available > 0 && available < FIXED_W) {
+      const scale = available / FIXED_W;
+      content.style.transform = `scale(${scale})`;
+      wrapper.style.height = (content.scrollHeight * scale) + 'px';
+    } else {
+      content.style.width = '';
+      wrapper.style.height = '';
+    }
+  }
+  window.addEventListener('resize', scaleInvoicePreview);
 
   async function saveInvoice() {
     const errEl = document.getElementById('invError');
