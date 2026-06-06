@@ -96,12 +96,13 @@ describe('POST /create-checkout-session', () => {
     allergies:     'None',
   };
 
+  const mockProductRow = { name: 'Meat Pies', price: '5.00', min_qty: null, max_qty: null };
+
   beforeEach(() => {
-    // products query (min/max check) → no constraints
     mockQuery
-      .mockResolvedValueOnce({ rows: [], rowCount: 0 })   // SELECT min_qty/max_qty
-      .mockResolvedValueOnce({ rows: [], rowCount: 0 })   // blocked_dates check
-      .mockResolvedValueOnce({ rows: [], rowCount: 0 });  // INSERT order
+      .mockResolvedValueOnce({ rows: [mockProductRow], rowCount: 1 })  // products (active check + price)
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })                // blocked_dates check
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 });               // INSERT order
   });
 
   test('returns Stripe URL for valid payload', async () => {
@@ -162,10 +163,10 @@ describe('POST /create-checkout-session', () => {
     mockQuery.mockReset();
     mockQuery
       .mockResolvedValueOnce({
-        rows: [{ name: 'Meat Pies', min_qty: 6, max_qty: null }],
+        rows: [{ name: 'Meat Pies', price: '5.00', min_qty: 6, max_qty: null }],
         rowCount: 1,
       })
-      .mockResolvedValue({ rows: [], rowCount: 0 }); // default fallback
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 }); // blocked_dates (won't reach)
     const res = await request(app)
       .post('/create-checkout-session')
       .send({ ...validPayload, items: [{ name: 'Meat Pies', price: 5.00, qty: 2 }] });
@@ -177,10 +178,10 @@ describe('POST /create-checkout-session', () => {
     mockQuery.mockReset();
     mockQuery
       .mockResolvedValueOnce({
-        rows: [{ name: 'Meat Pies', min_qty: 1, max_qty: 3 }],
+        rows: [{ name: 'Meat Pies', price: '5.00', min_qty: 1, max_qty: 3 }],
         rowCount: 1,
       })
-      .mockResolvedValue({ rows: [], rowCount: 0 }); // default fallback
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 }); // blocked_dates (won't reach)
     const res = await request(app)
       .post('/create-checkout-session')
       .send({ ...validPayload, items: [{ name: 'Meat Pies', price: 5.00, qty: 10 }] });
@@ -191,9 +192,8 @@ describe('POST /create-checkout-session', () => {
   test('rejects blocked pickup date', async () => {
     mockQuery.mockReset();
     mockQuery
-      .mockResolvedValueOnce({ rows: [], rowCount: 0 })               // products (no min/max)
-      .mockResolvedValueOnce({ rows: [{ id: '1' }], rowCount: 1 })   // blocked date hit
-      .mockResolvedValue({ rows: [], rowCount: 0 });                  // default fallback
+      .mockResolvedValueOnce({ rows: [mockProductRow], rowCount: 1 }) // products (active + price)
+      .mockResolvedValueOnce({ rows: [{ id: '1' }], rowCount: 1 });  // blocked date hit
     const res = await request(app)
       .post('/create-checkout-session')
       .send(validPayload);

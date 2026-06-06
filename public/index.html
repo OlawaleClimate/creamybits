@@ -960,18 +960,21 @@
       const stock  = getStock(prod, item.variant);
       const maxQty = prod?.maxQty ?? null;
       const atLimit = (stock !== null && item.qty >= stock) || (maxQty !== null && item.qty >= maxQty);
+      const unavailable = item._unavailable;
       return `
-      <div class="cart-item">
+      <div class="cart-item" style="${unavailable ? 'opacity:.6' : ''}">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           ${item.variant ? `<div class="cart-item-variant">${item.variant}</div>` : ''}
-          <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
-          ${stock !== null && item.qty >= stock ? `<div style="color:#ef4444;font-size:.75rem;margin-top:.2rem">Only ${stock} left in stock</div>` : ''}
+          <div class="cart-item-price" style="${unavailable ? 'text-decoration:line-through;color:#9ca3af' : ''}">$${(item.price * item.qty).toFixed(2)}</div>
+          ${unavailable ? `<div style="color:#ef4444;font-size:.75rem;font-weight:700;margin-top:.2rem">⚠️ No longer available — please remove</div>` : ''}
+          ${item._priceUpdated && !unavailable ? `<div style="color:#f59e0b;font-size:.75rem;margin-top:.2rem">Price updated to reflect current rate</div>` : ''}
+          ${!unavailable && stock !== null && item.qty >= stock ? `<div style="color:#ef4444;font-size:.75rem;margin-top:.2rem">Only ${stock} left in stock</div>` : ''}
         </div>
         <div class="cart-item-qty">
           <button class="qty-btn" onclick="changeQty(${idx},-1)" aria-label="Decrease quantity of ${item.name}">−</button>
-          <span class="qty-val" aria-label="Quantity: ${item.qty}">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty(${idx},1)" aria-label="Increase quantity of ${item.name}" ${atLimit ? 'disabled style="opacity:.35;cursor:not-allowed"' : ''}>+</button>
+          <span class="qty-val" aria-label="Quantity: ${item.qty}">${unavailable ? '<s>' + item.qty + '</s>' : item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${idx},1)" aria-label="Increase quantity of ${item.name}" ${atLimit || unavailable ? 'disabled style="opacity:.35;cursor:not-allowed"' : ''}>+</button>
         </div>
       </div>`;
     }).join('');
@@ -1026,6 +1029,44 @@
     }
   }
 
+  // ── Cart validation against live products ──────────────────────────────
+  async function validateCart() {
+    try {
+      const res = await fetch('/products');
+      if (!res.ok) return;
+      const live = await res.json();
+      const liveMap = new Map(live.map(p => [p.name, p]));
+      let changed = false;
+      cart.forEach(item => {
+        const prod = liveMap.get(item.name);
+        if (!prod) {
+          item._unavailable = true;
+          changed = true;
+        } else {
+          const livePrice = parseFloat(prod.price);
+          if (Math.abs(livePrice - item.price) > 0.02) {
+            item.price = livePrice;
+            item._priceUpdated = true;
+            changed = true;
+          }
+          delete item._unavailable;
+        }
+      });
+      if (changed) { renderCartItems(); updateCheckoutBtn(); }
+    } catch(e) { /* silent — server will catch on submit */ }
+  }
+
+  function updateCheckoutBtn() {
+    const hasUnavailable = cart.some(i => i._unavailable);
+    const msg = hasUnavailable ? 'Remove unavailable items to continue' : '';
+    ['checkoutBtn', 'submitOrderBtn'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.disabled = hasUnavailable;
+      btn.title = msg;
+    });
+  }
+
   // ── Cart drawer ─────────────────────────────────────────────────────────
   let _cartOpener = null;
   function openCart() {
@@ -1036,6 +1077,7 @@
     document.getElementById('cartOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
     trapFocus(drawer);
+    validateCart();
   }
   function closeCart() {
     const drawer = document.getElementById('cartDrawer');
@@ -1325,6 +1367,11 @@
 
   // ── Stripe checkout ─────────────────────────────────────────────────────
   async function submitOrder() {
+    if (cart.some(i => i._unavailable)) {
+      document.getElementById('formError').textContent = 'Your cart contains unavailable items. Please remove them before ordering.';
+      document.getElementById('formError').style.display = 'block';
+      return;
+    }
     const name      = document.getElementById('custName').value.trim();
     const email     = document.getElementById('custEmail').value.trim();
     const phone     = document.getElementById('custPhone').value.trim();
@@ -1376,7 +1423,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cart,
+          items: cart.map(({ _unavailable, _priceUpdated, ...rest }) => rest),
           customerName:  name,
           customerEmail: email,
           customerPhone: phone,

@@ -751,19 +751,26 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid cart item.' });
   }
 
-  // Validate min/max qty against DB
-  const { rows: productRows } = await pool.query('SELECT name, min_qty, max_qty FROM products WHERE active=true');
+  // Validate items against live DB: active status, price, qty bounds
+  const { rows: productRows } = await pool.query(
+    'SELECT name, price, variants, min_qty, max_qty FROM products WHERE active=true'
+  );
   const productMap = new Map(productRows.map(p => [p.name, p]));
   for (const item of items) {
     const prod = productMap.get(item.name);
-    if (prod) {
-      const min = prod.min_qty ?? 1;
-      const max = prod.max_qty ?? null;
-      if (item.qty < min)
-        return res.status(400).json({ error: `Minimum order for "${item.name}" is ${min}.` });
-      if (max !== null && item.qty > max)
-        return res.status(400).json({ error: `Maximum order for "${item.name}" is ${max}.` });
-    }
+    if (!prod)
+      return res.status(400).json({ error: `"${item.name}" is no longer available. Please remove it from your cart.` });
+    // Price check: allow small rounding diff but catch stale/tampered prices
+    const livePrice = parseFloat(prod.price);
+    const sentPrice = parseFloat(item.price);
+    if (Math.abs(livePrice - sentPrice) > 0.02)
+      return res.status(400).json({ error: `The price for "${item.name}" has changed. Please refresh the page and update your cart.` });
+    const min = prod.min_qty ?? 1;
+    const max = prod.max_qty ?? null;
+    if (item.qty < min)
+      return res.status(400).json({ error: `Minimum order for "${item.name}" is ${min}.` });
+    if (max !== null && item.qty > max)
+      return res.status(400).json({ error: `Maximum order for "${item.name}" is ${max}.` });
   }
 
   // Validate pickup date is not blocked
