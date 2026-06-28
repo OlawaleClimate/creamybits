@@ -356,6 +356,7 @@
   <button class="admin-tab" id="tabCoupons" onclick="switchTab('coupons')">🎟️ Coupons</button>
   <button class="admin-tab" id="tabClasses" onclick="switchTab('classes')">🎓 Classes</button>
   <button class="admin-tab" id="tabInvoices" onclick="switchTab('invoices')">📄 Invoices</button>
+  <button class="admin-tab" id="tabPaylink" onclick="switchTab('paylink')">🔗 Payment Link</button>
   <button class="admin-tab" id="tabQr" onclick="switchTab('qr')">📲 QR Codes</button>
 </div>
 
@@ -835,6 +836,84 @@
 
     </div><!-- end grid -->
   </div><!-- end formView -->
+</div>
+
+<!-- ── PAYMENT LINK SECTION ──────────────────────────────────── -->
+<div class="products-section" id="paylinkSection">
+  <div style="padding:1.5rem 2rem;max-width:780px">
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;margin-bottom:.3rem">Create Payment Link</h2>
+    <p style="color:var(--gray);font-size:.88rem;margin-bottom:1.5rem">Build a cart for a customer who can't (or won't) use the website. Generates a secure Stripe link you can email, text or paste anywhere. Once paid, the order shows up in 📋 Orders.</p>
+
+    <div id="paylinkFormCard" style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      <p class="form-error" id="paylinkError" style="margin:0;display:none;color:#dc2626;font-size:.85rem"></p>
+
+      <div>
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:.55rem">Customer <span style="color:#9ca3af;font-weight:600">(all optional)</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <input class="form-input" id="plName"  type="text"  placeholder="Name" />
+          <input class="form-input" id="plPhone" type="tel"   placeholder="Phone" />
+        </div>
+        <input class="form-input" id="plEmail" type="email" placeholder="Email (required to enable 'Send by email')" style="margin-top:.6rem" oninput="syncPaylinkEmailToggle()" />
+      </div>
+
+      <div style="border-top:1px solid #f0f0f0;padding-top:1rem">
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:.55rem">Pick-up <span style="color:#9ca3af;font-weight:600">(optional — leave blank for catering or generic orders)</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem">
+          <input class="form-input" id="plPickupDate" type="date" />
+          <input class="form-input" id="plPickupTime" type="text" placeholder="e.g. 10:00 AM" />
+          <select class="form-input" id="plPickupDay">
+            <option value="">— Day —</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <textarea class="form-input" id="plNotes" rows="2" placeholder="Allergies / notes (optional)" style="resize:vertical;margin-top:.6rem"></textarea>
+      </div>
+
+      <div style="border-top:1px solid #f0f0f0;padding-top:1rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;flex-wrap:wrap;gap:.4rem">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray)">Line items</div>
+          <button class="edit-btn" onclick="addPaylinkItem('','',0,1)">+ Custom item</button>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+          <select class="form-input" id="plProductPicker" style="flex:1;font-size:.82rem" onchange="syncPaylinkVariantPicker()">
+            <option value="">— Select a product —</option>
+          </select>
+          <select class="form-input" id="plVariantPicker" style="flex:1;font-size:.82rem;display:none">
+            <option value="">— Variant —</option>
+          </select>
+          <button class="edit-btn" onclick="addPaylinkFromProduct()">Add</button>
+        </div>
+        <div id="plItems" style="display:flex;flex-direction:column;gap:.5rem"></div>
+        <div style="text-align:right;font-weight:700;font-size:.95rem;margin-top:.75rem;padding-top:.75rem;border-top:1px dashed #e5e7eb">
+          Total: <span id="plTotal">$0.00</span>
+        </div>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:.6rem;font-size:.88rem;cursor:pointer;border-top:1px solid #f0f0f0;padding-top:1rem;color:#374151">
+        <input type="checkbox" id="plSendEmail" style="width:18px;height:18px;cursor:pointer" disabled />
+        <span>✉ Also send link to customer by email</span>
+      </label>
+
+      <button class="save-btn" id="plSubmitBtn" onclick="submitPaymentLink()" style="padding:.85rem 1.4rem;font-size:.92rem">Generate Payment Link</button>
+    </div>
+
+    <!-- Result panel -->
+    <div id="paylinkResult" style="display:none;margin-top:1.25rem;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:16px;padding:1.25rem">
+      <div style="font-weight:800;color:#15803d;margin-bottom:.55rem">✓ Payment link ready</div>
+      <div id="plResultEmailNote" style="font-size:.82rem;color:#15803d;margin-bottom:.85rem;display:none">📧 Email sent to <span id="plResultEmailAddr"></span></div>
+      <div style="display:flex;gap:.5rem;align-items:stretch;flex-wrap:wrap">
+        <input class="form-input" id="plResultUrl" readonly style="flex:1;min-width:240px;font-family:monospace;font-size:.82rem;background:#fff" />
+        <button class="save-btn" onclick="copyPaymentLink()" id="plCopyBtn" style="white-space:nowrap">📋 Copy</button>
+        <a id="plResultOpen" target="_blank" class="edit-btn" style="display:inline-flex;align-items:center;padding:.55rem 1rem;text-decoration:none">Open ↗</a>
+      </div>
+      <div style="margin-top:.85rem;display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="edit-btn" onclick="resetPaylinkForm()">+ New link</button>
+        <button class="edit-btn" onclick="switchTab('orders')">View in Orders →</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ── QR CODES SECTION ──────────────────────────────────────── -->
@@ -1554,6 +1633,7 @@
     document.getElementById('couponsSection').classList.toggle('active', tab === 'coupons');
     document.getElementById('classesSection').classList.toggle('active', tab === 'classes');
     document.getElementById('invoicesSection').classList.toggle('active', tab === 'invoices');
+    document.getElementById('paylinkSection').classList.toggle('active', tab === 'paylink');
     document.getElementById('qrSection').classList.toggle('active', tab === 'qr');
     document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
@@ -1563,6 +1643,7 @@
     document.getElementById('tabCoupons').classList.toggle('active', tab === 'coupons');
     document.getElementById('tabClasses').classList.toggle('active', tab === 'classes');
     document.getElementById('tabInvoices').classList.toggle('active', tab === 'invoices');
+    document.getElementById('tabPaylink').classList.toggle('active', tab === 'paylink');
     document.getElementById('tabQr').classList.toggle('active', tab === 'qr');
     if (tab === 'products') loadAllProducts();
     if (tab === 'blocked') loadBlockedDates();
@@ -1571,6 +1652,7 @@
     if (tab === 'coupons') loadCoupons();
     if (tab === 'classes') loadClasses();
     if (tab === 'invoices') loadInvoices();
+    if (tab === 'paylink') initPaylinkTab();
     if (tab === 'qr') initQrCodes();
   }
 
@@ -3020,6 +3102,187 @@
   }
 
   loadInvoiceImages();
+
+  // ── Payment Link tab ────────────────────────────────────────────
+  let _paylinkInited = false;
+  async function initPaylinkTab() {
+    if (!_paylinkInited) {
+      _paylinkInited = true;
+      resetPaylinkForm();
+    }
+    // Always refresh products in case admin changed them in another tab
+    try {
+      const res = await fetch('/products');
+      if (res.ok) {
+        const prods = await res.json();
+        const sel = document.getElementById('plProductPicker');
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">— Select a product —</option>' +
+          prods.filter(p => p.active !== false).map(p =>
+            `<option value="${p.id}">${p.name} — $${Number(p.price).toFixed(2)}</option>`
+          ).join('');
+        window._paylinkProducts = prods;
+        if (cur) sel.value = cur;
+      }
+    } catch(e) { /* network — leave dropdown */ }
+  }
+
+  function syncPaylinkVariantPicker() {
+    const sel  = document.getElementById('plProductPicker');
+    const vsel = document.getElementById('plVariantPicker');
+    const prod = (window._paylinkProducts || []).find(p => p.id === sel.value);
+    if (!prod || !Array.isArray(prod.variants) || prod.variants.length === 0) {
+      vsel.style.display = 'none';
+      vsel.innerHTML = '<option value="">— Variant —</option>';
+      return;
+    }
+    vsel.innerHTML = '<option value="">— Variant —</option>' +
+      prod.variants.map(v => `<option value="${v.label}" data-price="${v.price}">${v.label} — $${Number(v.price).toFixed(2)}</option>`).join('');
+    vsel.style.display = '';
+  }
+
+  function syncPaylinkEmailToggle() {
+    const email = document.getElementById('plEmail').value.trim();
+    const cb    = document.getElementById('plSendEmail');
+    cb.disabled = !email;
+    if (!email) cb.checked = false;
+  }
+
+  function addPaylinkItem(name, variant, price, qty) {
+    const container = document.getElementById('plItems');
+    const row = document.createElement('div');
+    row.className = 'pl-line-row';
+    row.style.cssText = 'display:flex;gap:.4rem;align-items:center;flex-wrap:wrap';
+    row.innerHTML = `
+      <input class="form-input pl-name"    style="font-size:.82rem;padding:.45rem .7rem;flex:2;min-width:140px" type="text"   placeholder="Item name"        value="${name||''}"    oninput="updatePaylinkTotal()" />
+      <input class="form-input pl-variant" style="font-size:.82rem;padding:.45rem .7rem;flex:1;min-width:90px"  type="text"   placeholder="Variant (opt)"    value="${variant||''}" />
+      <input class="form-input pl-qty"     style="font-size:.82rem;padding:.45rem .5rem;text-align:center;width:60px"  type="number" min="1"         value="${qty||1}"      oninput="updatePaylinkTotal()" />
+      <input class="form-input pl-price"   style="font-size:.82rem;padding:.45rem .7rem;text-align:right;width:90px"   type="number" min="0" step="0.01" placeholder="0.00" value="${price>0?price:''}" oninput="updatePaylinkTotal()" />
+      <button class="del-btn" style="padding:.35rem .6rem;flex-shrink:0" onclick="this.parentElement.remove();updatePaylinkTotal()">✕</button>
+    `;
+    container.appendChild(row);
+    updatePaylinkTotal();
+  }
+
+  function addPaylinkFromProduct() {
+    const sel  = document.getElementById('plProductPicker');
+    const vsel = document.getElementById('plVariantPicker');
+    if (!sel.value) return;
+    const prod = (window._paylinkProducts || []).find(p => p.id === sel.value);
+    if (!prod) return;
+    let variant = '';
+    let price   = Number(prod.price) || 0;
+    if (Array.isArray(prod.variants) && prod.variants.length > 0) {
+      if (!vsel.value) { alert('Please pick a variant for this product.'); return; }
+      const v = prod.variants.find(v => v.label === vsel.value);
+      if (v) { variant = v.label; price = Number(v.price) || price; }
+    }
+    addPaylinkItem(prod.name, variant, price, 1);
+    sel.selectedIndex = 0;
+    vsel.style.display = 'none';
+    vsel.innerHTML = '<option value="">— Variant —</option>';
+  }
+
+  function getPaylinkItems() {
+    return Array.from(document.querySelectorAll('#plItems .pl-line-row')).map(row => ({
+      name:    row.querySelector('.pl-name').value.trim(),
+      variant: row.querySelector('.pl-variant').value.trim() || undefined,
+      qty:     parseInt(row.querySelector('.pl-qty').value, 10) || 1,
+      price:   parseFloat(row.querySelector('.pl-price').value) || 0,
+    })).filter(i => i.name && i.price > 0 && i.qty >= 1);
+  }
+
+  function updatePaylinkTotal() {
+    const items = getPaylinkItems();
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById('plTotal').textContent = '$' + total.toFixed(2);
+  }
+
+  function resetPaylinkForm() {
+    ['plName','plEmail','plPhone','plPickupTime','plPickupDate','plNotes'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const day = document.getElementById('plPickupDay'); if (day) day.value = '';
+    document.getElementById('plItems').innerHTML = '';
+    document.getElementById('plSendEmail').checked = false;
+    document.getElementById('plSendEmail').disabled = true;
+    document.getElementById('paylinkResult').style.display = 'none';
+    document.getElementById('paylinkError').style.display = 'none';
+    updatePaylinkTotal();
+  }
+
+  async function submitPaymentLink() {
+    const err = document.getElementById('paylinkError');
+    err.style.display = 'none';
+    const items = getPaylinkItems();
+    if (items.length === 0) {
+      err.textContent = 'Add at least one valid line item (name, price > 0, qty ≥ 1).';
+      err.style.display = 'block';
+      return;
+    }
+    const payload = {
+      items,
+      customerName:  document.getElementById('plName').value.trim()  || undefined,
+      customerEmail: document.getElementById('plEmail').value.trim() || undefined,
+      customerPhone: document.getElementById('plPhone').value.trim() || undefined,
+      pickupDate:    document.getElementById('plPickupDate').value   || undefined,
+      pickupTime:    document.getElementById('plPickupTime').value.trim() || undefined,
+      pickupDay:     document.getElementById('plPickupDay').value    || undefined,
+      notes:         document.getElementById('plNotes').value.trim() || undefined,
+      sendEmail:     document.getElementById('plSendEmail').checked,
+    };
+
+    const btn = document.getElementById('plSubmitBtn');
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Creating link…';
+    try {
+      const res = await fetch('/admin/create-payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.redirected || res.status === 302) { location.href = '/admin-login.html'; return; }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        err.textContent = data.error || 'Could not create payment link.';
+        err.style.display = 'block';
+        return;
+      }
+      document.getElementById('plResultUrl').value  = data.url;
+      document.getElementById('plResultOpen').href  = data.url;
+      const emailNote = document.getElementById('plResultEmailNote');
+      if (data.emailed) {
+        document.getElementById('plResultEmailAddr').textContent = payload.customerEmail;
+        emailNote.style.display = 'block';
+      } else {
+        emailNote.style.display = 'none';
+      }
+      document.getElementById('paylinkResult').style.display = 'block';
+      document.getElementById('paylinkResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) {
+      err.textContent = 'Network error: ' + e.message;
+      err.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
+    }
+  }
+
+  function copyPaymentLink() {
+    const input = document.getElementById('plResultUrl');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value).then(() => {
+      const btn = document.getElementById('plCopyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 1600);
+    }).catch(() => {
+      document.execCommand('copy');
+    });
+  }
 </script>
 </body>
 </html>

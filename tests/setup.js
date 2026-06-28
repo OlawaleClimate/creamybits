@@ -31,13 +31,14 @@ jest.mock('pg', () => {
 
 // ── Mock connect-pg-simple ────────────────────────────────────────────────────
 jest.mock('connect-pg-simple', () => () => {
-  const { EventEmitter } = require('events');
-  return class PgStore extends EventEmitter {
+  const session = require('express-session');
+  const _store = new Map();
+  return class PgStore extends session.Store {
     constructor() { super(); }
-    get(sid, cb)    { cb(null, null); }
-    set(sid, s, cb) { cb && cb(); }
-    destroy(sid, cb){ cb && cb(); }
-    touch(sid, s, cb){ cb && cb(); }
+    get(sid, cb)    { cb(null, _store.get(sid) || null); }
+    set(sid, s, cb) { _store.set(sid, s); cb && cb(); }
+    destroy(sid, cb){ _store.delete(sid); cb && cb(); }
+    touch(sid, s, cb){ _store.set(sid, s); cb && cb(); }
   };
 });
 

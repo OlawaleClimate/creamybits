@@ -85,6 +85,7 @@ async function initDB() {
     );
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code TEXT DEFAULT NULL;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount NUMERIC DEFAULT NULL;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS admin_created BOOLEAN DEFAULT false;
     CREATE TABLE IF NOT EXISTS classes (
       id             TEXT PRIMARY KEY,
       title          TEXT NOT NULL,
@@ -404,8 +405,8 @@ async function saveOrder(order) {
        (id, stripe_session_id, status, pickup_status, placed_at,
         customer_name, customer_email, customer_phone,
         pickup_day, pickup_date, pickup_time, allergies, items,
-        coupon_code, discount_amount)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+        coupon_code, discount_amount, admin_created)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
     [
       order.id,
       order.stripeSessionId,
@@ -422,6 +423,7 @@ async function saveOrder(order) {
       JSON.stringify(order.items),
       order.couponCode || null,
       order.discountAmount || null,
+      !!order.adminCreated,
     ]
   );
 }
@@ -465,6 +467,7 @@ function rowToOrder(r) {
     items:                r.items,
     couponCode:           r.coupon_code || null,
     discountAmount:       r.discount_amount != null ? parseFloat(r.discount_amount) : null,
+    adminCreated:         !!r.admin_created,
   };
 }
 
@@ -627,6 +630,64 @@ async function sendLuxeBookingEmails(booking) {
   ]);
 }
 
+async function sendPaymentLinkEmail({ to, name, url, items, total, pickupDate, pickupTime, notes }) {
+  const itemRows = (items || []).map(i =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0">${i.name}${i.variant ? ` <em style="color:#6b7280;font-size:12px">(${i.variant})</em>` : ''}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center">${i.qty}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
+    </tr>`).join('');
+
+  const html = `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0">
+    <div style="background:#0f0f0f;padding:28px 32px;text-align:center">
+      <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:1px">🥧 CreamyBits</span><br>
+      <span style="color:#9ca3af;font-size:13px">African Pastries · Albuquerque, NM</span>
+    </div>
+    <div style="padding:32px">
+      <h2 style="margin:0 0 10px;font-size:22px">Hi ${name || 'there'}, your CreamyBits order is ready to pay 🧾</h2>
+      <p style="color:#6b7280;margin:0 0 18px;line-height:1.6">
+        Below is the order we put together for you. Tap the button to pay securely with Stripe — your card details never touch our servers.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #f0f0f0;font-size:14px">
+        <thead>
+          <tr style="background:#f8f8f8">
+            <th style="padding:10px 12px;text-align:left">Item</th>
+            <th style="padding:10px 12px;text-align:center">Qty</th>
+            <th style="padding:10px 12px;text-align:right">Price</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+        <tfoot>
+          <tr style="background:#f8f8f8;font-weight:700">
+            <td colspan="2" style="padding:10px 12px">Total</td>
+            <td style="padding:10px 12px;text-align:right">$${Number(total).toFixed(2)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      ${pickupDate || pickupTime ? `<p style="font-size:13px;margin:8px 0"><strong>📅 Pick-up:</strong> ${[pickupDate, pickupTime].filter(Boolean).join(' · ')}</p>` : ''}
+      ${notes ? `<p style="font-size:13px;margin:8px 0;color:#374151"><strong>📝 Notes:</strong> ${notes}</p>` : ''}
+      <div style="text-align:center;margin:28px 0">
+        <a href="${url}" style="display:inline-block;background:#0f0f0f;color:#fff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700">Pay Now →</a>
+      </div>
+      <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0">
+        Link expires in 24 hours. Questions? Reply to this email.
+      </p>
+    </div>
+    <div style="background:#f8f8f8;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">
+      © 2026 CreamyBits LLC · creamybitsllc@gmail.com
+    </div>
+  </div>`;
+
+  await resend.emails.send({
+    from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+    reply_to: 'creamybitsllc@gmail.com',
+    to,
+    subject:  `Your CreamyBits payment link – $${Number(total).toFixed(2)}`,
+    html,
+  });
+}
+
 // ── Middleware ────────────────────────────────────────────────────────────────
 // Webhook route must get raw body — register BEFORE json middleware catches it
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -700,8 +761,21 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
           await pool.query('UPDATE coupons SET uses=uses+1 WHERE code=$1', [s.metadata.couponCode])
             .catch(e => console.error('Coupon increment failed:', e.message));
         }
-        try { await sendEmails(updated); }
-        catch (e) { console.error('Email send failed:', e.message); }
+        // Admin-created orders may lack a customer email or have already received the payment link email
+        if (updated.customerEmail && !updated.adminCreated) {
+          try { await sendEmails(updated); }
+          catch (e) { console.error('Email send failed:', e.message); }
+        } else if (updated.adminCreated && process.env.ADMIN_EMAIL) {
+          // still notify admin of paid order
+          try {
+            await resend.emails.send({
+              from:    `CreamyBits Orders <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+              to:      process.env.ADMIN_EMAIL,
+              subject: `Admin-created order PAID · ${updated.customerName || 'No name'} · $${((updated.items||[]).reduce((s,i)=>s+i.price*i.qty,0)).toFixed(2)}`,
+              html:    `<p>Payment link order <strong>${updated.id.slice(0,8).toUpperCase()}</strong> just paid.</p><p>View in admin: ${BASE_URL}/admin</p>`,
+            });
+          } catch (e) { console.error('Admin notification failed:', e.message); }
+        }
       }
     }
   }
@@ -882,6 +956,97 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
     console.error('Stripe error:', err.message);
     res.status(500).json({ error: 'Unable to start checkout. Please try again.' });
   }
+});
+
+// ── Admin: create payment link ────────────────────────────────────────────────
+app.post('/admin/create-payment-link', requireAdmin, async (req, res) => {
+  const {
+    items,
+    customerName, customerEmail, customerPhone,
+    pickupDay, pickupDate, pickupTime,
+    allergies, notes,
+    sendEmail,
+  } = req.body;
+
+  if (!Array.isArray(items) || items.length === 0)
+    return res.status(400).json({ error: 'Add at least one item.' });
+
+  for (const item of items) {
+    if (typeof item.name  !== 'string' || item.name.trim() === '' ||
+        typeof item.price !== 'number' || item.price <= 0 ||
+        typeof item.qty   !== 'number' || item.qty < 1)
+      return res.status(400).json({ error: 'Every line item needs a name, a price > 0 and qty ≥ 1.' });
+  }
+
+  if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))
+    return res.status(400).json({ error: 'Customer email is not valid.' });
+
+  const orderId = uuidv4();
+  const line_items = items.map(item => ({
+    price_data: {
+      currency: 'usd',
+      product_data: {
+        name: item.name,
+        ...(item.variant ? { description: item.variant } : {}),
+      },
+      unit_amount: Math.round(item.price * 100),
+    },
+    quantity: item.qty,
+  }));
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
+  let stripeSession;
+  try {
+    stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items,
+      success_url: `${BASE_URL}/success.html?order_id=${orderId}`,
+      cancel_url:  `${BASE_URL}/cancel.html`,
+      ...(customerEmail ? { customer_email: customerEmail } : {}),
+      metadata: { orderId },
+    });
+  } catch (err) {
+    console.error('Stripe payment-link error:', err.message);
+    return res.status(500).json({ error: 'Unable to create payment link. Please try again.' });
+  }
+
+  await saveOrder({
+    id: orderId,
+    stripeSessionId: stripeSession.id,
+    status: 'pending_payment',
+    placedAt: new Date().toISOString(),
+    customerName:  customerName ? customerName.trim() : null,
+    customerEmail: customerEmail ? customerEmail.trim().toLowerCase() : null,
+    customerPhone: customerPhone ? customerPhone.trim() : null,
+    pickupDay:  pickupDay  || null,
+    pickupDate: pickupDate || null,
+    pickupTime: pickupTime || null,
+    allergies:  allergies  ? allergies.trim() : (notes ? notes.trim() : null),
+    items,
+    adminCreated: true,
+  });
+
+  let emailed = false;
+  if (sendEmail && customerEmail) {
+    try {
+      await sendPaymentLinkEmail({
+        to: customerEmail,
+        name: customerName,
+        url: stripeSession.url,
+        items,
+        total,
+        pickupDate,
+        pickupTime,
+        notes,
+      });
+      emailed = true;
+    } catch (e) {
+      console.error('Payment link email failed:', e.message);
+    }
+  }
+
+  res.json({ orderId, url: stripeSession.url, emailed });
 });
 
 // ── Admin auth routes ─────────────────────────────────────────────────────────

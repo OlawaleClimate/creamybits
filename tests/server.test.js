@@ -283,3 +283,75 @@ describe('POST /admin/products — validation (bypassing auth via mock)', () => 
     expect(res.body.error).toMatch(/invalid cart item/i);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. ADMIN PAYMENT LINKS
+// ─────────────────────────────────────────────────────────────────────────────
+describe('POST /admin/create-payment-link', () => {
+  test('redirects unauthenticated requests to admin-login', async () => {
+    const res = await request(app)
+      .post('/admin/create-payment-link')
+      .send({ items: [{ name: 'Custom', price: 25, qty: 1 }] });
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain('admin-login');
+  });
+
+  async function loginAgent() {
+    const agent = request.agent(app);
+    const loginRes = await agent
+      .post('/admin/login')
+      .send('password=testpassword')
+      .set('Content-Type', 'application/x-www-form-urlencoded');
+    expect(loginRes.status).toBe(302);
+    expect(loginRes.headers.location).toBe('/admin');
+    return agent;
+  }
+
+  test('returns a Stripe URL and orderId for a valid cart', async () => {
+    const agent = await loginAgent();
+    // The endpoint's only DB call is the INSERT in saveOrder
+    mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    const res = await agent
+      .post('/admin/create-payment-link')
+      .send({
+        items: [{ name: 'Custom Catering Tray', price: 120, qty: 1 }],
+        customerName: 'Walk-in Customer',
+        sendEmail: false,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('url');
+    expect(res.body.url).toContain('checkout.stripe.com');
+    expect(res.body).toHaveProperty('orderId');
+    expect(res.body.emailed).toBe(false);
+  });
+
+  test('rejects empty items', async () => {
+    const agent = await loginAgent();
+    const res = await agent
+      .post('/admin/create-payment-link')
+      .send({ items: [] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/at least one/i);
+  });
+
+  test('rejects invalid line item (price=0)', async () => {
+    const agent = await loginAgent();
+    const res = await agent
+      .post('/admin/create-payment-link')
+      .send({ items: [{ name: 'Bad', price: 0, qty: 1 }] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/price/i);
+  });
+
+  test('rejects malformed customer email', async () => {
+    const agent = await loginAgent();
+    const res = await agent
+      .post('/admin/create-payment-link')
+      .send({
+        items: [{ name: 'Custom', price: 25, qty: 1 }],
+        customerEmail: 'not-an-email',
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/email/i);
+  });
+});
