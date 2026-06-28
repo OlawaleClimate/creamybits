@@ -86,6 +86,9 @@ async function initDB() {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code TEXT DEFAULT NULL;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount NUMERIC DEFAULT NULL;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS admin_created BOOLEAN DEFAULT false;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_link_token TEXT;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_link_url TEXT;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_payment_link_token ON orders(payment_link_token) WHERE payment_link_token IS NOT NULL;
     CREATE TABLE IF NOT EXISTS classes (
       id             TEXT PRIMARY KEY,
       title          TEXT NOT NULL,
@@ -405,8 +408,9 @@ async function saveOrder(order) {
        (id, stripe_session_id, status, pickup_status, placed_at,
         customer_name, customer_email, customer_phone,
         pickup_day, pickup_date, pickup_time, allergies, items,
-        coupon_code, discount_amount, admin_created)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+        coupon_code, discount_amount, admin_created,
+        payment_link_token, payment_link_url)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
     [
       order.id,
       order.stripeSessionId,
@@ -424,6 +428,8 @@ async function saveOrder(order) {
       order.couponCode || null,
       order.discountAmount || null,
       !!order.adminCreated,
+      order.paymentLinkToken || null,
+      order.paymentLinkUrl || null,
     ]
   );
 }
@@ -1011,6 +1017,13 @@ app.post('/admin/create-payment-link', requireAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Unable to create payment link. Please try again.' });
   }
 
+  // Generate a short, unambiguous token (no 0/O/1/I) for the public /pay/:token URL
+  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const paymentLinkToken = Array.from({ length: 8 }, () =>
+    ALPHABET[Math.floor(Math.random() * ALPHABET.length)]
+  ).join('');
+  const shortUrl = `${BASE_URL}/pay/${paymentLinkToken}`;
+
   await saveOrder({
     id: orderId,
     stripeSessionId: stripeSession.id,
@@ -1025,6 +1038,8 @@ app.post('/admin/create-payment-link', requireAdmin, async (req, res) => {
     allergies:  allergies  ? allergies.trim() : (notes ? notes.trim() : null),
     items,
     adminCreated: true,
+    paymentLinkToken,
+    paymentLinkUrl: stripeSession.url,
   });
 
   let emailed = false;
@@ -1033,7 +1048,7 @@ app.post('/admin/create-payment-link', requireAdmin, async (req, res) => {
       await sendPaymentLinkEmail({
         to: customerEmail,
         name: customerName,
-        url: stripeSession.url,
+        url: shortUrl,
         items,
         total,
         pickupDate,
@@ -1046,7 +1061,27 @@ app.post('/admin/create-payment-link', requireAdmin, async (req, res) => {
     }
   }
 
-  res.json({ orderId, url: stripeSession.url, emailed });
+  res.json({ orderId, url: shortUrl, stripeUrl: stripeSession.url, emailed });
+});
+
+// ── Public: short payment link redirect ──────────────────────────────────────
+app.get('/pay/:token', async (req, res) => {
+  const token = (req.params.token || '').trim();
+  if (!/^[A-Z0-9]{4,16}$/.test(token)) return res.status(404).send('Link not found.');
+  try {
+    const { rows } = await pool.query(
+      'SELECT payment_link_url, status FROM orders WHERE payment_link_token=$1 LIMIT 1',
+      [token]
+    );
+    const row = rows[0];
+    if (!row || !row.payment_link_url) return res.status(404).send('Link not found.');
+    if (row.status === 'paid')      return res.redirect(`${BASE_URL}/success.html`);
+    if (row.status === 'cancelled') return res.status(410).send('This payment link has been cancelled.');
+    return res.redirect(row.payment_link_url);
+  } catch (e) {
+    console.error('Payment link lookup error:', e.message);
+    return res.status(500).send('Something went wrong.');
+  }
 });
 
 // ── Admin auth routes ─────────────────────────────────────────────────────────

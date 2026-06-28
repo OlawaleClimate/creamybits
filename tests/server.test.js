@@ -307,7 +307,7 @@ describe('POST /admin/create-payment-link', () => {
     return agent;
   }
 
-  test('returns a Stripe URL and orderId for a valid cart', async () => {
+  test('returns a short /pay/:token URL and orderId for a valid cart', async () => {
     const agent = await loginAgent();
     // The endpoint's only DB call is the INSERT in saveOrder
     mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 0 });
@@ -320,7 +320,8 @@ describe('POST /admin/create-payment-link', () => {
       });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('url');
-    expect(res.body.url).toContain('checkout.stripe.com');
+    expect(res.body.url).toMatch(/\/pay\/[A-Z0-9]{8}$/);
+    expect(res.body.stripeUrl).toContain('checkout.stripe.com');
     expect(res.body).toHaveProperty('orderId');
     expect(res.body.emailed).toBe(false);
   });
@@ -353,5 +354,38 @@ describe('POST /admin/create-payment-link', () => {
       });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/email/i);
+  });
+});
+
+describe('GET /pay/:token', () => {
+  test('redirects to the stored Stripe URL when token exists', async () => {
+    mockQuery.mockResolvedValueOnce({
+      rows: [{ payment_link_url: 'https://checkout.stripe.com/pay/cs_test_xyz', status: 'pending_payment' }],
+      rowCount: 1,
+    });
+    const res = await request(app).get('/pay/ABCD2345');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('https://checkout.stripe.com/pay/cs_test_xyz');
+  });
+
+  test('returns 404 for unknown token', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    const res = await request(app).get('/pay/ZZZZ9999');
+    expect(res.status).toBe(404);
+  });
+
+  test('rejects malformed tokens', async () => {
+    const res = await request(app).get('/pay/abc');
+    expect(res.status).toBe(404);
+  });
+
+  test('redirects already-paid links to /success.html', async () => {
+    mockQuery.mockResolvedValueOnce({
+      rows: [{ payment_link_url: 'https://checkout.stripe.com/pay/cs_test_xyz', status: 'paid' }],
+      rowCount: 1,
+    });
+    const res = await request(app).get('/pay/ABCD2345');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain('/success.html');
   });
 });
