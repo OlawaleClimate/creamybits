@@ -844,6 +844,17 @@
     <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;margin-bottom:.3rem">Create Payment Link</h2>
     <p style="color:var(--gray);font-size:.88rem;margin-bottom:1.5rem">Build a cart for a customer who can't (or won't) use the website. Generates a secure Stripe link you can email, text or paste anywhere. Once paid, the order shows up in 📋 Orders.</p>
 
+    <!-- Unpaid links list -->
+    <div id="paylinkListCard" style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.25rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.4rem">
+        <div style="font-size:.85rem;font-weight:800;color:#374151">⏳ Unpaid links <span style="color:#9ca3af;font-weight:600">(last 7 days)</span></div>
+        <button class="edit-btn" onclick="loadPaymentLinksList()" style="font-size:.78rem">↻ Refresh</button>
+      </div>
+      <div id="paylinkList" style="display:flex;flex-direction:column;gap:.6rem">
+        <div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:.75rem 0">Loading…</div>
+      </div>
+    </div>
+
     <div id="paylinkFormCard" style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
       <p class="form-error" id="paylinkError" style="margin:0;display:none;color:#dc2626;font-size:.85rem"></p>
 
@@ -3125,6 +3136,66 @@
         if (cur) sel.value = cur;
       }
     } catch(e) { /* network — leave dropdown */ }
+    loadPaymentLinksList();
+  }
+
+  async function loadPaymentLinksList() {
+    const wrap = document.getElementById('paylinkList');
+    if (!wrap) return;
+    wrap.innerHTML = '<div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:.75rem 0">Loading…</div>';
+    try {
+      const res = await fetch('/admin/payment-links');
+      if (res.redirected || res.status === 302) { location.href = '/admin-login.html'; return; }
+      const links = await res.json();
+      if (!Array.isArray(links) || links.length === 0) {
+        wrap.innerHTML = '<div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:.75rem 0">No unpaid links yet.</div>';
+        return;
+      }
+      wrap.innerHTML = links.map(l => {
+        const who = [l.customerName, l.customerEmail, l.customerPhone].filter(Boolean).join(' · ') || '—';
+        const placedAt = new Date(l.placedAt);
+        const ageMins = Math.max(1, Math.round((Date.now() - placedAt.getTime()) / 60000));
+        const ageStr  = ageMins < 60   ? `${ageMins}m ago`
+                      : ageMins < 1440 ? `${Math.round(ageMins/60)}h ago`
+                      :                  `${Math.round(ageMins/1440)}d ago`;
+        const expired = ageMins > 24 * 60; // Stripe sessions expire ~24h
+        const itemSummary = (l.items || []).map(i => `${i.qty}× ${i.name}${i.variant ? ` (${i.variant})` : ''}`).join(', ') || '—';
+        return `
+          <div style="border:1px solid #e5e7eb;border-radius:10px;padding:.7rem .9rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;${expired?'opacity:.65;background:#fafafa':''}">
+            <div style="flex:1;min-width:200px">
+              <div style="font-weight:700;font-size:.88rem;color:#0f0f0f">${who} · $${Number(l.total).toFixed(2)}</div>
+              <div style="color:#6b7280;font-size:.75rem;margin-top:.15rem">${itemSummary}</div>
+              <div style="color:#9ca3af;font-size:.72rem;margin-top:.2rem">
+                ${ageStr}${expired ? ' · <span style="color:#dc2626;font-weight:700">⚠ expired</span>' : ''}
+                ${l.pickupDate ? ` · 📅 ${l.pickupDate}${l.pickupTime ? ' ' + l.pickupTime : ''}` : ''}
+              </div>
+            </div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+              <button class="edit-btn" onclick="copyTextFlash(this, ${JSON.stringify(l.url)})" style="font-size:.78rem">📋 Copy link</button>
+              <a class="edit-btn" href="${l.url}" target="_blank" style="font-size:.78rem;text-decoration:none">Open ↗</a>
+            </div>
+          </div>`;
+      }).join('');
+    } catch (e) {
+      wrap.innerHTML = `<div style="color:#dc2626;font-size:.85rem;text-align:center;padding:.75rem 0">Could not load: ${e.message}</div>`;
+    }
+  }
+
+  function copyTextFlash(btn, text) {
+    const orig = btn.textContent;
+    const restore = () => { btn.textContent = orig; };
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied!';
+      setTimeout(restore, 1600);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); btn.textContent = '✓ Copied!'; setTimeout(restore, 1600); }
+      catch { btn.textContent = 'Copy failed'; setTimeout(restore, 1600); }
+      ta.remove();
+    });
   }
 
   function syncPaylinkVariantPicker() {
@@ -3261,6 +3332,7 @@
       }
       document.getElementById('paylinkResult').style.display = 'block';
       document.getElementById('paylinkResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      loadPaymentLinksList();
     } catch (e) {
       err.textContent = 'Network error: ' + e.message;
       err.style.display = 'block';

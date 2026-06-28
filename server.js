@@ -964,6 +964,44 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
   }
 });
 
+// ── Admin: list recent unpaid payment links ──────────────────────────────────
+app.get('/admin/payment-links', requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, customer_name, customer_email, customer_phone,
+              pickup_date, pickup_time, items, placed_at,
+              payment_link_token, status
+         FROM orders
+        WHERE admin_created = true
+          AND payment_link_token IS NOT NULL
+          AND status = 'pending_payment'
+          AND placed_at > NOW() - INTERVAL '7 days'
+        ORDER BY placed_at DESC
+        LIMIT 50`
+    );
+    res.json(rows.map(r => {
+      const items = Array.isArray(r.items) ? r.items : [];
+      const total = items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 0), 0);
+      return {
+        id: r.id,
+        customerName:  r.customer_name,
+        customerEmail: r.customer_email,
+        customerPhone: r.customer_phone,
+        pickupDate:    r.pickup_date,
+        pickupTime:    r.pickup_time,
+        items,
+        total,
+        placedAt:      r.placed_at,
+        token:         r.payment_link_token,
+        url:           `${BASE_URL}/pay/${r.payment_link_token}`,
+      };
+    }));
+  } catch (e) {
+    console.error('List payment links error:', e.message);
+    res.status(500).json({ error: 'Failed to load payment links.' });
+  }
+});
+
 // ── Admin: create payment link ────────────────────────────────────────────────
 app.post('/admin/create-payment-link', requireAdmin, async (req, res) => {
   const {
