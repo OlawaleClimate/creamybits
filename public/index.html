@@ -1043,7 +1043,11 @@
           item._unavailable = true;
           changed = true;
         } else {
-          const livePrice = parseFloat(prod.price);
+          let livePrice = parseFloat(prod.price);
+          if (item.variant && Array.isArray(prod.variants)) {
+            const v = prod.variants.find(v => v.label === item.variant);
+            if (v) livePrice = parseFloat(v.price);
+          }
           if (Math.abs(livePrice - item.price) > 0.02) {
             item.price = livePrice;
             item._priceUpdated = true;

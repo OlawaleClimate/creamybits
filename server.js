@@ -760,8 +760,12 @@ app.post('/create-checkout-session', checkoutLimiter, async (req, res) => {
     const prod = productMap.get(item.name);
     if (!prod)
       return res.status(400).json({ error: `"${item.name}" is no longer available. Please remove it from your cart.` });
-    // Price check: allow small rounding diff but catch stale/tampered prices
-    const livePrice = parseFloat(prod.price);
+    // Resolve variant price if applicable, else fall back to base price
+    let livePrice = parseFloat(prod.price);
+    if (item.variant && Array.isArray(prod.variants)) {
+      const v = prod.variants.find(v => v.label === item.variant);
+      if (v) livePrice = parseFloat(v.price);
+    }
     const sentPrice = parseFloat(item.price);
     if (Math.abs(livePrice - sentPrice) > 0.02)
       return res.status(400).json({ error: `The price for "${item.name}" has changed. Please refresh the page and update your cart.` });
