@@ -155,8 +155,8 @@
       gap: 5rem;
       align-items: center;
       opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 1s ease-out .2s, transform 1s ease-out .2s;
+      transform: translateY(20px);
+      transition: opacity .45s ease-out, transform .45s ease-out;
     }
     .tier.in-view .tier-inner {
       opacity: 1;
@@ -1002,10 +1002,14 @@
   function scrollToTier(id) {
     const el = document.getElementById(id);
     if (!el) return;
+    // Reveal target immediately so content is visible by the time the scroll lands.
+    el.classList.add('in-view');
+    // Also reflect the active state on the nav right away (don't wait for the observer).
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+
     const isMobile = window.matchMedia('(max-width: 880px)').matches;
     const navH = document.querySelector('.nav')?.offsetHeight || 0;
     if (isMobile) {
-      // Body scrolls; subtract nav height so the section title isn't hidden under the fixed nav.
       const top = el.getBoundingClientRect().top + window.scrollY - navH - 8;
       window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
     } else {
