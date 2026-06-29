@@ -2056,10 +2056,12 @@ app.post('/luxe-package-request', express.json(), async (req, res) => {
     silver: 'Silver · Classic Celebration',
     gold:   'Gold · Signature Event',
   })[tier] || tier;
-  const addonsList = Array.isArray(addons) && addons.length
-    ? addons.map(a => `<li>${a}</li>`).join('')
+  const addonsArr  = Array.isArray(addons) ? addons : [];
+  const addonsList = addonsArr.length
+    ? addonsArr.map(a => `<li>${a}</li>`).join('')
     : '<li><em>None selected</em></li>';
-  const html = `
+
+  const adminHtml = `
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
       <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:2rem;border-radius:12px 12px 0 0;text-align:center">
         <h1 style="color:#f0d080;font-size:1.4rem;margin:0">✨ Luxe Package Request</h1>
@@ -2076,14 +2078,65 @@ app.post('/luxe-package-request', express.json(), async (req, res) => {
       </div>
       <p style="text-align:center;color:#9ca3af;font-size:.78rem;margin-top:1rem">CreamyBits LLC · Albuquerque, NM</p>
     </div>`;
+
+  const customerHtml = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
+      <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:2.5rem 2rem;border-radius:12px 12px 0 0;text-align:center">
+        <h1 style="color:#f0d080;font-size:1.6rem;margin:0 0 .5rem;font-weight:600">Thank you, ${name}!</h1>
+        <p style="color:#e5dcc8;font-size:.95rem;margin:0;font-style:italic">We received your CreamyBits Luxe package request.</p>
+      </div>
+      <div style="background:#fff;border:1px solid #e5dcc8;border-top:none;border-radius:0 0 12px 12px;padding:2rem">
+        <p style="font-size:.95rem;line-height:1.6;margin:0 0 1.2rem">
+          Our team will reach out to you within <strong>24 hours</strong> to confirm details, walk through the menu,
+          and finalize pricing for your event.
+        </p>
+
+        <div style="background:#fdfaf3;border-left:3px solid #c9a84c;padding:1rem 1.2rem;border-radius:0 6px 6px 0;margin-bottom:1.4rem">
+          <div style="font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#9a7a2e;font-weight:700;margin-bottom:.6rem">Your Request</div>
+          <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+            <tr><td style="padding:.3rem 0;color:#6b7280;width:90px">Tier</td><td style="padding:.3rem 0"><strong>${tierLabel}</strong></td></tr>
+            <tr><td style="padding:.3rem 0;color:#6b7280;vertical-align:top">Add-ons</td><td style="padding:.3rem 0">${addonsArr.length ? addonsArr.map(a => `• ${a}`).join('<br>') : '<em style="color:#9ca3af">None selected</em>'}</td></tr>
+            ${notes ? `<tr><td style="padding:.3rem 0;color:#6b7280;vertical-align:top">Notes</td><td style="padding:.3rem 0">${notes}</td></tr>` : ''}
+          </table>
+        </div>
+
+        <p style="font-size:.9rem;line-height:1.6;color:#4b5563;margin:0 0 1rem">
+          If you'd like to update any details in the meantime, just reply to this email.
+        </p>
+
+        <p style="font-size:.9rem;line-height:1.6;color:#4b5563;margin:0">
+          Warmly,<br>
+          <strong style="color:#1a1a1a">The CreamyBits Luxe Team</strong>
+        </p>
+      </div>
+      <p style="text-align:center;color:#9ca3af;font-size:.78rem;margin-top:1rem">CreamyBits LLC · Albuquerque, NM · creamybits.com</p>
+    </div>`;
+
   try {
-    await resend.emails.send({
-      from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
-      to:       process.env.ADMIN_EMAIL,
-      reply_to: email,
-      subject:  `Luxe Package Request – ${name} · ${tierLabel}`,
-      html,
-    });
+    // Admin notification + customer confirmation in parallel; customer failure shouldn't fail the request.
+    const [adminResult, customerResult] = await Promise.allSettled([
+      resend.emails.send({
+        from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+        to:       process.env.ADMIN_EMAIL,
+        reply_to: email,
+        subject:  `Luxe Package Request – ${name} · ${tierLabel}`,
+        html:     adminHtml,
+      }),
+      resend.emails.send({
+        from:     `CreamyBits Luxe <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+        to:       email,
+        reply_to: process.env.ADMIN_EMAIL,
+        subject:  `Thank you for your CreamyBits Luxe package request`,
+        html:     customerHtml,
+      }),
+    ]);
+    if (adminResult.status === 'rejected') {
+      console.error('Admin notification failed:', adminResult.reason?.message);
+      return res.status(500).json({ error: 'Failed to send request.' });
+    }
+    if (customerResult.status === 'rejected') {
+      console.error('Customer confirmation failed:', customerResult.reason?.message);
+    }
     res.json({ ok: true });
   } catch (err) {
     console.error('Luxe package request error:', err.message);
