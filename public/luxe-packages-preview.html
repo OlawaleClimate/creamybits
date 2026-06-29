@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CreamyBits Luxe — Catering Packages 2026</title>
+<style>
+  @page { size: letter portrait; margin: 0; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #1a1a1a;
+    color: #f5f5f5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body { padding: 24px 0; }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    margin: 0 auto 24px;
+    background: #0e0e0e;
+    color: #f5f5f5;
+    padding: 0.6in 0.7in;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+      width: 100%;
+      height: 100vh;
+    }
+    .page:last-child { page-break-after: auto; }
+    .no-print { display: none !important; }
+  }
+
+  /* ─── Cover ─────────────────────────────────────────── */
+  .cover {
+    background:
+      radial-gradient(ellipse at top, rgba(201,168,76,0.15), transparent 60%),
+      linear-gradient(180deg, #0e0e0e 0%, #1a1a1a 100%);
+    text-align: center;
+    justify-content: space-between;
+  }
+  .cover-top { padding-top: 1.2in; }
+  .cover-brand {
+    font-size: 14px;
+    letter-spacing: 0.4em;
+    color: #C9A84C;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cover-title {
+    font-size: 64px;
+    font-weight: 200;
+    letter-spacing: 0.05em;
+    line-height: 1.05;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+  .cover-title .gold { color: #C9A84C; font-style: italic; font-weight: 300; }
+  .cover-subtitle {
+    font-size: 16px;
+    color: #999;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .cover-line {
+    width: 80px; height: 1px;
+    background: #C9A84C;
+    margin: 0 auto;
+  }
+  .cover-tagline {
+    font-size: 20px;
+    color: #ccc;
+    font-style: italic;
+    font-weight: 300;
+    margin-top: 36px;
+    padding: 0 1in;
+    line-height: 1.5;
+  }
+  .cover-footer {
+    color: #666;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding-bottom: 0.4in;
+  }
+  .cover-year {
+    font-size: 32px;
+    color: #C9A84C;
+    font-weight: 200;
+    letter-spacing: 0.3em;
+    margin-bottom: 8px;
+  }
+
+  /* ─── Tier pages ────────────────────────────────────── */
+  .tier-page {
+    background: #0e0e0e;
+  }
+  .tier-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 28px;
+  }
+  .tier-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .badge-bronze   { background: #B87333; color: #1a1a1a; }
+  .badge-silver   { background: #C0C0C0; color: #1a1a1a; }
+  .badge-gold     { background: #C9A84C; color: #1a1a1a; }
+  .badge-diamond  {
+    background: linear-gradient(135deg, #B9F2FF 0%, #E0FFFF 100%);
+    color: #1a1a1a;
+  }
+
+  .tier-name {
+    font-size: 38px;
+    font-weight: 200;
+    letter-spacing: 0.02em;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .tier-tagline {
+    font-size: 14px;
+    color: #aaa;
+    font-style: italic;
+    line-height: 1.5;
+    max-width: 5in;
+  }
+  .tier-price-block { text-align: right; min-width: 2.2in; }
+  .tier-price {
+    font-size: 44px;
+    font-weight: 200;
+    color: #C9A84C;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .tier-price-from {
+    font-size: 13px;
+    color: #999;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .tier-guests {
+    font-size: 12px;
+    color: #999;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* ─── Multi-pricing strip (Bronze tiered pricing) ───── */
+  .price-tiers {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .price-tile {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 6px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .price-tile-guests {
+    font-size: 11px;
+    color: #C9A84C;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .price-tile-amount {
+    font-size: 28px;
+    color: #fff;
+    font-weight: 200;
+    letter-spacing: 0.02em;
+  }
+  .price-tile-per {
+    font-size: 10px;
+    color: #888;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .tier-body { flex: 1; }
+
+  .section-group { margin-bottom: 20px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #C9A84C;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .item-list {
+    list-style: none;
+    padding: 0;
+  }
+  .item-list li {
+    padding: 5px 0 5px 18px;
+    font-size: 13px;
+    color: #ddd;
+    position: relative;
+    line-height: 1.5;
+  }
+  .item-list li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    color: #C9A84C;
+    font-size: 8px;
+  }
+  .item-list li strong { color: #fff; font-weight: 600; }
+  .item-list .note { color: #999; font-size: 12px; font-style: italic; }
+
+  .tier-footer {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cta-box {
+    background: #C9A84C;
+    color: #1a1a1a;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .cta-box .cta-amount {
+    display: block;
+    font-size: 18px;
+    font-weight: 300;
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+    text-transform: none;
+  }
+  .tier-num {
+    font-family: 'Times New Roman', serif;
+    font-size: 90px;
+    color: rgba(201,168,76,0.08);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  /* ─── How it works ─────────────────────────────────── */
+  .how-page {
+    background:
+      radial-gradient(ellipse at bottom, rgba(201,168,76,0.1), transparent 60%),
+      #0e0e0e;
+  }
+  .how-title {
+    font-size: 14px;
+    color: #C9A84C;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .how-heading {
+    font-size: 42px;
+    font-weight: 200;
+    text-align: center;
+    margin-bottom: 8px;
+    line-height: 1.15;
+  }
+  .how-heading .gold { color: #C9A84C; font-style: italic; }
+  .how-sub {
+    text-align: center;
+    font-size: 14px;
+    color: #aaa;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 28px;
+    margin-bottom: 50px;
+  }
+  .step {
+    text-align: center;
+    padding: 24px 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 6px;
+  }
+  .step-num {
+    font-size: 36px;
+    font-weight: 200;
+    color: #C9A84C;
+    font-family: 'Times New Roman', serif;
+    margin-bottom: 10px;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .step-desc {
+    font-size: 12px;
+    color: #bbb;
+    line-height: 1.55;
+  }
+
+  .addon-box {
+    background: rgba(201,168,76,0.06);
+    border-left: 3px solid #C9A84C;
+    padding: 18px 22px;
+    margin-bottom: 36px;
+    border-radius: 0 4px 4px 0;
+  }
+  .addon-box h4 {
+    color: #C9A84C;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .addon-box p {
+    color: #ddd;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .contact {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    line-height: 2;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .contact strong { color: #C9A84C; letter-spacing: 0.15em; }
+
+  /* ─── Print-only helpers ────────────────────────────── */
+  .toolbar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #C9A84C;
+    color: #1a1a1a;
+    padding: 14px 22px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    z-index: 1000;
+  }
+  .toolbar:hover { background: #d4b35a; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ PAGE 1 — COVER ═══════════════ -->
+<section class="page cover">
+  <div class="cover-top">
+    <div class="cover-brand">CreamyBits Luxe</div>
+    <h1 class="cover-title">Catering<br><span class="gold">Packages</span></h1>
+    <div class="cover-subtitle">Curated for every gathering</div>
+    <div class="cover-line"></div>
+    <p class="cover-tagline">
+      From intimate celebrations to grand affairs &mdash; three tiers, each crafted around authentic Nigerian flavor and curated service.
+    </p>
+  </div>
+  <div class="cover-footer">
+    <div class="cover-year">2026</div>
+    <div>Bronze · Silver · Gold</div>
+  </div>
+</section>
+
+<!-- ═══════════════ PAGE 2 — BRONZE ═══════════════ -->
+<section class="page tier-page">
+  <div class="tier-header">
+    <div>
+      <span class="tier-badge badge-bronze">Bronze · Tier 01</span>
+      <h2 class="tier-name">Intimate Gathering</h2>
+      <p class="tier-tagline">Light bites and sweet finishes &mdash; perfect for birthdays, bridal showers, and small get-togethers where a full meal isn't expected.</p>
+    </div>
+    <div class="tier-price-block">
+      <div class="tier-price-from">Starting from</div>
+      <div class="tier-price">$1,200</div>
+      <div class="tier-guests">3 Sizes Available</div>
+    </div>
+  </div>
+
+  <div class="tier-body">
+    <div class="price-tiers">
+      <div class="price-tile">
+        <div class="price-tile-guests">30 Guests</div>
+        <div class="price-tile-amount">$1,200</div>
+        <div class="price-tile-per">$40 / guest</div>
+      </div>
+      <div class="price-tile">
+        <div class="price-tile-guests">50 Guests</div>
+        <div class="price-tile-amount">$1,800</div>
+        <div class="price-tile-per">$36 / guest</div>
+      </div>
+      <div class="price-tile">
+        <div class="price-tile-guests">100 Guests</div>
+        <div class="price-tile-amount">$3,200</div>
+        <div class="price-tile-per">$32 / guest</div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Small Chops Platter &middot; scales to guest count</div>
+      <ul class="item-list">
+        <li><strong>Puff Puff</strong></li>
+        <li><strong>Samosa</strong></li>
+        <li><strong>Spring Rolls</strong></li>
+        <li><strong>Meat Pies</strong></li>
+        <li><strong>Chin Chin</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Sweet Finish</div>
+      <ul class="item-list">
+        <li><strong>Dessert Cups</strong> &mdash; 2 dozen <span class="note">(mix of Red Velvet, Chocolate, Vanilla &amp; Cream)</span></li>
+        <li><strong>Mocktail Bar</strong> &mdash; 2 dozen <span class="note">(Chapman + Virgin Mojito)</span></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Service &middot; Drop off after setup</div>
+      <ul class="item-list">
+        <li>Disposable platters &amp; branded napkins</li>
+        <li><strong>Transportation</strong> included</li>
+        <li><strong>Table cloth</strong> &amp; <strong>food risers</strong></li>
+        <li><strong>Lighting</strong> (warmer)</li>
+        <li><strong>Floral arrangement</strong></li>
+        <li><strong>Dry ice</strong> <span class="note">(available at extra cost)</span></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Damages &middot; refundable</div>
+      <ul class="item-list">
+        <li><strong>$200 refundable deposit</strong> <span class="note">(returned after event if equipment is undamaged)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tier-footer">
+    <div class="tier-num">01</div>
+    <div class="cta-box">
+      Book Consultation
+      <span class="cta-amount">$40 deposit</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PAGE 3 — SILVER ═══════════════ -->
+<section class="page tier-page">
+  <div class="tier-header">
+    <div>
+      <span class="tier-badge badge-silver">Silver · Tier 02</span>
+      <h2 class="tier-name">Classic Celebration</h2>
+      <p class="tier-tagline">The first tier with mains &mdash; a proper Nigerian party plate. Jollof, fried rice, protein, small chops, and dessert.</p>
+    </div>
+    <div class="tier-price-block">
+      <div class="tier-price">$3,200</div>
+      <div class="tier-guests">40 &ndash; 49 Guests</div>
+    </div>
+  </div>
+
+  <div class="tier-body">
+    <div class="section-group">
+      <div class="section-label">Mains &middot; chafing trays, hot</div>
+      <ul class="item-list">
+        <li><strong>Party Jollof Rice</strong> &mdash; 1 large tray</li>
+        <li><strong>Nigerian Fried Rice</strong> &mdash; 1 large tray</li>
+        <li><strong>Protein &mdash; choose any two:</strong>
+          <span class="note">Peppered Fried Fish &middot; Peppered Turkey &middot; Stewed Chicken</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Side &middot; choose any one</div>
+      <ul class="item-list">
+        <li><strong>Fried Plantain</strong></li>
+        <li><strong>Nigerian Salad</strong></li>
+        <li><strong>Moin Moin</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Small Chops Platter</div>
+      <ul class="item-list">
+        <li><strong>Puff Puff</strong></li>
+        <li><strong>Samosa</strong></li>
+        <li><strong>Spring Rolls</strong></li>
+        <li><strong>Meat Pies</strong></li>
+        <li><strong>Chin Chin</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Dessert &amp; Drinks</div>
+      <ul class="item-list">
+        <li><strong>Dessert Cups</strong> &mdash; 3 dozen</li>
+        <li><strong>Mocktail Bar</strong> &mdash; 3 dozen <span class="note">(Chapman, Hurricane, Strawberry)</span></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Service &middot; Drop off after setup</div>
+      <ul class="item-list">
+        <li>Chafing trays + warmers, serving utensils</li>
+        <li>Disposable platters &amp; branded napkins</li>
+        <li><strong>Transportation</strong> included</li>
+        <li><strong>Table cloth</strong> &amp; <strong>food risers</strong></li>
+        <li><strong>Lighting</strong> (warmer)</li>
+        <li><strong>Floral arrangement</strong></li>
+        <li><strong>Dry ice</strong> <span class="note">(available at extra cost)</span></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Damages &middot; refundable</div>
+      <ul class="item-list">
+        <li><strong>$200 refundable deposit</strong> <span class="note">(returned after event if equipment is undamaged)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tier-footer">
+    <div class="tier-num">02</div>
+    <div class="cta-box">
+      Book Consultation
+      <span class="cta-amount">$40 deposit</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PAGE 4 — GOLD ═══════════════ -->
+<section class="page tier-page">
+  <div class="tier-header">
+    <div>
+      <span class="tier-badge badge-gold">Gold · Tier 03</span>
+      <h2 class="tier-name">Signature Event</h2>
+      <p class="tier-tagline">Full Nigerian spread with two proteins and Efo Riro. Built for weddings, milestone birthdays, and corporate launches.</p>
+    </div>
+    <div class="tier-price-block">
+      <div class="tier-price">$6,000</div>
+      <div class="tier-guests">50 &ndash; 75 Guests</div>
+    </div>
+  </div>
+
+  <div class="tier-body">
+    <div class="section-group">
+      <div class="section-label">Mains &middot; choose any three</div>
+      <ul class="item-list">
+        <li><strong>Party Jollof Rice</strong></li>
+        <li><strong>Nigerian Fried Rice</strong></li>
+        <li><strong>Coconut Rice</strong></li>
+        <li><strong>White Rice &amp; Ayamase Sauce</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Protein &middot; choose any three</div>
+      <ul class="item-list">
+        <li><strong>Stewed Beef</strong></li>
+        <li><strong>Peppered Turkey</strong></li>
+        <li><strong>Peppered Chicken</strong></li>
+        <li><strong>Fried Peppered Fish</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Sides &middot; choose any two</div>
+      <ul class="item-list">
+        <li><strong>Fried Plantain</strong></li>
+        <li><strong>Nigerian Salad</strong></li>
+        <li><strong>Moin Moin</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Premium Small Chops Platter</div>
+      <ul class="item-list">
+        <li><strong>Puff Puff</strong></li>
+        <li><strong>Samosa</strong></li>
+        <li><strong>Spring Rolls</strong></li>
+        <li><strong>Meat Pies</strong></li>
+        <li><strong>Chicken Pies</strong></li>
+        <li><strong>Shawarma Bites</strong></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Dessert &amp; Drinks</div>
+      <ul class="item-list">
+        <li><strong>Dessert Cups</strong> &mdash; 5 dozen <span class="note">(full mix incl. Lotus Biscoff &amp; Oreo Cheesecake)</span></li>
+        <li><strong>Mocktail Bar</strong> &mdash; 5 dozen <span class="note">(Chapman, Hurricane, Piña Colada, Strawberry)</span></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Service &middot; Drop off after setup</div>
+      <ul class="item-list">
+        <li>Full chafing setup, warmers &amp; serving utensils</li>
+        <li>Disposable platters &amp; branded napkins</li>
+        <li><strong>Transportation</strong> included</li>
+        <li><strong>Table cloth</strong> &amp; <strong>food risers</strong></li>
+        <li><strong>Lighting</strong> (warmer)</li>
+        <li><strong>Floral arrangement</strong></li>
+        <li><strong>Dry ice</strong> <span class="note">(available at extra cost)</span></li>
+      </ul>
+    </div>
+
+    <div class="section-group">
+      <div class="section-label">Damages &middot; refundable</div>
+      <ul class="item-list">
+        <li><strong>$200 refundable deposit</strong> <span class="note">(returned after event if equipment is undamaged)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tier-footer">
+    <div class="tier-num">03</div>
+    <div class="cta-box">
+      Book Consultation
+      <span class="cta-amount">$40 deposit</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PAGE 5 — HOW IT WORKS ═══════════════ -->
+<section class="page how-page">
+  <div class="how-title">How It Works</div>
+  <h2 class="how-heading">Three simple <span class="gold">steps</span></h2>
+  <p class="how-sub">From package selection to event day &mdash; we handle the rest.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">I</div>
+      <div class="step-title">Book Consultation</div>
+      <div class="step-desc">Reserve your $40 consultation. We'll walk through your menu, guest count, and any custom requests.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">II</div>
+      <div class="step-title">Pick a Tier</div>
+      <div class="step-desc">Browse the three packages and choose the one closest to your event size and vision &mdash; together during the consultation.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">III</div>
+      <div class="step-title">We Tailor &amp; Invoice</div>
+      <div class="step-desc">After consultation, we send a custom invoice reflecting your final package + any add-ons. Pay securely online.</div>
+    </div>
+  </div>
+
+  <div class="addon-box">
+    <h4>Add-ons available</h4>
+    <p>Every tier can be customized. Add extra trays, premium proteins, full mocktail bars, additional servers, or anything from our à-la-carte Luxe menu. Final pricing is confirmed during consultation.</p>
+  </div>
+
+  <div class="contact">
+    <strong>CreamyBits Luxe</strong> &middot; Catering for the moments that matter<br>
+    creamybits.com &middot; hello@creamybits.com
+  </div>
+</section>
+
+<button class="toolbar no-print" onclick="window.print()">⌘P · Save as PDF</button>
+
+</body>
+</html>

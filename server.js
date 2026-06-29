@@ -1790,15 +1790,25 @@ app.delete('/admin/orders/:id', requireAdmin, async (req, res) => {
 
 // ── Luxe menu (public) ───────────────────────────────────────────────────────
 app.get('/luxe-sections', async (_req, res) => {
-  const { rows } = await pool.query('SELECT id,title,sort_order FROM luxe_sections WHERE archived=false ORDER BY sort_order, id');
-  res.json(rows);
+  try {
+    const { rows } = await pool.query('SELECT id,title,sort_order FROM luxe_sections WHERE archived=false ORDER BY sort_order, id');
+    res.json(rows);
+  } catch (e) {
+    console.error('GET /luxe-sections error:', e.message);
+    res.status(500).json({ error: 'Failed to load sections.' });
+  }
 });
 
 app.get('/luxe-items', async (_req, res) => {
-  const { rows } = await pool.query(
-    'SELECT * FROM luxe_items WHERE active=true ORDER BY section, sort_order, name'
-  );
-  res.json(rows);
+  try {
+    const { rows } = await pool.query(
+      'SELECT * FROM luxe_items WHERE active=true ORDER BY section, sort_order, name'
+    );
+    res.json(rows);
+  } catch (e) {
+    console.error('GET /luxe-items error:', e.message);
+    res.status(500).json({ error: 'Failed to load items.' });
+  }
 });
 
 // ── Luxe sections (admin) ────────────────────────────────────────────────────
@@ -2030,6 +2040,55 @@ app.delete('/admin/deals/:id', requireAdmin, async (req, res) => {
 
 app.get('/luxe-menu', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe-menu.html'));
+});
+
+app.get('/luxe-packages', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'luxe-packages.html'));
+});
+
+app.post('/luxe-package-request', express.json(), async (req, res) => {
+  const { name, email, phone, tier, addons, notes } = req.body;
+  if (!name || !email || !phone || !tier) {
+    return res.status(400).json({ error: 'Name, email, phone, and tier are required.' });
+  }
+  const tierLabel = ({
+    bronze: 'Bronze · Intimate Gathering',
+    silver: 'Silver · Classic Celebration',
+    gold:   'Gold · Signature Event',
+  })[tier] || tier;
+  const addonsList = Array.isArray(addons) && addons.length
+    ? addons.map(a => `<li>${a}</li>`).join('')
+    : '<li><em>None selected</em></li>';
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
+      <div style="background:linear-gradient(135deg,#1a1209,#2e1f0a);padding:2rem;border-radius:12px 12px 0 0;text-align:center">
+        <h1 style="color:#f0d080;font-size:1.4rem;margin:0">✨ Luxe Package Request</h1>
+      </div>
+      <div style="background:#fff;border:1px solid #e5dcc8;border-top:none;border-radius:0 0 12px 12px;padding:2rem">
+        <table style="width:100%;border-collapse:collapse;font-size:.93rem">
+          <tr><td style="padding:.5rem .75rem;font-weight:700;width:160px;color:#6b7280">Name</td><td style="padding:.5rem .75rem">${name}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Email</td><td style="padding:.5rem .75rem"><a href="mailto:${email}">${email}</a></td></tr>
+          <tr><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Phone</td><td style="padding:.5rem .75rem">${phone}</td></tr>
+          <tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280">Tier</td><td style="padding:.5rem .75rem"><strong>${tierLabel}</strong></td></tr>
+          <tr><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280;vertical-align:top">Add-ons</td><td style="padding:.5rem .75rem"><ul style="margin:0;padding-left:1.2rem">${addonsList}</ul></td></tr>
+          ${notes ? `<tr style="background:#fdfaf3"><td style="padding:.5rem .75rem;font-weight:700;color:#6b7280;vertical-align:top">Notes</td><td style="padding:.5rem .75rem">${notes}</td></tr>` : ''}
+        </table>
+      </div>
+      <p style="text-align:center;color:#9ca3af;font-size:.78rem;margin-top:1rem">CreamyBits LLC · Albuquerque, NM</p>
+    </div>`;
+  try {
+    await resend.emails.send({
+      from:     `CreamyBits <orders@${process.env.RESEND_FROM_DOMAIN}>`,
+      to:       process.env.ADMIN_EMAIL,
+      reply_to: email,
+      subject:  `Luxe Package Request – ${name} · ${tierLabel}`,
+      html,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Luxe package request error:', err.message);
+    res.status(500).json({ error: 'Failed to send request.' });
+  }
 });
 
 // Luxe catering inquiry form

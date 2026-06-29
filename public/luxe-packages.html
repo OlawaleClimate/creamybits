@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catering Packages — CreamyBits Luxe</title>
+  <meta name="description" content="Bronze, Silver, and Gold catering packages from CreamyBits Luxe. Tailored Nigerian flavor for every event." />
+  <link rel="icon" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:    #c9a84c;
+      --gold-lt: #e8c97a;
+      --gold-dk: #9a7a2e;
+      --bronze:  #b87333;
+      --silver:  #d4d4d4;
+      --black:   #050301;
+      --black2:  #0d0b07;
+      --cream:   #fdf8ee;
+      --muted:   rgba(245,230,184,.55);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black);
+      color: var(--cream);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ─────────────────────────────────────────── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 2rem;
+      background: rgba(5,3,1,.55);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      border-bottom: 1px solid rgba(201,168,76,.08);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: .6rem;
+      text-decoration: none;
+    }
+    .nav-logo img { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(201,168,76,.3); }
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700;
+      color: var(--cream); letter-spacing: .02em;
+    }
+    .nav-brand span { color: var(--gold); }
+
+    .nav-tiers {
+      display: flex; gap: .5rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(201,168,76,.15);
+      border-radius: 100px;
+      padding: 4px;
+    }
+    .nav-tier-btn {
+      padding: .55rem 1.4rem;
+      background: transparent;
+      border: none;
+      border-radius: 100px;
+      color: rgba(245,230,184,.55);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .35s cubic-bezier(.4,0,.2,1);
+      position: relative;
+    }
+    .nav-tier-btn:hover {
+      color: var(--cream);
+    }
+    .nav-tier-btn.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: #0e0a03;
+      box-shadow: 0 4px 16px rgba(201,168,76,.35);
+    }
+
+    .nav-book {
+      padding: .55rem 1.2rem;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,.5);
+      color: var(--gold-lt);
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      transition: all .25s;
+    }
+    .nav-book:hover {
+      background: var(--gold);
+      color: #0e0a03;
+      border-color: var(--gold);
+    }
+
+    /* ── Scroll container ────────────────────────────── */
+    .stage {
+      scroll-snap-type: y mandatory;
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-behavior: smooth;
+    }
+
+    /* ── Tier section ────────────────────────────────── */
+    .tier {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 100px 4vw 60px;
+      overflow: hidden;
+    }
+
+    .tier-bg {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(.4) saturate(1.1);
+      transform: scale(1.05);
+      transition: transform 1.5s ease-out;
+    }
+    .tier.in-view .tier-bg { transform: scale(1); }
+
+    .tier-overlay {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 50%, rgba(5,3,1,.4), rgba(5,3,1,.95) 80%),
+        linear-gradient(135deg, rgba(5,3,1,.6) 0%, rgba(5,3,1,.85) 100%);
+    }
+
+    .tier-bg-bronze  { background-image: url('/luxe-images/DSC_4243.jpg'); }
+    .tier-bg-silver  { background-image: url('/luxe-images/DSC_4266.jpg'); }
+    .tier-bg-gold    { background-image: url('/luxe-images/DSC_4305.jpg'); }
+
+    .tier-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 5rem;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 1s ease-out .2s, transform 1s ease-out .2s;
+    }
+    .tier.in-view .tier-inner {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tier-left {
+      display: flex; flex-direction: column; gap: 1.8rem;
+    }
+
+    .tier-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .8rem;
+      font-size: .75rem;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .tier-eyebrow::before {
+      content: '';
+      width: 32px; height: 1px;
+      background: var(--gold);
+    }
+
+    .tier-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6.5vw, 5.5rem);
+      font-weight: 400;
+      line-height: 1;
+      color: var(--cream);
+      letter-spacing: -.01em;
+    }
+    .tier-title em {
+      font-style: italic;
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    .tier-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.05rem, 1.4vw, 1.4rem);
+      line-height: 1.55;
+      color: rgba(245,230,184,.75);
+      max-width: 28rem;
+      font-weight: 400;
+    }
+
+    /* ── Pricing ─────────────────────────────────────── */
+    .pricing-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .9rem;
+      margin-top: .5rem;
+    }
+    .price-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: 14px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      transition: all .35s cubic-bezier(.4,0,.2,1);
+    }
+    .price-card:hover {
+      background: rgba(201,168,76,.08);
+      border-color: rgba(201,168,76,.5);
+      transform: translateY(-3px);
+    }
+    .price-card-label {
+      font-size: .7rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: .6rem;
+    }
+    .price-card-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.85rem;
+      font-weight: 400;
+      color: var(--cream);
+      letter-spacing: .01em;
+      line-height: 1;
+    }
+    .price-card-per {
+      font-size: .68rem;
+      color: rgba(245,230,184,.45);
+      margin-top: .5rem;
+      letter-spacing: .05em;
+    }
+
+    .single-price {
+      display: flex; align-items: baseline; gap: 1rem;
+      margin-top: .5rem;
+    }
+    .single-price-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.2rem;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: .01em;
+      line-height: 1;
+    }
+    .single-price-guests {
+      font-size: .8rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(245,230,184,.6);
+      font-weight: 600;
+    }
+
+    .tier-cta-row {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      margin-top: .8rem;
+    }
+    .btn-primary {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: #0e0a03;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all .3s;
+      box-shadow: 0 6px 24px rgba(201,168,76,.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(201,168,76,.4);
+    }
+    .btn-ghost {
+      padding: 1rem 1.8rem;
+      background: transparent;
+      color: var(--cream);
+      border: 1px solid rgba(245,230,184,.3);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .25s;
+      text-decoration: none;
+    }
+    .btn-ghost:hover {
+      border-color: var(--gold);
+      color: var(--gold-lt);
+    }
+
+    /* ── Right column: menu card ─────────────────────── */
+    .menu-card {
+      background:
+        linear-gradient(180deg, rgba(20,15,8,.85) 0%, rgba(13,11,7,.92) 100%);
+      border: 1px solid rgba(201,168,76,.15);
+      border-radius: 18px;
+      padding: 2.2rem 2.4rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      max-height: 78vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .menu-card::-webkit-scrollbar { width: 4px; }
+    .menu-card::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 2px; }
+
+    .menu-section { margin-bottom: 1.6rem; }
+    .menu-section:last-child { margin-bottom: 0; }
+
+    .menu-label {
+      font-size: .7rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      padding-bottom: .55rem;
+      margin-bottom: .8rem;
+      border-bottom: 1px solid rgba(201,168,76,.18);
+    }
+    .menu-list { list-style: none; }
+    .menu-list li {
+      padding: .35rem 0 .35rem 1.1rem;
+      font-size: .92rem;
+      color: rgba(245,230,184,.82);
+      position: relative;
+      line-height: 1.5;
+    }
+    .menu-list li::before {
+      content: '◆';
+      position: absolute; left: 0; top: .55rem;
+      color: var(--gold);
+      font-size: .55rem;
+    }
+    .menu-list li strong { color: var(--cream); font-weight: 600; }
+    .menu-list li .note { color: rgba(245,230,184,.5); font-style: italic; font-size: .85rem; }
+
+    /* ── Closing section ─────────────────────────────── */
+    .closing {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 4vw 60px;
+      background:
+        radial-gradient(ellipse at center, rgba(201,168,76,.12), transparent 60%),
+        linear-gradient(180deg, var(--black) 0%, var(--black2) 100%);
+    }
+    .closing-inner {
+      max-width: 900px; text-align: center;
+    }
+    .closing-eyebrow {
+      font-size: .8rem;
+      letter-spacing: .4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .closing-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .closing-title em { color: var(--gold); font-style: italic; }
+    .closing-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: rgba(245,230,184,.7);
+      margin-bottom: 3.5rem;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.6rem;
+      margin-bottom: 3.5rem;
+    }
+    .step-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(201,168,76,.18);
+      border-radius: 16px;
+      padding: 2rem 1.4rem;
+      text-align: center;
+      transition: all .3s;
+    }
+    .step-card:hover {
+      border-color: rgba(201,168,76,.4);
+      transform: translateY(-4px);
+    }
+    .step-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      color: var(--gold);
+      margin-bottom: .8rem;
+      font-style: italic;
+    }
+    .step-title {
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin-bottom: .7rem;
+    }
+    .step-desc {
+      font-size: .9rem;
+      color: rgba(245,230,184,.65);
+      line-height: 1.55;
+    }
+
+    /* ── Form ────────────────────────────────────────── */
+    .form-inner { max-width: 1000px; text-align: left; }
+    .form-inner .closing-eyebrow,
+    .form-inner .closing-title,
+    .form-inner .closing-sub { text-align: center; }
+
+    .package-form {
+      background:
+        linear-gradient(180deg, rgba(20,15,8,.7) 0%, rgba(13,11,7,.85) 100%);
+      border: 1px solid rgba(201,168,76,.18);
+      border-radius: 20px;
+      padding: 2.5rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .form-group { margin-bottom: 2rem; }
+    .form-group:last-of-type { margin-bottom: 1.5rem; }
+    .form-label {
+      display: block;
+      font-size: .75rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .form-label-sub {
+      font-weight: 400;
+      color: rgba(245,230,184,.45);
+      text-transform: none;
+      letter-spacing: .05em;
+      font-size: .8rem;
+      margin-left: .3rem;
+    }
+
+    .tier-select {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .tier-option { cursor: pointer; }
+    .tier-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .tier-option-card {
+      background: rgba(255,255,255,.03);
+      border: 1.5px solid rgba(201,168,76,.2);
+      border-radius: 14px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+    }
+    .tier-option:hover .tier-option-card {
+      border-color: rgba(201,168,76,.5);
+      transform: translateY(-2px);
+    }
+    .tier-option input:checked + .tier-option-card {
+      background: linear-gradient(135deg, rgba(201,168,76,.18), rgba(201,168,76,.08));
+      border-color: var(--gold);
+      box-shadow: 0 6px 24px rgba(201,168,76,.2);
+    }
+    .tier-option-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--cream);
+      margin-bottom: .4rem;
+    }
+    .tier-option input:checked + .tier-option-card .tier-option-name {
+      color: var(--gold-lt);
+    }
+    .tier-option-meta {
+      font-size: .8rem;
+      color: rgba(245,230,184,.6);
+      line-height: 1.5;
+    }
+
+    .addon-container {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: .4rem;
+      border-radius: 10px;
+    }
+    .addon-container::-webkit-scrollbar { width: 5px; }
+    .addon-container::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 3px; }
+
+    .addon-loading,
+    .addon-empty {
+      padding: 1.5rem;
+      text-align: center;
+      color: rgba(245,230,184,.5);
+      font-size: .88rem;
+      font-style: italic;
+    }
+
+    .addon-section {
+      margin-bottom: 1.4rem;
+    }
+    .addon-section:last-child { margin-bottom: 0; }
+    .addon-section-title {
+      font-size: .7rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      padding-bottom: .5rem;
+      margin-bottom: .7rem;
+      border-bottom: 1px solid rgba(201,168,76,.18);
+    }
+    .addon-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .55rem;
+    }
+    .addon {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .7rem .9rem;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(201,168,76,.15);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .87rem;
+      color: rgba(245,230,184,.78);
+      transition: all .2s;
+    }
+    .addon:hover {
+      border-color: rgba(201,168,76,.4);
+      background: rgba(255,255,255,.06);
+    }
+    .addon input {
+      width: 17px; height: 17px;
+      accent-color: var(--gold);
+      flex-shrink: 0;
+    }
+    .addon-text {
+      display: flex; flex-direction: column;
+      flex: 1;
+      gap: 2px;
+      line-height: 1.25;
+    }
+    .addon-name { color: rgba(245,230,184,.85); }
+    .addon-price {
+      color: var(--gold);
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+    .addon input:checked ~ .addon-text .addon-name { color: var(--cream); font-weight: 500; }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: .8rem;
+      margin-bottom: .8rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: .9rem 1rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: 8px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .92rem;
+      transition: all .2s;
+    }
+    .form-input::placeholder { color: rgba(245,230,184,.4); }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 0 0 3px rgba(201,168,76,.12);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+
+    .form-submit {
+      display: block;
+      width: 100%;
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      padding: 1.2rem 2rem;
+      border: none;
+    }
+    .form-status {
+      margin-top: 1.2rem;
+      text-align: center;
+      font-size: .9rem;
+      min-height: 1.4rem;
+    }
+    .form-status.ok    { color: var(--gold-lt); }
+    .form-status.err   { color: #ff8b7d; }
+    .form-status.busy  { color: rgba(245,230,184,.6); }
+
+    /* ── Scroll indicator ────────────────────────────── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(245,230,184,.4);
+      font-size: .7rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      animation: bounce 2.5s ease-in-out infinite;
+      z-index: 3;
+    }
+    .scroll-hint::after {
+      content: '↓';
+      display: block;
+      text-align: center;
+      font-size: 1.2rem;
+      margin-top: .4rem;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); opacity: .6; }
+      50%      { transform: translateX(-50%) translateY(6px); opacity: 1; }
+    }
+
+    /* ── Mobile ──────────────────────────────────────── */
+    @media (max-width: 880px) {
+      .nav { padding: .75rem 1rem; flex-wrap: wrap; gap: .6rem; }
+      .nav-logo { order: 1; }
+      .nav-book  { order: 2; }
+      .nav-tiers { order: 3; width: 100%; justify-content: center; }
+      .nav-tier-btn { padding: .45rem 1rem; font-size: .72rem; }
+
+      .stage { scroll-snap-type: none; height: auto; overflow: visible; }
+      body  { overflow-y: auto; }
+
+      .tier { padding: 140px 1.2rem 60px; min-height: auto; }
+      .tier-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .menu-card { max-height: none; padding: 1.5rem 1.4rem; }
+      .pricing-row { grid-template-columns: 1fr; }
+      .price-card { padding: 1rem; }
+      .steps { grid-template-columns: 1fr; }
+      .scroll-hint { display: none; }
+
+      .package-form { padding: 1.5rem 1.2rem; border-radius: 14px; }
+      .tier-select { grid-template-columns: 1fr; }
+      .addon-grid  { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ────────────────────────────────────────────── -->
+<nav class="nav">
+  <a href="/luxe" class="nav-logo">
+    <img src="/logo.png" alt="" />
+    <div class="nav-brand">CreamyBits <span>Luxe</span></div>
+  </a>
+  <div class="nav-tiers">
+    <button class="nav-tier-btn active" data-target="bronze">Bronze</button>
+    <button class="nav-tier-btn" data-target="silver">Silver</button>
+    <button class="nav-tier-btn" data-target="gold">Gold</button>
+  </div>
+  <a href="#request" class="nav-book" onclick="event.preventDefault(); scrollToTier('request');">Request Package →</a>
+</nav>
+
+<!-- ── STAGE ──────────────────────────────────────────── -->
+<div class="stage" id="stage">
+
+  <!-- ─── BRONZE ─────────────────────────────────────── -->
+  <section class="tier" id="bronze">
+    <div class="tier-bg tier-bg-bronze"></div>
+    <div class="tier-overlay"></div>
+
+    <div class="tier-inner">
+      <div class="tier-left">
+        <div class="tier-eyebrow">Tier 01 · Bronze</div>
+        <h1 class="tier-title">Intimate <em>Gathering</em></h1>
+        <p class="tier-tagline">
+          Light bites and sweet finishes — perfect for birthdays, bridal showers, and small get-togethers where a full meal isn't expected.
+        </p>
+
+        <div class="pricing-row">
+          <div class="price-card">
+            <div class="price-card-label">30 Guests</div>
+            <div class="price-card-amount">$1,200</div>
+            <div class="price-card-per">$40 / guest</div>
+          </div>
+          <div class="price-card">
+            <div class="price-card-label">50 Guests</div>
+            <div class="price-card-amount">$1,800</div>
+            <div class="price-card-per">$36 / guest</div>
+          </div>
+          <div class="price-card">
+            <div class="price-card-label">100 Guests</div>
+            <div class="price-card-amount">$3,200</div>
+            <div class="price-card-per">$32 / guest</div>
+          </div>
+        </div>
+
+        <div class="tier-cta-row">
+          <button class="btn-primary" onclick="selectTierAndJump('bronze')">Request Bronze →</button>
+          <button class="btn-ghost" onclick="scrollToTier('silver')">View Silver →</button>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-section">
+          <div class="menu-label">Small Chops Platter</div>
+          <ul class="menu-list">
+            <li><strong>Puff Puff</strong></li>
+            <li><strong>Samosa</strong></li>
+            <li><strong>Spring Rolls</strong></li>
+            <li><strong>Meat Pies</strong></li>
+            <li><strong>Chin Chin</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Sweet Finish</div>
+          <ul class="menu-list">
+            <li><strong>Dessert Cups</strong> — 2 dozen <span class="note">(Red Velvet, Chocolate, Vanilla &amp; Cream)</span></li>
+            <li><strong>Mocktail Bar</strong> — 2 dozen <span class="note">(Chapman + Virgin Mojito)</span></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Service · Drop off after setup</div>
+          <ul class="menu-list">
+            <li>Disposable platters &amp; branded napkins</li>
+            <li><strong>Transportation</strong> included</li>
+            <li><strong>Table cloth</strong> &amp; <strong>food risers</strong></li>
+            <li><strong>Lighting</strong> (warmer)</li>
+            <li><strong>Floral arrangement</strong></li>
+            <li><strong>Dry ice</strong> <span class="note">(available at extra cost)</span></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Damages · Refundable</div>
+          <ul class="menu-list">
+            <li><strong>$200 refundable deposit</strong> <span class="note">(returned after event if equipment is undamaged)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-hint">Scroll · Silver</div>
+  </section>
+
+  <!-- ─── SILVER ─────────────────────────────────────── -->
+  <section class="tier" id="silver">
+    <div class="tier-bg tier-bg-silver"></div>
+    <div class="tier-overlay"></div>
+
+    <div class="tier-inner">
+      <div class="tier-left">
+        <div class="tier-eyebrow">Tier 02 · Silver</div>
+        <h1 class="tier-title">Classic <em>Celebration</em></h1>
+        <p class="tier-tagline">
+          The first tier with mains — a proper Nigerian party plate. Jollof, fried rice, protein of your choice, small chops, and dessert.
+        </p>
+
+        <div class="single-price">
+          <span class="single-price-amount">$3,200</span>
+          <span class="single-price-guests">40 – 49 Guests</span>
+        </div>
+
+        <div class="tier-cta-row">
+          <button class="btn-primary" onclick="selectTierAndJump('silver')">Request Silver →</button>
+          <button class="btn-ghost" onclick="scrollToTier('gold')">View Gold →</button>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-section">
+          <div class="menu-label">Mains · chafing trays, hot</div>
+          <ul class="menu-list">
+            <li><strong>Party Jollof Rice</strong> — 1 large tray</li>
+            <li><strong>Nigerian Fried Rice</strong> — 1 large tray</li>
+            <li><strong>Protein</strong> — choose any two
+              <br><span class="note">Peppered Fried Fish · Peppered Turkey · Stewed Chicken</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Side · choose any one</div>
+          <ul class="menu-list">
+            <li><strong>Fried Plantain</strong></li>
+            <li><strong>Nigerian Salad</strong></li>
+            <li><strong>Moin Moin</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Small Chops Platter</div>
+          <ul class="menu-list">
+            <li><strong>Puff Puff</strong> · <strong>Samosa</strong> · <strong>Spring Rolls</strong> · <strong>Meat Pies</strong> · <strong>Chin Chin</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Dessert &amp; Drinks</div>
+          <ul class="menu-list">
+            <li><strong>Dessert Cups</strong> — 3 dozen</li>
+            <li><strong>Mocktail Bar</strong> — 3 dozen <span class="note">(Chapman, Hurricane, Strawberry)</span></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Service · Drop off after setup</div>
+          <ul class="menu-list">
+            <li>Chafing trays + warmers, serving utensils</li>
+            <li><strong>Transportation</strong> included</li>
+            <li><strong>Table cloth</strong> &amp; <strong>food risers</strong></li>
+            <li><strong>Lighting</strong> (warmer) &amp; <strong>Floral arrangement</strong></li>
+            <li><strong>Dry ice</strong> <span class="note">(extra cost)</span></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Damages · Refundable</div>
+          <ul class="menu-list">
+            <li><strong>$200 refundable deposit</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-hint">Scroll · Gold</div>
+  </section>
+
+  <!-- ─── GOLD ───────────────────────────────────────── -->
+  <section class="tier" id="gold">
+    <div class="tier-bg tier-bg-gold"></div>
+    <div class="tier-overlay"></div>
+
+    <div class="tier-inner">
+      <div class="tier-left">
+        <div class="tier-eyebrow">Tier 03 · Gold</div>
+        <h1 class="tier-title">Signature <em>Event</em></h1>
+        <p class="tier-tagline">
+          The full Nigerian spread. Choose three mains and three proteins — built for weddings, milestone birthdays, and corporate launches.
+        </p>
+
+        <div class="single-price">
+          <span class="single-price-amount">$6,000</span>
+          <span class="single-price-guests">50 – 75 Guests</span>
+        </div>
+
+        <div class="tier-cta-row">
+          <button class="btn-primary" onclick="selectTierAndJump('gold')">Request Gold →</button>
+          <button class="btn-ghost" onclick="scrollToTier('request')">View Form →</button>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-section">
+          <div class="menu-label">Mains · choose any three</div>
+          <ul class="menu-list">
+            <li><strong>Party Jollof Rice</strong></li>
+            <li><strong>Nigerian Fried Rice</strong></li>
+            <li><strong>Coconut Rice</strong></li>
+            <li><strong>White Rice &amp; Ayamase Sauce</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Protein · choose any three</div>
+          <ul class="menu-list">
+            <li><strong>Stewed Beef</strong></li>
+            <li><strong>Peppered Turkey</strong></li>
+            <li><strong>Peppered Chicken</strong></li>
+            <li><strong>Fried Peppered Fish</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Sides · choose any two</div>
+          <ul class="menu-list">
+            <li><strong>Fried Plantain</strong> · <strong>Nigerian Salad</strong> · <strong>Moin Moin</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Premium Small Chops Platter</div>
+          <ul class="menu-list">
+            <li><strong>Puff Puff</strong> · <strong>Samosa</strong> · <strong>Spring Rolls</strong> · <strong>Meat Pies</strong> · <strong>Chicken Pies</strong> · <strong>Shawarma Bites</strong></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Service · Drop off after setup</div>
+          <ul class="menu-list">
+            <li>Full chafing setup, warmers &amp; serving utensils</li>
+            <li><strong>Transportation</strong> &middot; <strong>Table cloth</strong> &middot; <strong>Food risers</strong></li>
+            <li><strong>Lighting</strong> (warmer) &middot; <strong>Floral arrangement</strong></li>
+            <li><strong>Dry ice</strong> <span class="note">(extra cost)</span></li>
+          </ul>
+        </div>
+        <div class="menu-section">
+          <div class="menu-label">Damages · Refundable</div>
+          <ul class="menu-list">
+            <li><strong>$200 refundable deposit</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-hint">Scroll · Request Form</div>
+  </section>
+
+  <!-- ─── REQUEST FORM ───────────────────────────────── -->
+  <section class="closing" id="request">
+    <div class="closing-inner form-inner">
+      <div class="closing-eyebrow">Request Your Package</div>
+      <h2 class="closing-title">Let's plan your <em>event</em></h2>
+      <p class="closing-sub">Pick a tier, add anything extra you'd like, and we'll be in touch shortly.</p>
+
+      <form id="packageForm" class="package-form">
+        <!-- Tier select -->
+        <div class="form-group">
+          <label class="form-label">Choose your tier</label>
+          <div class="tier-select">
+            <label class="tier-option">
+              <input type="radio" name="tier" value="bronze" required>
+              <div class="tier-option-card">
+                <div class="tier-option-name">Bronze</div>
+                <div class="tier-option-meta">Intimate Gathering<br>from $1,200</div>
+              </div>
+            </label>
+            <label class="tier-option">
+              <input type="radio" name="tier" value="silver" required>
+              <div class="tier-option-card">
+                <div class="tier-option-name">Silver</div>
+                <div class="tier-option-meta">Classic Celebration<br>$3,200</div>
+              </div>
+            </label>
+            <label class="tier-option">
+              <input type="radio" name="tier" value="gold" required>
+              <div class="tier-option-card">
+                <div class="tier-option-name">Gold</div>
+                <div class="tier-option-meta">Signature Event<br>$6,000</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Add-ons (loaded from /luxe-menu items) -->
+        <div class="form-group">
+          <label class="form-label">Add-ons <span class="form-label-sub">(optional · pick anything to add to your package)</span></label>
+          <div id="addonContainer" class="addon-container">
+            <div class="addon-loading">Loading add-ons from the Luxe menu…</div>
+          </div>
+        </div>
+
+        <!-- Contact info -->
+        <div class="form-group">
+          <label class="form-label">Your details</label>
+          <div class="contact-grid">
+            <input type="text" name="name" placeholder="Full name" required class="form-input">
+            <input type="email" name="email" placeholder="Email" required class="form-input">
+            <input type="tel" name="phone" placeholder="Phone" required class="form-input">
+          </div>
+          <textarea name="notes" placeholder="Anything else we should know? (event date, guest count, dietary needs…)" class="form-input form-textarea" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary form-submit">Submit Request →</button>
+        <div class="form-status" id="formStatus"></div>
+      </form>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const stage   = document.getElementById('stage');
+  const tiers   = document.querySelectorAll('.tier, .closing');
+  const buttons = document.querySelectorAll('.nav-tier-btn');
+
+  /* ── Tier-button click → smooth scroll to section ── */
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => scrollToTier(btn.dataset.target));
+  });
+
+  function scrollToTier(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // On desktop we scroll within the .stage container; on mobile the page itself scrolls.
+    const isMobile = window.matchMedia('(max-width: 880px)').matches;
+    if (isMobile) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      stage.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
+    }
+  }
+
+  /* ── IntersectionObserver: active button + in-view reveal ── */
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        const id = entry.target.id;
+        buttons.forEach(b => {
+          b.classList.toggle('active', b.dataset.target === id);
+        });
+      }
+    });
+  }, {
+    root: window.matchMedia('(max-width: 880px)').matches ? null : stage,
+    threshold: 0.45
+  });
+
+  tiers.forEach(t => observer.observe(t));
+
+  /* trigger initial reveal */
+  setTimeout(() => {
+    document.getElementById('bronze')?.classList.add('in-view');
+  }, 100);
+
+  /* ── Load add-ons from the live Luxe menu ──────────── */
+  async function loadAddons() {
+    const container = document.getElementById('addonContainer');
+    try {
+      const [sections, items] = await Promise.all([
+        fetch('/luxe-sections').then(r => r.json()),
+        fetch('/luxe-items').then(r => r.json()),
+      ]);
+
+      const bySection = {};
+      items.forEach(it => {
+        (bySection[it.section] = bySection[it.section] || []).push(it);
+      });
+
+      const escapeHtml = (s) => String(s ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      const html = sections.map(sec => {
+        const list = (bySection[sec.id] || []);
+        if (!list.length) return '';
+        const rows = list.map(it => {
+          const priceText = it.on_request ? 'On request' : (it.price || '');
+          const label     = priceText ? `${it.name} — ${priceText}` : it.name;
+          return `
+            <label class="addon">
+              <input type="checkbox" name="addons" value="${escapeHtml(label)}">
+              <span class="addon-text">
+                <span class="addon-name">${escapeHtml(it.name)}</span>
+                ${priceText ? `<span class="addon-price">${escapeHtml(priceText)}</span>` : ''}
+              </span>
+            </label>`;
+        }).join('');
+        return `
+          <div class="addon-section">
+            <div class="addon-section-title">${escapeHtml(sec.title)}</div>
+            <div class="addon-grid">${rows}</div>
+          </div>`;
+      }).filter(Boolean).join('');
+
+      container.innerHTML = html || '<div class="addon-empty">No add-ons available yet.</div>';
+    } catch (e) {
+      container.innerHTML = '<div class="addon-empty">Could not load add-ons. You can still submit your request — we\'ll customize during follow-up.</div>';
+    }
+  }
+  loadAddons();
+
+  /* ── "Request this tier" → select + scroll to form ── */
+  function selectTierAndJump(tier) {
+    const radio = document.querySelector(`input[name="tier"][value="${tier}"]`);
+    if (radio) radio.checked = true;
+    scrollToTier('request');
+  }
+  window.selectTierAndJump = selectTierAndJump;
+
+  /* ── Form submission ── */
+  const form    = document.getElementById('packageForm');
+  const status  = document.getElementById('formStatus');
+  const submit  = form.querySelector('.form-submit');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const payload = {
+      name:   data.get('name')?.trim(),
+      email:  data.get('email')?.trim(),
+      phone:  data.get('phone')?.trim(),
+      tier:   data.get('tier'),
+      addons: data.getAll('addons'),
+      notes:  data.get('notes')?.trim() || '',
+    };
+
+    if (!payload.tier) {
+      status.textContent = 'Please choose a tier above.';
+      status.className   = 'form-status err';
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = 'Sending…';
+    status.textContent = 'Submitting your request…';
+    status.className   = 'form-status busy';
+
+    try {
+      const res = await fetch('/luxe-package-request', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Submission failed');
+      status.textContent = '✓ Thank you! We received your request and will reach out within 24 hours.';
+      status.className   = 'form-status ok';
+      form.reset();
+      submit.textContent = 'Submitted ✓';
+    } catch (err) {
+      status.textContent = err.message || 'Something went wrong. Please try again.';
+      status.className   = 'form-status err';
+      submit.disabled = false;
+      submit.textContent = 'Submit Request →';
+    }
+  });
+</script>
+
+</body>
+</html>
