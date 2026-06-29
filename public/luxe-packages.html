@@ -1005,10 +1005,12 @@
   function scrollToTier(id) {
     const el = document.getElementById(id);
     if (!el) return;
-    // On desktop we scroll within the .stage container; on mobile the page itself scrolls.
     const isMobile = window.matchMedia('(max-width: 880px)').matches;
+    const navH = document.querySelector('.nav')?.offsetHeight || 0;
     if (isMobile) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Body scrolls; subtract nav height so the section title isn't hidden under the fixed nav.
+      const top = el.getBoundingClientRect().top + window.scrollY - navH - 8;
+      window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
     } else {
       stage.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
     }
