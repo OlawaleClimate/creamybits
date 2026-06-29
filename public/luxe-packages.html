@@ -124,20 +124,31 @@
     }
 
     .tier-bg {
-      position: absolute; inset: 0;
+      position: absolute; inset: -8% 0;
       background-size: cover;
       background-position: center;
-      filter: brightness(.4) saturate(1.1);
-      transform: scale(1.05);
-      transition: transform 1.5s ease-out;
+      filter: brightness(.38) saturate(1.15) contrast(1.05);
+      transform: scale(1.08) translateY(0);
+      transition: transform 1.6s cubic-bezier(.22,.61,.36,1);
+      will-change: transform;
     }
-    .tier.in-view .tier-bg { transform: scale(1); }
+    .tier.in-view .tier-bg { transform: scale(1.02) translateY(0); }
+
+    /* Subtle film grain overlay for cinematic feel */
+    .tier-grain {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      opacity: .05;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .95  0 0 0 0 .8  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      z-index: 1;
+    }
 
     .tier-overlay {
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse at 30% 50%, rgba(5,3,1,.4), rgba(5,3,1,.95) 80%),
-        linear-gradient(135deg, rgba(5,3,1,.6) 0%, rgba(5,3,1,.85) 100%);
+        radial-gradient(ellipse 80% 70% at 28% 55%, rgba(5,3,1,.35), rgba(5,3,1,.96) 80%),
+        linear-gradient(135deg, rgba(5,3,1,.55) 0%, rgba(5,3,1,.88) 100%);
     }
 
     .tier-bg-bronze  { background-image: url('/luxe-images/DSC_4243.jpg'); }
@@ -154,55 +165,86 @@
       grid-template-columns: 1fr 1.1fr;
       gap: 5rem;
       align-items: center;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity .45s ease-out, transform .45s ease-out;
-    }
-    .tier.in-view .tier-inner {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     .tier-left {
-      display: flex; flex-direction: column; gap: 1.8rem;
+      display: flex; flex-direction: column; gap: 1.6rem;
     }
+
+    /* Staggered children reveals */
+    .tier-left > *,
+    .menu-card {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .8s cubic-bezier(.22,.61,.36,1), transform .8s cubic-bezier(.22,.61,.36,1);
+    }
+    .tier.in-view .tier-left > *  { opacity: 1; transform: translateY(0); }
+    .tier.in-view .menu-card      { opacity: 1; transform: translateY(0); }
+    .tier.in-view .tier-left > *:nth-child(1) { transition-delay: .08s; }
+    .tier.in-view .tier-left > *:nth-child(2) { transition-delay: .2s; }
+    .tier.in-view .tier-left > *:nth-child(3) { transition-delay: .32s; }
+    .tier.in-view .tier-left > *:nth-child(4) { transition-delay: .44s; }
+    .tier.in-view .tier-left > *:nth-child(5) { transition-delay: .54s; }
+    .tier.in-view .menu-card      { transition-delay: .3s; }
 
     .tier-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: .8rem;
-      font-size: .75rem;
-      letter-spacing: .35em;
+      font-size: .74rem;
+      letter-spacing: .4em;
       text-transform: uppercase;
       color: var(--gold);
-      font-weight: 700;
+      font-weight: 600;
     }
-    .tier-eyebrow::before {
+    .tier-eyebrow::before,
+    .tier-eyebrow::after {
       content: '';
-      width: 32px; height: 1px;
-      background: var(--gold);
+      width: 36px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold));
+    }
+    .tier-eyebrow::after {
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+    .tier-eyebrow-mark {
+      color: var(--gold);
+      font-size: .55rem;
+      letter-spacing: 0;
+    }
+
+    .tier-overline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 1.05rem;
+      color: rgba(245,230,184,.55);
+      letter-spacing: .04em;
+      margin-bottom: -.6rem;
     }
 
     .tier-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(3rem, 6.5vw, 5.5rem);
+      font-size: clamp(3.2rem, 7vw, 6rem);
       font-weight: 400;
-      line-height: 1;
+      line-height: .98;
       color: var(--cream);
-      letter-spacing: -.01em;
+      letter-spacing: -.015em;
     }
     .tier-title em {
       font-style: italic;
-      color: var(--gold);
       font-weight: 400;
+      background: linear-gradient(135deg, var(--gold-lt) 0%, var(--gold) 50%, var(--gold-dk) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .tier-tagline {
       font-family: 'Cormorant Garamond', serif;
       font-style: italic;
-      font-size: clamp(1.05rem, 1.4vw, 1.4rem);
+      font-size: clamp(1.1rem, 1.45vw, 1.45rem);
       line-height: 1.55;
-      color: rgba(245,230,184,.75);
+      color: rgba(245,230,184,.78);
       max-width: 28rem;
       font-weight: 400;
     }
@@ -215,17 +257,28 @@
       margin-top: .5rem;
     }
     .price-card {
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(201,168,76,.2);
-      border-radius: 14px;
-      padding: 1.2rem 1rem;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border: 1px solid rgba(201,168,76,.22);
+      border-radius: 16px;
+      padding: 1.4rem 1rem;
       text-align: center;
-      transition: all .35s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      overflow: hidden;
+      transition: transform .5s cubic-bezier(.22,.61,.36,1), border-color .35s, box-shadow .5s;
     }
+    .price-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255,230,160,.18) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform .9s cubic-bezier(.22,.61,.36,1);
+      pointer-events: none;
+    }
+    .price-card:hover::before { transform: translateX(100%); }
     .price-card:hover {
-      background: rgba(201,168,76,.08);
-      border-color: rgba(201,168,76,.5);
-      transform: translateY(-3px);
+      border-color: var(--gold);
+      transform: translateY(-5px);
+      box-shadow: 0 14px 36px rgba(201,168,76,.18), inset 0 1px 0 rgba(255,230,160,.12);
     }
     .price-card-label {
       font-size: .7rem;
@@ -275,25 +328,40 @@
       margin-top: .8rem;
     }
     .btn-primary {
-      padding: 1rem 2rem;
-      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      padding: 1rem 2.2rem;
+      background: linear-gradient(135deg, var(--gold-dk) 0%, var(--gold) 45%, var(--gold-lt) 100%);
+      background-size: 200% 200%;
+      background-position: 0% 50%;
       color: #0e0a03;
       border: none;
-      border-radius: 10px;
+      border-radius: 999px;
       font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
+      font-size: .85rem;
       font-weight: 700;
-      letter-spacing: .1em;
+      letter-spacing: .14em;
       text-transform: uppercase;
       text-decoration: none;
       cursor: pointer;
-      transition: all .3s;
-      box-shadow: 0 6px 24px rgba(201,168,76,.25);
+      position: relative;
+      overflow: hidden;
+      transition: transform .35s cubic-bezier(.22,.61,.36,1),
+                  box-shadow .35s,
+                  background-position .6s ease;
+      box-shadow: 0 6px 24px rgba(201,168,76,.25), inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,.45) 50%, transparent 75%);
+      transform: translateX(-110%);
+      transition: transform .7s cubic-bezier(.22,.61,.36,1);
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(201,168,76,.4);
+      box-shadow: 0 14px 36px rgba(201,168,76,.45), inset 0 1px 0 rgba(255,255,255,.35);
+      background-position: 100% 50%;
     }
+    .btn-primary:hover::after { transform: translateX(110%); }
     .btn-ghost {
       padding: 1rem 1.8rem;
       background: transparent;
@@ -630,6 +698,70 @@
     .form-status.err   { color: #ff8b7d; }
     .form-status.busy  { color: rgba(245,230,184,.6); }
 
+    /* ── Side rail navigator ─────────────────────────── */
+    .rail {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 90;
+      display: flex; flex-direction: column;
+      gap: 1.1rem;
+      align-items: center;
+    }
+    .rail-dot {
+      display: flex; align-items: center; gap: .7rem;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: rgba(245,230,184,.45);
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: .9rem;
+      transition: color .35s;
+    }
+    .rail-dot-mark {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(245,230,184,.3);
+      transition: all .35s cubic-bezier(.22,.61,.36,1);
+      box-shadow: 0 0 0 0 rgba(201,168,76,0);
+    }
+    .rail-dot-label {
+      opacity: 0;
+      transform: translateX(8px);
+      transition: opacity .35s, transform .35s;
+      letter-spacing: .1em;
+    }
+    .rail-dot:hover .rail-dot-label,
+    .rail-dot.active .rail-dot-label {
+      opacity: 1; transform: translateX(0);
+    }
+    .rail-dot:hover { color: var(--gold-lt); }
+    .rail-dot.active { color: var(--gold); }
+    .rail-dot.active .rail-dot-mark {
+      width: 14px; height: 14px;
+      background: var(--gold);
+      box-shadow: 0 0 0 4px rgba(201,168,76,.18), 0 0 16px rgba(201,168,76,.5);
+    }
+
+    /* ── Scroll progress bar ─────────────────────────── */
+    .progress-rail {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      z-index: 101;
+      background: rgba(201,168,76,.08);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold-dk), var(--gold), var(--gold-lt));
+      transition: width .15s ease-out;
+      box-shadow: 0 0 14px rgba(201,168,76,.6);
+    }
+
     /* ── Scroll indicator ────────────────────────────── */
     .scroll-hint {
       position: absolute;
@@ -674,6 +806,8 @@
       .steps { grid-template-columns: 1fr; }
       .scroll-hint { display: none; }
 
+      .rail { display: none; }
+      .tier-inner { gap: 1.6rem; }
       .package-form { padding: 1.5rem 1.2rem; border-radius: 14px; }
       .tier-select { grid-template-columns: 1fr; }
       .addon-grid  { grid-template-columns: 1fr; }
@@ -682,6 +816,29 @@
   </style>
 </head>
 <body>
+
+<!-- ── Scroll progress bar ────────────────────────────── -->
+<div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- ── Side rail navigator (desktop) ──────────────────── -->
+<aside class="rail" id="rail">
+  <button class="rail-dot active" data-target="bronze">
+    <span class="rail-dot-label">Bronze</span>
+    <span class="rail-dot-mark"></span>
+  </button>
+  <button class="rail-dot" data-target="silver">
+    <span class="rail-dot-label">Silver</span>
+    <span class="rail-dot-mark"></span>
+  </button>
+  <button class="rail-dot" data-target="gold">
+    <span class="rail-dot-label">Gold</span>
+    <span class="rail-dot-mark"></span>
+  </button>
+  <button class="rail-dot" data-target="request">
+    <span class="rail-dot-label">Request</span>
+    <span class="rail-dot-mark"></span>
+  </button>
+</aside>
 
 <!-- ── NAV ────────────────────────────────────────────── -->
 <nav class="nav">
@@ -704,10 +861,12 @@
   <section class="tier" id="bronze">
     <div class="tier-bg tier-bg-bronze"></div>
     <div class="tier-overlay"></div>
+    <div class="tier-grain"></div>
 
     <div class="tier-inner">
       <div class="tier-left">
-        <div class="tier-eyebrow">Tier 01 · Bronze</div>
+        <div class="tier-eyebrow"><span class="tier-eyebrow-mark">◆</span>Tier 01 · Bronze<span class="tier-eyebrow-mark">◆</span></div>
+        <div class="tier-overline">For the considered host</div>
         <h1 class="tier-title">Intimate <em>Gathering</em></h1>
         <p class="tier-tagline">
           Light bites and sweet finishes — perfect for birthdays, bridal showers, and small get-togethers.
@@ -778,10 +937,12 @@
   <section class="tier" id="silver">
     <div class="tier-bg tier-bg-silver"></div>
     <div class="tier-overlay"></div>
+    <div class="tier-grain"></div>
 
     <div class="tier-inner">
       <div class="tier-left">
-        <div class="tier-eyebrow">Tier 02 · Silver</div>
+        <div class="tier-eyebrow"><span class="tier-eyebrow-mark">◆</span>Tier 02 · Silver<span class="tier-eyebrow-mark">◆</span></div>
+        <div class="tier-overline">A celebration, properly served</div>
         <h1 class="tier-title">Classic <em>Celebration</em></h1>
         <p class="tier-tagline">
           The first tier with mains — a proper Nigerian party plate. Jollof, fried rice, protein of your choice, small chops, and dessert.
@@ -855,10 +1016,12 @@
   <section class="tier" id="gold">
     <div class="tier-bg tier-bg-gold"></div>
     <div class="tier-overlay"></div>
+    <div class="tier-grain"></div>
 
     <div class="tier-inner">
       <div class="tier-left">
-        <div class="tier-eyebrow">Tier 03 · Gold</div>
+        <div class="tier-eyebrow"><span class="tier-eyebrow-mark">◆</span>Tier 03 · Gold<span class="tier-eyebrow-mark">◆</span></div>
+        <div class="tier-overline">The full Nigerian spread, presented in luxury</div>
         <h1 class="tier-title">Signature <em>Event</em></h1>
         <p class="tier-tagline">
           The full Nigerian spread. Choose three mains and three proteins — built for weddings, milestone birthdays, and corporate launches.
@@ -990,13 +1153,20 @@
 </div>
 
 <script>
-  const stage   = document.getElementById('stage');
-  const tiers   = document.querySelectorAll('.tier, .closing');
-  const buttons = document.querySelectorAll('.nav-tier-btn');
+  const stage    = document.getElementById('stage');
+  const tiers    = document.querySelectorAll('.tier, .closing');
+  const buttons  = document.querySelectorAll('.nav-tier-btn');
+  const railDots = document.querySelectorAll('.rail-dot');
+  const progress = document.getElementById('progressFill');
 
   /* ── Tier-button click → smooth scroll to section ── */
   buttons.forEach(btn => {
     btn.addEventListener('click', () => scrollToTier(btn.dataset.target));
+  });
+
+  /* ── Side rail clicks ── */
+  railDots.forEach(dot => {
+    dot.addEventListener('click', () => scrollToTier(dot.dataset.target));
   });
 
   function scrollToTier(id) {
@@ -1004,8 +1174,9 @@
     if (!el) return;
     // Reveal target immediately so content is visible by the time the scroll lands.
     el.classList.add('in-view');
-    // Also reflect the active state on the nav right away (don't wait for the observer).
-    buttons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    // Reflect active state right away on nav + side rail.
+    buttons.forEach(b  => b.classList.toggle('active',  b.dataset.target  === id));
+    railDots.forEach(d => d.classList.toggle('active', d.dataset.target === id));
 
     const isMobile = window.matchMedia('(max-width: 880px)').matches;
     const navH = document.querySelector('.nav')?.offsetHeight || 0;
@@ -1018,22 +1189,47 @@
   }
 
   /* ── IntersectionObserver: active button + in-view reveal ── */
+  const isMobileNow = () => window.matchMedia('(max-width: 880px)').matches;
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('in-view');
         const id = entry.target.id;
-        buttons.forEach(b => {
-          b.classList.toggle('active', b.dataset.target === id);
-        });
+        buttons.forEach(b  => b.classList.toggle('active',  b.dataset.target  === id));
+        railDots.forEach(d => d.classList.toggle('active', d.dataset.target === id));
       }
     });
   }, {
-    root: window.matchMedia('(max-width: 880px)').matches ? null : stage,
+    root: isMobileNow() ? null : stage,
     threshold: 0.45
   });
 
   tiers.forEach(t => observer.observe(t));
+
+  /* ── Scroll progress bar + parallax bg ── */
+  function syncScrollFx() {
+    const scrollEl = isMobileNow() ? document.documentElement : stage;
+    const max = scrollEl.scrollHeight - scrollEl.clientHeight;
+    const top = isMobileNow() ? window.scrollY : stage.scrollTop;
+    const pct = max > 0 ? Math.min(100, Math.max(0, (top / max) * 100)) : 0;
+    if (progress) progress.style.width = pct + '%';
+
+    // Parallax: shift each in-view tier bg slightly based on how far through the section we are.
+    const vh = window.innerHeight;
+    document.querySelectorAll('.tier').forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > vh) return;
+      const bg = section.querySelector('.tier-bg');
+      if (!bg) return;
+      const progress = 1 - (rect.top + rect.height/2) / vh; // -.5 (above) → .5 (below)
+      const shift = Math.max(-30, Math.min(30, progress * 40));
+      bg.style.transform = `scale(1.06) translateY(${shift}px)`;
+    });
+  }
+  const scrollSource = isMobileNow() ? window : stage;
+  scrollSource.addEventListener('scroll', () => requestAnimationFrame(syncScrollFx), { passive: true });
+  window.addEventListener('resize', syncScrollFx);
+  syncScrollFx();
 
   /* trigger initial reveal */
   setTimeout(() => {
