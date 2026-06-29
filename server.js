@@ -190,7 +190,37 @@ async function initDB() {
       event_date        TEXT,
       notes             TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS luxe_packages_config (
+      tier        TEXT PRIMARY KEY,
+      pricing     JSONB NOT NULL DEFAULT '[]',
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
+
+  // Seed luxe_packages_config if empty
+  const { rowCount: pkgCount } = await pool.query('SELECT 1 FROM luxe_packages_config LIMIT 1');
+  if (pkgCount === 0) {
+    const defaults = [
+      { tier: 'bronze', pricing: [
+        { label: '30 Guests',  price: 1200 },
+        { label: '50 Guests',  price: 1800 },
+        { label: '100 Guests', price: 3200 },
+      ]},
+      { tier: 'silver', pricing: [
+        { label: '40 – 49 Guests', price: 3200 },
+      ]},
+      { tier: 'gold', pricing: [
+        { label: '50 – 75 Guests', price: 6000 },
+      ]},
+    ];
+    for (const d of defaults) {
+      await pool.query(
+        'INSERT INTO luxe_packages_config (tier, pricing) VALUES ($1,$2) ON CONFLICT (tier) DO NOTHING',
+        [d.tier, JSON.stringify(d.pricing)]
+      );
+    }
+  }
 
   // Seed products if table is empty
   const { rowCount } = await pool.query('SELECT 1 FROM products LIMIT 1');
@@ -2044,6 +2074,63 @@ app.get('/luxe-menu', (_req, res) => {
 
 app.get('/luxe-packages', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'luxe-packages.html'));
+});
+
+// Public: live tier pricing for /luxe-packages page
+app.get('/luxe-packages-config', async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT tier, pricing FROM luxe_packages_config ORDER BY CASE tier WHEN \'bronze\' THEN 1 WHEN \'silver\' THEN 2 WHEN \'gold\' THEN 3 ELSE 4 END'
+    );
+    res.json(rows);
+  } catch (e) {
+    console.error('GET /luxe-packages-config error:', e.message);
+    res.status(500).json({ error: 'Failed to load packages config.' });
+  }
+});
+
+// Admin: list + update tier pricing
+app.get('/admin/luxe-packages-config', requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT tier, pricing, updated_at FROM luxe_packages_config ORDER BY CASE tier WHEN \'bronze\' THEN 1 WHEN \'silver\' THEN 2 WHEN \'gold\' THEN 3 ELSE 4 END'
+    );
+    res.json(rows);
+  } catch (e) {
+    console.error('GET /admin/luxe-packages-config error:', e.message);
+    res.status(500).json({ error: 'Failed to load packages config.' });
+  }
+});
+
+app.patch('/admin/luxe-packages-config/:tier', express.json(), requireAdmin, async (req, res) => {
+  const tier = String(req.params.tier || '').toLowerCase();
+  if (!['bronze', 'silver', 'gold'].includes(tier)) {
+    return res.status(400).json({ error: 'Invalid tier.' });
+  }
+  const pricing = req.body?.pricing;
+  if (!Array.isArray(pricing) || pricing.length === 0) {
+    return res.status(400).json({ error: 'Pricing must be a non-empty array.' });
+  }
+  const clean = [];
+  for (const row of pricing) {
+    const label = String(row?.label || '').trim();
+    const price = Number(row?.price);
+    if (!label) return res.status(400).json({ error: 'Each row needs a label.' });
+    if (!Number.isFinite(price) || price < 0) return res.status(400).json({ error: 'Each row needs a non-negative price.' });
+    clean.push({ label, price });
+  }
+  try {
+    await pool.query(
+      `INSERT INTO luxe_packages_config (tier, pricing, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (tier) DO UPDATE SET pricing = EXCLUDED.pricing, updated_at = NOW()`,
+      [tier, JSON.stringify(clean)]
+    );
+    res.json({ ok: true, tier, pricing: clean });
+  } catch (e) {
+    console.error('PATCH /admin/luxe-packages-config error:', e.message);
+    res.status(500).json({ error: 'Failed to save pricing.' });
+  }
 });
 
 app.post('/luxe-package-request', express.json(), async (req, res) => {

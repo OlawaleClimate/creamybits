@@ -118,6 +118,8 @@
       scroll-snap-align: start;
       position: relative;
       display: flex;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
       padding: 100px 4vw 60px;
       overflow: hidden;
@@ -173,19 +175,22 @@
 
     /* Staggered children reveals */
     .tier-left > *,
-    .menu-card {
+    .menu-card,
+    .tier-cta-row {
       opacity: 0;
       transform: translateY(28px);
       transition: opacity .8s cubic-bezier(.22,.61,.36,1), transform .8s cubic-bezier(.22,.61,.36,1);
     }
     .tier.in-view .tier-left > *  { opacity: 1; transform: translateY(0); }
     .tier.in-view .menu-card      { opacity: 1; transform: translateY(0); }
+    .tier.in-view .tier-cta-row   { opacity: 1; transform: translateY(0); }
     .tier.in-view .tier-left > *:nth-child(1) { transition-delay: .08s; }
     .tier.in-view .tier-left > *:nth-child(2) { transition-delay: .2s; }
     .tier.in-view .tier-left > *:nth-child(3) { transition-delay: .32s; }
     .tier.in-view .tier-left > *:nth-child(4) { transition-delay: .44s; }
     .tier.in-view .tier-left > *:nth-child(5) { transition-delay: .54s; }
     .tier.in-view .menu-card      { transition-delay: .3s; }
+    .tier.in-view .tier-cta-row   { transition-delay: .6s; }
 
     .tier-eyebrow {
       display: inline-flex;
@@ -325,7 +330,13 @@
 
     .tier-cta-row {
       display: flex; gap: 1rem; flex-wrap: wrap;
-      margin-top: .8rem;
+      justify-content: center;
+      align-items: center;
+      max-width: 1280px;
+      width: 100%;
+      margin: 2.4rem auto 0;
+      position: relative;
+      z-index: 2;
     }
     .btn-primary {
       padding: 1rem 2.2rem;
@@ -801,8 +812,13 @@
       .tier { padding: 140px 1.2rem 60px; min-height: auto; }
       .tier-inner { grid-template-columns: 1fr; gap: 2rem; }
       .menu-card { max-height: none; padding: 1.5rem 1.4rem; }
-      .pricing-row { grid-template-columns: 1fr; }
-      .price-card { padding: 1rem; }
+      .pricing-row { grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+      .price-card { padding: .85rem .4rem; }
+      .price-card-label { font-size: .56rem; letter-spacing: .15em; margin-bottom: .35rem; }
+      .price-card-amount { font-size: 1.15rem; }
+      .tier-cta-row { margin-top: 1.6rem; gap: .6rem; }
+      .tier-cta-row .btn-primary,
+      .tier-cta-row .btn-ghost { flex: 1 1 0; min-width: 0; padding: .85rem .6rem; font-size: .72rem; letter-spacing: .08em; text-align: center; }
       .steps { grid-template-columns: 1fr; }
       .scroll-hint { display: none; }
 
@@ -872,7 +888,7 @@
           Light bites and sweet finishes — perfect for birthdays, bridal showers, and small get-togethers.
         </p>
 
-        <div class="pricing-row">
+        <div class="pricing-row" id="bronzePricing">
           <div class="price-card">
             <div class="price-card-label">30 Guests</div>
             <div class="price-card-amount">$1,200</div>
@@ -885,11 +901,6 @@
             <div class="price-card-label">100 Guests</div>
             <div class="price-card-amount">$3,200</div>
           </div>
-        </div>
-
-        <div class="tier-cta-row">
-          <button class="btn-primary" onclick="selectTierAndJump('bronze')">Request Bronze →</button>
-          <button class="btn-ghost" onclick="scrollToTier('silver')">View Silver →</button>
         </div>
       </div>
 
@@ -930,6 +941,12 @@
         </div>
       </div>
     </div>
+
+    <div class="tier-cta-row">
+      <button class="btn-primary" onclick="selectTierAndJump('bronze')">Request Bronze →</button>
+      <button class="btn-ghost" onclick="scrollToTier('silver')">View Silver →</button>
+    </div>
+
     <div class="scroll-hint">Scroll · Silver</div>
   </section>
 
@@ -948,14 +965,9 @@
           The first tier with mains — a proper Nigerian party plate. Jollof, fried rice, protein of your choice, small chops, and dessert.
         </p>
 
-        <div class="single-price">
+        <div class="single-price" id="silverPricing">
           <span class="single-price-amount">$3,200</span>
           <span class="single-price-guests">40 – 49 Guests</span>
-        </div>
-
-        <div class="tier-cta-row">
-          <button class="btn-primary" onclick="selectTierAndJump('silver')">Request Silver →</button>
-          <button class="btn-ghost" onclick="scrollToTier('gold')">View Gold →</button>
         </div>
       </div>
 
@@ -1009,6 +1021,12 @@
         </div>
       </div>
     </div>
+
+    <div class="tier-cta-row">
+      <button class="btn-primary" onclick="selectTierAndJump('silver')">Request Silver →</button>
+      <button class="btn-ghost" onclick="scrollToTier('gold')">View Gold →</button>
+    </div>
+
     <div class="scroll-hint">Scroll · Gold</div>
   </section>
 
@@ -1027,14 +1045,9 @@
           The full Nigerian spread. Choose three mains and three proteins — built for weddings, milestone birthdays, and corporate launches.
         </p>
 
-        <div class="single-price">
+        <div class="single-price" id="goldPricing">
           <span class="single-price-amount">$6,000</span>
           <span class="single-price-guests">50 – 75 Guests</span>
-        </div>
-
-        <div class="tier-cta-row">
-          <button class="btn-primary" onclick="selectTierAndJump('gold')">Request Gold →</button>
-          <button class="btn-ghost" onclick="scrollToTier('request')">View Form →</button>
         </div>
       </div>
 
@@ -1086,6 +1099,12 @@
         </div>
       </div>
     </div>
+
+    <div class="tier-cta-row">
+      <button class="btn-primary" onclick="selectTierAndJump('gold')">Request Gold →</button>
+      <button class="btn-ghost" onclick="scrollToTier('request')">View Form →</button>
+    </div>
+
     <div class="scroll-hint">Scroll · Request Form</div>
   </section>
 
@@ -1282,6 +1301,41 @@
     }
   }
   loadAddons();
+
+  /* ── Live pricing from admin (overrides hardcoded fallback) ── */
+  function fmtPrice(n) {
+    const v = Number(n);
+    if (!Number.isFinite(v)) return '';
+    return '$' + v.toLocaleString('en-US');
+  }
+  async function loadPricing() {
+    try {
+      const res = await fetch('/luxe-packages-config');
+      if (!res.ok) return;
+      const rows = await res.json();
+      const escape = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      rows.forEach(({ tier, pricing }) => {
+        if (!Array.isArray(pricing) || !pricing.length) return;
+        if (tier === 'bronze') {
+          const el = document.getElementById('bronzePricing');
+          if (!el) return;
+          el.innerHTML = pricing.map(p => `
+            <div class="price-card">
+              <div class="price-card-label">${escape(p.label)}</div>
+              <div class="price-card-amount">${fmtPrice(p.price)}</div>
+            </div>`).join('');
+        } else {
+          const el = document.getElementById(`${tier}Pricing`);
+          if (!el) return;
+          const p = pricing[0];
+          el.innerHTML = `
+            <span class="single-price-amount">${fmtPrice(p.price)}</span>
+            <span class="single-price-guests">${escape(p.label)}</span>`;
+        }
+      });
+    } catch (_) { /* keep hardcoded fallback */ }
+  }
+  loadPricing();
 
   /* ── "Request this tier" → select + scroll to form ── */
   function selectTierAndJump(tier) {
